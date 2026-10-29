@@ -1,0 +1,20 @@
+---
+description: Rules for generating ultra-premium, creative, award-winning UI/UX layout and typography. Use this to destroy generic AI templates.
+globs: **/*.{tsx,jsx,ts,js,css,scss}
+---
+# Creative UI & Taste Rules
+
+## 1. Anti-Generic Layout Guardrails
+- **NEVER** build standard alternating "Image on Left, Text on Right" sections.
+- Use dynamic, asymmetric grids, layered bento box layouts, and intentional editorial whitespace.
+- Implement overlapping sections using negative margins, absolute positioning anchors, and high Z-index depth layers.
+
+## 2. Visual Polish & "Taste" Layer
+- **Typography Over Everything:** Use high-contrast type scaling (e.g., massive header fonts tracking-tighter paired with ultra-clean micro-copy).
+- **Gradients:** Absolutely NO generic diagonal gradients. Use multi-stop mesh gradients, soft glowing radial orbs (`bg-[radial-gradient(...)]`), or strict monochromatic palettes with high-fidelity accent strokes.
+- **Glassmorphism & Depth:** Maximize backdrop-blur layers, thin 1px semi-transparent borders (`border-white/10`), and subtle layered box shadows instead of harsh solid cards.
+
+## 3. Motion & Micro-interactions
+- Every interactive element (buttons, cards, links) MUST have an elegant transition state.
+- Integrate **Framer Motion** or native CSS keyframes for layout-reveal triggers, magnetic hover tracking, and smooth stagger-fade text entrances.
+- Keep animations snappy and luxurious (e.g., `transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1)`).

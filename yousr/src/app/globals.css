@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+/* ---------- Masar clinical-grade design tokens ---------- */
+:root {
+  --dawn-50: #fbf9f5;
+  --dawn-100: #f3efe7;
+  --dawn-200: #e5decb;
+  --dawn-300: #cfc4ac;
+  --peach-200: #f7deca;
+  --peach-300: #eebc96;
+  --peach-500: #c87245;
+  --peach-700: #994f28;
+  --mist-100: #e6f2f0;
+  --mist-300: #b8dad5;
+  --mist-500: #2b7a72;
+  --mist-700: #1d5751;
+  --amber-100: #faeed5;
+  --amber-400: #d89b35;
+  --amber-700: #7c510d;
+  --slate-200: #e5e8eb;
+  --slate-400: #919aa4;
+  --slate-600: #4c5661;
+  --ink-900: #1f1c19;
+  --ink-600: #554e48;
+  --ink-400: #7f766f;
+
+  --state-improving: var(--mist-500);
+  --state-stable: var(--mist-300);
+  --state-shifting: var(--peach-500);
+  --state-discuss: var(--amber-400);
+  --state-unknown: var(--slate-400);
+
+  --shadow-lift: 0 4px 14px -6px rgba(31, 28, 25, 0.12);
+  --shadow-soft: 0 1px 2px rgba(31, 28, 25, 0.04), 0 8px 24px -12px rgba(31, 28, 25, 0.1);
+
+  --r-pill: 999px;
+  --r-lg: 12px;
+  --r-md: 8px;
+  --r-sm: 6px;
+}
+
+@theme inline {
+  --color-dawn-50: var(--dawn-50);
+  --color-dawn-100: var(--dawn-100);
+  --color-dawn-200: var(--dawn-200);
+  --color-dawn-300: var(--dawn-300);
+  --color-peach-200: var(--peach-200);
+  --color-peach-300: var(--peach-300);
+  --color-peach-500: var(--peach-500);
+  --color-peach-700: var(--peach-700);
+  --color-mist-100: var(--mist-100);
+  --color-mist-300: var(--mist-300);
+  --color-mist-500: var(--mist-500);
+  --color-mist-700: var(--mist-700);
+  --color-amber-100: var(--amber-100);
+  --color-amber-400: var(--amber-400);
+  --color-amber-700: var(--amber-700);
+  --color-slate-200: var(--slate-200);
+  --color-slate-400: var(--slate-400);
+  --color-slate-600: var(--slate-600);
+  --color-ink-900: var(--ink-900);
+  --color-ink-600: var(--ink-600);
+  --color-ink-400: var(--ink-400);
+
+  --font-display: var(--font-fraunces), var(--font-amiri), Georgia, serif;
+  --font-body: var(--font-sans), var(--font-arabic-sans), system-ui, -apple-system, sans-serif;
+
+  --radius-pill: var(--r-pill);
+  --radius-lg: var(--r-lg);
+  --radius-md: var(--r-md);
+  --radius-sm: var(--r-sm);
+
+  --shadow-lift: var(--shadow-lift);
+}
+
+/* ---------- Base ---------- */
+html {
+  background: var(--dawn-50);
+  color: var(--ink-900);
+  font-family: var(--font-body);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html[dir="rtl"] {
+  --font-display: var(--font-amiri), var(--font-fraunces), serif;
+  --font-body: var(--font-arabic-sans), var(--font-sans), system-ui, sans-serif;
+}
+
+html[dir="rtl"] body {
+  line-height: 1.75;
+}
+
+body {
+  min-height: 100dvh;
+  position: relative;
+  line-height: 1.5;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--mist-300) 55%, white);
+  color: var(--ink-900);
+}
+
+h1,
+h2,
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 40, "opsz" 48;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.875rem;
+  line-height: 1.15;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 2.25rem;
+  }
+}
+
+h2 {
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mist-500);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Section / metadata label */
+.label-caps {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  color: var(--ink-600);
+}
+
+html[dir="rtl"] .label-caps {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+}
+
+/* Legacy glow classes kept as no-op so no stray blur circles render */
+.glow,
+.glow-peach,
+.glow-mist,
+.glow-amber {
+  display: none;
+}
+
+/* Surfaces */
+.surface {
+  background: var(--dawn-100);
+  border: 1px solid var(--dawn-200);
+  border-radius: var(--r-lg);
+}
+
+.surface-paper {
+  background: #ffffff;
+  border: 1px solid var(--dawn-200);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.lift {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.lift:hover {
+  border-color: var(--dawn-300);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Expandable panels: calm open/close cue */
+details > summary {
+  transition: background-color 160ms ease;
+}
+
+details > summary:hover {
+  background-color: color-mix(in srgb, var(--dawn-100) 70%, transparent);
+}
+
+details[open] > summary {
+  background-color: color-mix(in srgb, var(--dawn-100) 55%, transparent);
+}
+
+/* Visually hidden */
+.sr-only-table {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Journey prepare: ECG draw + soft scan (clinical, not decorative spinner) */
+@keyframes journey-ecg-draw {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  45% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes journey-ecg-scan {
+  0% {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(320px);
+    opacity: 0;
+  }
+}
+
+.journey-ecg-trace {
+  animation: journey-ecg-draw 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.journey-ecg-scan {
+  animation: journey-ecg-scan 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .journey-ecg-trace,
+  .journey-ecg-scan {
+    animation: none !important;
+  }
+}

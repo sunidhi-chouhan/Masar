@@ -1,0 +1,201 @@
+// Masar — synthetic reproductive-health prototype schema.
+// SQLite in dev via @prisma/adapter-libsql; Postgres-compatible types only.
+// String "enums" are documented in src/lib/domain/types.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id          String  @id
+  role        String // patient | clinician | admin | cohort
+  name        String
+  nameAr      String
+  sex         String // female | male
+  birthYear   Int
+  nationality String
+  language    String  @default("en")
+  intention   String  @default("PreferNotToSay")
+  hue         Int     @default(20)
+  isDemo      Boolean @default(true)
+
+  profile          HealthProfile?
+  observations     Observation[]
+  consents         ConsentGrant[]
+  assessments      DomainAssessment[]
+  careActions      CareAction[]       @relation("actionPatient")
+  clinicianActions CareAction[]       @relation("actionClinician")
+  auditAsSubject   AuditEvent[]       @relation("auditSubject")
+  auditAsActor     AuditEvent[]       @relation("auditActor")
+  integrations     IntegrationEvent[]
+  teachBacks       TeachBackResponse[]
+  reviewsAsPatient ClinicianReview[]  @relation("reviewPatient")
+  reviewsAsClinic  ClinicianReview[]  @relation("reviewClinician")
+  coupleAsA        CoupleLink[]       @relation("partnerA")
+  coupleAsB        CoupleLink[]       @relation("partnerB")
+}
+
+model HealthProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conditions    String   @default("[]") // JSON string[] of condition codes
+  familyHistory String   @default("[]") // JSON string[]
+  medications   String   @default("[]") // JSON string[]
+  completed     String   @default("[]") // JSON string[] of completed profile steps
+  updatedAt     DateTime @updatedAt
+}
+
+model DataSource {
+  id         String    @id // SelfReport | MalaffiMock | LabMock | HealthAgeMock | DeviceMock
+  name       String
+  kind       String // self | hie | lab | programme | device
+  simulated  Boolean   @default(true)
+  lastSyncAt DateTime?
+
+  observations Observation[]
+  integrations IntegrationEvent[]
+}
+
+model Observation {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dataSourceId String
+  dataSource   DataSource @relation(fields: [dataSourceId], references: [id])
+  code         String
+  valueNum     Float?
+  valueText    String?
+  unit         String?
+  effectiveAt  DateTime
+  importedAt   DateTime   @default(now())
+
+  @@index([userId, code, effectiveAt])
+}
+
+model ConsentGrant {
+  id            String    @id @default(cuid())
+  subjectId     String
+  subject       User      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  source        String? // null = applies to all sources
+  recipientRole String // Self | Clinician | Partner | Analytics
+  purpose       String // PersonalView | ClinicianReview | PartnerShare | PopulationAnalytics
+  status        String    @default("active") // active | revoked
+  scopes        String? // JSON string[] of domains (partner share)
+  grantedAt     DateTime  @default(now())
+  revokedAt     DateTime?
+
+  @@index([subjectId, purpose, status])
+}
+
+model DomainAssessment {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain     String
+  direction  String // Improving | Stable | Shifting | Discuss | Unknown
+  confidence String // High | Moderate | Low | InsufficientData
+  drivers    String   @default("[]") // JSON Driver[]
+  unknowns   String   @default("[]") // JSON Unknown[]
+  // Why this interpretation was stored. A snapshot is an interpretation event,
+  // never a measurement: first | inputs (records, sharing or profile changed) | time (a reading aged out)
+  reason        String?
+  inputsKey     String? // fingerprint of what the rules saw when this was computed
+  engineVersion String?
+  computedAt DateTime @default(now())
+
+  @@index([userId, domain, computedAt])
+}
+
+model CareAction {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation("actionPatient", fields: [userId], references: [id], onDelete: Cascade)
+  clinicianId  String?
+  clinician    User?     @relation("actionClinician", fields: [clinicianId], references: [id])
+  type         String // Learn | Optimise | TestDiscuss | Counsel | PreserveDiscuss | Refer
+  domain       String
+  state        String    @default("Suggested") // Suggested | Requested | Confirmed | Attended | OutcomeRecorded | Declined | Expired
+  titleKey     String // i18n key for the action title
+  reasonKey    String // i18n key for the plain-language reason
+  triggerCode  String? // escalation trigger id if any
+  suggestedAt  DateTime  @default(now())
+  requestedAt  DateTime?
+  confirmedAt  DateTime?
+  scheduledFor DateTime?
+  attendedAt   DateTime?
+  outcomeAt    DateTime?
+  declinedAt   DateTime?
+  outcomeNote  String?
+
+  @@index([userId, state])
+}
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation("auditActor", fields: [actorId], references: [id])
+  actorRole String
+  subjectId String
+  subject   User     @relation("auditSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  type      String // View | Share | Export | ConsentChange | BlockedAccess | Import | ActionTransition | Review
+  purpose   String?
+  resource  String
+  detail    String?
+  allowed   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([subjectId, createdAt])
+}
+
+model IntegrationEvent {
+  id                String     @id @default(cuid())
+  userId            String
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dataSourceId      String
+  dataSource        DataSource @relation(fields: [dataSourceId], references: [id])
+  status            String // ok | blocked | empty
+  observationsAdded Int        @default(0)
+  createdAt         DateTime   @default(now())
+}
+
+model CoupleLink {
+  id         String   @id @default(cuid())
+  partnerAId String
+  partnerA   User     @relation("partnerA", fields: [partnerAId], references: [id], onDelete: Cascade)
+  partnerBId String
+  partnerB   User     @relation("partnerB", fields: [partnerBId], references: [id], onDelete: Cascade)
+  scopesA    String   @default("[]") // JSON domains A shares with B
+  scopesB    String   @default("[]") // JSON domains B shares with A
+  createdAt  DateTime @default(now())
+
+  @@unique([partnerAId, partnerBId])
+}
+
+model TeachBackResponse {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain     String
+  questionId String
+  answer     String
+  correct    Boolean
+  createdAt  DateTime @default(now())
+}
+
+model ClinicianReview {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     User     @relation("reviewPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  clinicianId String
+  clinician   User     @relation("reviewClinician", fields: [clinicianId], references: [id])
+  decision    String // Accept | Modify | Override
+  reason      String?
+  note        String?
+  createdAt   DateTime @default(now())
+}

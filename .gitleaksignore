@@ -1,0 +1,2 @@
+# False positives: i18n rule identifiers, not credentials
+yousr/src/lib/engine/rules.ts:generic-api-key:63

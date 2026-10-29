@@ -1,0 +1,10 @@
+---
+description: Always apply the Reproductive Potential challenge context to work in this project
+alwaysApply: true
+---
+
+This project (Masar, in `yousr/`) is a solution to the Abu Dhabi "[Fertility] Reproductive Potential" challenge: an earlier, clearer, longitudinal view of changes in reproductive potential, translated into timely, evidence-informed, personalized options, with granular consent and non-discrimination. It is not a fertility score and not a diagnostic tool.
+
+Before any spec, design, code, copy, AI-prompt or review work, read and follow `.cursor/skills/reproductive-potential-challenge/SKILL.md` (and its `reference.md` for domain detail), and run its Build Checklist on the change.
+
+The older `.cursor/skills/inherited-risk-challenge/` skill belongs to a different challenge and must not govern work in `yousr/`.

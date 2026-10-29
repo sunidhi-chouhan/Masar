@@ -1,0 +1,1424 @@
+{
+  "common": {
+    "appName": "Masar",
+    "appNameAr": "مسار",
+    "tagline": "Understand how things change, on your terms.",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "skip": "Skip for now",
+    "ratherNot": "I'd rather not say",
+    "cancel": "Cancel",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "learnMore": "Learn more",
+    "simulated": "Simulated",
+    "synthetic": "Synthetic data",
+    "notDiagnosis": "Not a diagnosis. Masar shows direction of change and what is still unknown; it never gives a fertility score.",
+    "lastUpdated": "Last updated {date}",
+    "source": "Source",
+    "date": "Date",
+    "signOut": "Sign out",
+    "demoBadge": "Prototype with synthetic people. Nothing here is real patient data.",
+    "notEnough": "Not enough information to say.",
+    "whyThisMatters": "Why this matters",
+    "talkToClinician": "Talk to a clinician",
+    "and": "and",
+    "of": "of",
+    "age": "age {age}",
+    "years": "years",
+    "orSwitch": "or switch persona"
+  },
+  "nav": {
+    "trajectory": "Trajectory",
+    "livingWell": "Living Well",
+    "actions": "Next steps",
+    "privacy": "Your data",
+    "profile": "Profile",
+    "couple": "Couple",
+    "clinician": "Clinician",
+    "population": "Population",
+    "about": "How it works",
+    "demo": "Guided demo",
+    "login": "Demo sign-in",
+    "home": "Home",
+    "journey": "Start journey"
+  },
+  "tiers": {
+    "Education": "Education",
+    "DecisionSupport": "Personalised",
+    "ClinicianOnly": "Clinician only",
+    "hint": {
+      "Education": "General information. Nothing here is about you specifically.",
+      "DecisionSupport": "Your own information explained, with options listed neutrally. No recommendation of one option.",
+      "ClinicianOnly": "Interpretation and decisions stay with a qualified clinician."
+    }
+  },
+  "directions": {
+    "Improving": "Improving",
+    "Stable": "Stable",
+    "Shifting": "Changing",
+    "Discuss": "Worth discussing",
+    "Unknown": "Not enough data for a trend",
+    "hint": {
+      "Improving": "Supportive factors have moved in a helpful direction since the previous reading.",
+      "Stable": "Little change between readings. Stable is not the same as 'all clear'.",
+      "Shifting": "Something has changed between readings. Shifting is a reason to look closer, not an alarm.",
+      "Discuss": "A pattern here is worth a conversation with a clinician. It is not a diagnosis.",
+      "Unknown": "We can't speak to this yet. Adding information would help."
+    }
+  },
+  "confidence": {
+    "label": "What this is based on",
+    "High": "Several recent readings",
+    "Moderate": "A few readings",
+    "Low": "Limited data",
+    "InsufficientData": "Not enough information yet",
+    "notEnough": "Not enough information yet",
+    "notEnoughHint": "There are no usable readings for this area, so Masar does not name a direction. It is not calling this stable, and it is not calling it a concern.",
+    "hint": {
+      "High": "Several recent readings, including the ones that matter most for this area.",
+      "Moderate": "A few recent readings. Enough to see a direction, not detail.",
+      "Low": "One reading, or only older ones.",
+      "InsufficientData": "No readings for this area. Nothing can be said about direction."
+    }
+  },
+  "modifiability": {
+    "Modifiable": "You can influence this",
+    "NonModifiable": "Context you can't change",
+    "Unknown": "Not known yet"
+  },
+  "strength": {
+    "label": "Evidence",
+    "Strong": "Strong evidence",
+    "Moderate": "Moderate evidence",
+    "Emerging": "Emerging evidence",
+    "reviewed": "Reviewed {date}"
+  },
+  "intentions": {
+    "NotPlanning": "Not planning",
+    "MaybeLater": "Maybe in a few years",
+    "TryingNow": "Trying now",
+    "Pregnant": "Pregnant",
+    "PreferNotToSay": "Prefer not to say",
+    "hint": {
+      "NotPlanning": "You'll see education and what would help us see more. No pressure to act.",
+      "MaybeLater": "Timing matters here, so age and reserve context are surfaced gently.",
+      "TryingNow": "Preconception conversations are offered earlier.",
+      "Pregnant": "Wellbeing in pregnancy and any condition follow-up are prioritised.",
+      "PreferNotToSay": "You'll see everything as general information."
+    }
+  },
+  "domains": {
+    "cycle": "Cycle health",
+    "reserve": "Egg reserve context",
+    "metabolic": "Metabolic health",
+    "male": "Male factor context",
+    "conditions": "Conditions and history",
+    "lifestyle": "Lifestyle and recovery",
+    "about": {
+      "cycle": "How regular your cycles are and what influences them.",
+      "reserve": "Age and, where available, lab context about the quantity of remaining eggs. Never quality.",
+      "metabolic": "Weight trend, blood sugar, blood pressure and activity.",
+      "male": "Semen analysis where available, and the everyday factors associated with it.",
+      "conditions": "Conditions and family history you've recorded that can be relevant.",
+      "lifestyle": "Sleep, movement, smoking, stress, laughter and connection, from your check-ins."
+    }
+  },
+  "factors": {
+    "age": "Age",
+    "pcos": "PCOS",
+    "endometriosis": "Endometriosis",
+    "thyroid": "Thyroid (TSH)",
+    "stress": "Stress level",
+    "sleep": "Sleep",
+    "weight_trend": "Weight trend (BMI)",
+    "amh": "AMH",
+    "family_early_menopause": "Family history of early menopause",
+    "smoking": "Smoking",
+    "glycaemic": "Blood sugar (HbA1c)",
+    "blood_pressure": "Blood pressure",
+    "activity": "Physical activity",
+    "health_age": "Health Age",
+    "semen_concentration": "Sperm concentration",
+    "semen_motility": "Sperm motility",
+    "semen_volume": "Semen volume",
+    "varicocele": "Varicocele",
+    "heat": "Heat exposure",
+    "alcohol": "Alcohol",
+    "diet_pattern": "Dietary pattern",
+    "laughter": "Laughter and connection",
+    "hypothyroidism": "Underactive thyroid",
+    "hyperthyroidism": "Overactive thyroid",
+    "type2_diabetes": "Type 2 diabetes",
+    "prediabetes": "Prediabetes",
+    "hypertension": "High blood pressure",
+    "sti_history": "Past infection (STI)",
+    "pelvic_surgery": "Pelvic surgery",
+    "oncology_history": "Cancer treatment history",
+    "family_pcos_family": "PCOS in the family",
+    "family_diabetes_family": "Diabetes in the family",
+    "family_genetic_condition": "Genetic condition in the family",
+    "family_male_infertility_family": "Male fertility difficulty in the family",
+    "cycle_length": "Cycle length",
+    "cycle_regular": "Cycle regularity",
+    "period_absent_days": "Days without a period",
+    "afc": "Antral follicle count",
+    "fsh": "FSH",
+    "fasting_glucose": "Fasting glucose"
+  },
+  "driverNotes": {
+    "pcos_features_modifiable": "The condition itself is not a choice, but several of its features respond to lifestyle.",
+    "amh_quantity_not_quality": "Reflects approximate quantity of eggs, not quality. A weak predictor of natural conception.",
+    "semen_varies_between_samples": "Results vary between samples; one value is never a verdict.",
+    "health_age_simulated": "Simulated Health Age tile; a real deployment would read the programme's value."
+  },
+  "missing": {
+    "tsh": "A thyroid test (TSH)",
+    "cycle_dates": "Three months of cycle dates",
+    "amh": "An AMH result, for discussion with a clinician",
+    "afc": "An antral follicle count (ultrasound)",
+    "hba1c": "A blood sugar result (HbA1c)",
+    "bp": "A blood pressure reading",
+    "semen_analysis": "A semen analysis",
+    "heat_exposure": "Whether your routine involves heat exposure",
+    "conditions_step": "Your conditions and history",
+    "medications": "Your current medications",
+    "sleep": "Your usual sleep",
+    "activity": "Your weekly activity",
+    "smoking": "Your smoking status",
+    "stress": "How stressed you feel",
+    "laughter": "How often you laugh or connect with others",
+    "wouldNarrow": "would narrow {domain}"
+  },
+  "observed": {
+    "cycle_insufficient": "No cycle dates recorded yet.",
+    "cycle_absent": "No period for 90 days or more.",
+    "cycle_persistent_irregular": "Cycles have been irregular for more than three months.",
+    "cycle_newly_irregular": "Recent cycles are more irregular than earlier ones.",
+    "cycle_regularising": "Recent cycles are more regular than earlier ones.",
+    "cycle_regular": "Recent cycles fall within the usual range.",
+    "cycle_few": "Fewer than three recent cycles recorded.",
+    "reserve_age_only": "Only age is known; no reserve-related results yet.",
+    "reserve_amh_lower": "The latest AMH is lower than the typical reference used for conversation.",
+    "reserve_amh_falling": "AMH has fallen noticeably between two results.",
+    "reserve_amh_typical": "The latest AMH sits within the typical reference range.",
+    "reserve_age35_no_data": "You're 35 or older, thinking about later, and no reserve results are recorded.",
+    "metabolic_insufficient": "No metabolic readings recorded yet.",
+    "metabolic_bmi_down": "BMI has decreased since an earlier reading.",
+    "metabolic_bmi_up": "BMI has increased since an earlier reading.",
+    "metabolic_bmi_steady": "BMI is similar to an earlier reading.",
+    "metabolic_single": "One metabolic reading; a direction needs two.",
+    "metabolic_hba1c_down": "HbA1c has decreased since an earlier result.",
+    "metabolic_hba1c_raised": "HbA1c is in a range worth discussing.",
+    "male_insufficient": "No semen or lifestyle information recorded yet.",
+    "male_semen_below": "One or more semen values are below the WHO reference limit.",
+    "male_semen_within": "Semen values are within WHO reference limits.",
+    "male_quit_smoking": "Smoking status changed from current to former.",
+    "male_lifestyle_shifting": "Current smoking together with a higher BMI.",
+    "male_lifestyle_only": "Lifestyle recorded, but no semen analysis yet.",
+    "conditions_not_completed": "The conditions step hasn't been completed.",
+    "conditions_none": "No conditions or relevant family history recorded.",
+    "conditions_pregnant": "You're pregnant and have a recorded condition.",
+    "conditions_review": "A recorded condition is relevant to your plans.",
+    "conditions_family": "A family history item is worth a conversation.",
+    "conditions_recorded": "Conditions recorded; nothing changing right now.",
+    "lifestyle_insufficient": "No check-ins recorded yet.",
+    "lifestyle_more_supportive": "More supportive habits than at your previous check-in.",
+    "lifestyle_fewer_supportive": "Fewer supportive habits than at your previous check-in.",
+    "lifestyle_steady": "Similar habits to your previous check-in.",
+    "lifestyle_single_checkin": "One check-in; a direction needs two.",
+    "lifestyle_distress": "You reported very high stress."
+  },
+  "summaries": {
+    "cycle_improving": "Cycles settling is encouraging. Keep recording dates so the view stays clear.",
+    "cycle_stable": "Regular cycles are one piece of context among many. They don't confirm ovulation or fertility.",
+    "cycle_shifting": "Cycle changes have many causes: stress, thyroid, weight change, PCOS, travel. If it persists, it's worth a conversation.",
+    "cycle_discuss": "A persistent change or a relevant condition makes this worth discussing with a clinician. It is not a diagnosis.",
+    "cycle_unknown": "We can't speak to cycle health yet. Three months of dates would change that.",
+    "reserve_improving": "Reserve context doesn't improve in a biological sense; a clearer view may simply reveal more than expected.",
+    "reserve_stable": "AMH in the typical range is context, not reassurance about conceiving. Quantity, not quality.",
+    "reserve_shifting": "A noticeable fall between results is worth understanding in context with a clinician.",
+    "reserve_discuss": "Either a lower AMH, a family history or your age and plans make a conversation about timing useful.",
+    "reserve_unknown": "Age alone describes a population trend, not your reserve. A lab result would narrow this, if you want one.",
+    "reserve_single_lab": "One AMH result is context, not a direction. It reflects quantity, not quality, and a second result over time is what would show change.",
+    "metabolic_improving": "A helpful metabolic direction supports ovulation and semen health in general evidence.",
+    "metabolic_stable": "Steady readings. Stable is a description, not a judgement.",
+    "metabolic_shifting": "A change in weight or blood sugar is modifiable context, and worth a look.",
+    "metabolic_discuss": "A reading sits in a range clinicians like to review, especially around pregnancy plans.",
+    "metabolic_unknown": "We can't see a metabolic direction yet. Two readings over time are needed.",
+    "male_improving": "Stopping smoking is associated with better semen parameters within a few months.",
+    "male_stable": "Values within reference limits are context, not a guarantee.",
+    "male_shifting": "Smoking plus a higher BMI are modifiable factors associated with semen changes.",
+    "male_discuss": "A value below the reference limit is common and often repeated; a clinician can interpret it in context.",
+    "male_unknown": "Without a semen analysis, male factor stays in shade. That is a normal place to be.",
+    "conditions_improving": "Conditions don't 'improve' here; management may.",
+    "conditions_stable": "What you've recorded isn't changing. Keep it current.",
+    "conditions_shifting": "Something has changed in your recorded history.",
+    "conditions_discuss": "A recorded condition or family history is relevant to your plans and worth discussing.",
+    "conditions_unknown": "Completing the conditions step would change what we can say.",
+    "lifestyle_improving": "More supportive habits than before. Small and repeatable beats dramatic.",
+    "lifestyle_stable": "Steady habits. Nothing to fix for its own sake.",
+    "lifestyle_shifting": "Fewer supportive habits recently. Life happens; this is a nudge, not a mark.",
+    "lifestyle_discuss": "Very high stress deserves support in its own right.",
+    "lifestyle_unknown": "A second check-in would let us see a direction."
+  },
+  "access": {
+    "unauthenticated": "Please choose a persona first.",
+    "not_self": "This information belongs to someone else.",
+    "not_clinician": "Only clinicians can open this view.",
+    "consent_revoked": "Access is switched off. The person has not shared this with you.",
+    "not_linked": "You are not linked with this person.",
+    "domain_not_shared": "This area hasn't been shared with you.",
+    "not_admin": "Only health-system roles can open this view.",
+    "self": "Your own view",
+    "consented": "Shared with consent",
+    "blockedTitle": "Access blocked and recorded",
+    "blockedBody": "This attempt has been written to the person's access log. Nothing was shown.",
+    "purpose_not_for_data": "This consent is for wording only and cannot open health records."
+  },
+  "welcome": {
+    "title": "Understand how things change, on your terms.",
+    "subtitle": "Masar watches the direction of change in reproductive health, explains it plainly, and helps you decide what, if anything, to do next.",
+    "whereAreYou": "Where are you right now?",
+    "notFertilityScore": "Not a fertility score",
+    "howWeUse": "How we use your data",
+    "start": "Continue",
+    "pillars": {
+      "direction": "Direction, not a number",
+      "directionBody": "Each area shows whether things are improving, stable, shifting or worth discussing, and how much we can actually see.",
+      "honest": "Honest about shade",
+      "honestBody": "When information is missing we say so, and tell you what would narrow it.",
+      "yours": "Yours to share",
+      "yoursBody": "Every source and every recipient is a switch you control, with a log you can read."
+    }
+  },
+  "login": {
+    "title": "Demo sign-in",
+    "subtitle": "This demonstration uses synthetic people instead of a real sign-in. Choose one to explore Masar.",
+    "roles": {
+      "patient": "Person",
+      "clinician": "Clinician",
+      "admin": "Health system"
+    },
+    "personas": {
+      "mariam": "33, PCOS, cycles getting more irregular, thinking about a few years from now.",
+      "omar": "36, Mariam's partner. Metabolic changes and a smoker, open to a couple pathway.",
+      "fatima": "28, not planning, very little data. Shows how Masar refuses false reassurance.",
+      "sara": "38, trying now, Arabic-first. Shows the live language switch.",
+      "layla": "OB/GYN with a signal queue and a one-pager per patient.",
+      "admin": "Health-system view: funnel, equity and honesty metrics over synthetic people."
+    },
+    "enter": "Enter as {name}",
+    "peopleTitle": "People using Masar",
+    "peopleBody": "Synthetic individuals. Each one opens the personal view of their own recorded information.",
+    "workspacesTitle": "Authorized workspaces",
+    "workspacesBody": "Separate clinician and health-system views. They do not share unrestricted access to personal records."
+  },
+  "privacy": {
+    "title": "Your data, your rules",
+    "subtitle": "Every switch below is enforced on the server, not just on this screen. Turning something off stops future access and is written to your log.",
+    "sourcesHeading": "Sources",
+    "sourcesBody": "Which information Masar may include in your view.",
+    "whoCanSee": "Who can see",
+    "whoCanSeeBody": "Who may read your trajectory. Nobody else has a way in.",
+    "sources": {
+      "SelfReport": "What you tell us",
+      "MalaffiMock": "Health records (Malaffi)",
+      "LabMock": "Lab results",
+      "HealthAgeMock": "Health Age",
+      "DeviceMock": "Device and app imports"
+    },
+    "sourceHints": {
+      "SelfReport": "Cycle dates, check-ins, conditions.",
+      "MalaffiMock": "Conditions, blood pressure, BMI from the exchange.",
+      "LabMock": "AMH, HbA1c, TSH, semen analysis.",
+      "HealthAgeMock": "Your Health Age tile from the programme.",
+      "DeviceMock": "Sleep and activity from a wearable."
+    },
+    "recipients": {
+      "Clinician": "My clinician",
+      "Partner": "My partner",
+      "Analytics": "Anonymous population insight"
+    },
+    "recipientHints": {
+      "Clinician": "A concise one-pager with provenance. They never see more than you do.",
+      "Partner": "Only the areas you choose, as directions, never raw values.",
+      "Analytics": "Counted in de-identified groups of ten or more. Never individually."
+    },
+    "on": "Shared",
+    "off": "Not shared",
+    "firewall": {
+      "title": "Never, by design",
+      "body": "These never receive your information. There is no setting to allow it, because no such purpose exists in Masar.",
+      "employer": "Employer",
+      "insurer": "Insurer",
+      "unrelated": "Unrelated apps and marketing"
+    },
+    "accessLog": "Access log",
+    "accessLogBody": "Every view, share, import and blocked attempt, newest first.",
+    "story1": "When you switch something off here, it stops on the server for everyone, straight away. A clinician who tries anyway is turned back, not quietly shown a blank page.",
+    "story2": "Every look at your information, allowed or blocked, is written to the log below with who, when and why.",
+    "logEmpty": "Nothing has been accessed yet.",
+    "auditTypes": {
+      "View": "Viewed",
+      "Share": "Shared",
+      "Export": "Exported",
+      "ConsentChange": "Consent changed",
+      "BlockedAccess": "Blocked",
+      "Import": "Imported",
+      "ActionTransition": "Step updated",
+      "Review": "Clinician review"
+    },
+    "by": "by {name}",
+    "system": "system"
+  },
+  "profile": {
+    "title": "Your profile",
+    "subtitle": "One question at a time. Everything is optional.",
+    "steps": {
+      "intention": "Where you are",
+      "cycle": "Your cycles",
+      "conditions": "Conditions",
+      "family": "Family history",
+      "lifestyle": "Check-in",
+      "labs": "Results you have",
+      "medications": "Medications"
+    },
+    "cycleQ": "Roughly how long are your cycles lately, in days? Add the last few if you can.",
+    "cycleAbsentQ": "Days since your last period, if it has been a while",
+    "conditionsQ": "Has a clinician ever told you that you have any of these?",
+    "familyQ": "Anything like this in your close family?",
+    "lifestyleQ": "How have the last couple of weeks been?",
+    "sleep": "Usual sleep (hours)",
+    "activity": "Activity (minutes per week)",
+    "smoking": "Smoking",
+    "smokingOptions": {
+      "never": "Never",
+      "former": "Stopped",
+      "current": "Currently"
+    },
+    "alcohol": "Alcohol (units per week)",
+    "stress": "Stress, 1 to 10",
+    "laughter": "Days this week you laughed heartily or connected with people",
+    "heat": "Frequent heat exposure (sauna, hot tub, laptop on lap)",
+    "heatOptions": {
+      "low": "Rarely",
+      "high": "Often"
+    },
+    "labsQ": "Add a result you already have. Masar will show it against the reference range for discussion, never as a verdict.",
+    "labCode": "Result type",
+    "labValue": "Value",
+    "labDate": "Date",
+    "medsQ": "Any regular medications or supplements? Names are enough.",
+    "addCycle": "Add cycle",
+    "addLab": "Add result",
+    "saved": "Saved. Your trajectory has been refreshed.",
+    "completeness": "{done} of {total} steps completed",
+    "nextStep": "Next",
+    "finish": "See my trajectory"
+  },
+  "trajectory": {
+    "title": "Your trajectory",
+    "greeting": "Good to see you, {name}.",
+    "intro": "Brightness is how much we can see. The arrow is the direction. Nothing here is a score.",
+    "whatLights": "What is lighting this up",
+    "whatShade": "What we don't know yet",
+    "suggestedNext": "Suggested next step",
+    "noSuggested": "Nothing to do right now. Learning is always available.",
+    "addData": "Add information",
+    "whatWouldNarrow": "What would narrow this?",
+    "guardTitle": "We won't call this stable",
+    "guardBody": "There isn't enough information to say which way things are moving, so Masar shows shade instead of a reassuring word.",
+    "openDomain": "Open {domain}",
+    "domainsCount": "{n} areas",
+    "intentionLabel": "Right now: {intention}",
+    "changeIntention": "Change",
+    "history": "Changes over time",
+    "historyBody": "Each row is a moment the direction or visibility of an area changed.",
+    "noHistory": "No changes recorded yet."
+  },
+  "domainDetail": {
+    "drivers": "What's affecting this",
+    "groupModifiable": "You can influence",
+    "groupNon": "Context you can't change",
+    "groupUnknown": "Not known yet",
+    "evidence": "Evidence behind this",
+    "chart": "Readings over time",
+    "chartLegend": "The band is the range we can speak to. It narrows as information arrives.",
+    "noChart": "No numeric readings to chart yet.",
+    "simulate": "Simulate a change",
+    "simulateBanner": "Illustrative education, not a prediction. Moving a slider shows how visibility and direction would be described, not what will happen to you.",
+    "simulateReset": "Reset",
+    "simulateResult": "With these values, Masar would describe this area as {direction}, with {confidence}.",
+    "sliders": {
+      "sleep": "Sleep (hours)",
+      "activity": "Activity (min/week)",
+      "smoking": "Smoking",
+      "stress": "Stress (1-10)",
+      "laughter": "Laughter and connection (days/week)",
+      "bmi": "BMI"
+    },
+    "livingWell": "Living Well for this area",
+    "understand": "Understand this finding",
+    "noDrivers": "No drivers recorded for this area yet."
+  },
+  "insights": {
+    "title": "Understanding {domain}",
+    "observed": "Observed",
+    "whyMatters": "Why it may matter",
+    "evidence": "Evidence",
+    "stillUnknown": "Still unknown",
+    "nothingUnknown": "Nothing major is missing for this area right now.",
+    "cannotConclude": "What this cannot tell you",
+    "cannotBody": "Whether you can or cannot conceive. Whether you have a diagnosis. What will happen next year. Those are conversations with a clinician, with all your context.",
+    "nextSteps": "See your next steps"
+  },
+  "teachback": {
+    "title": "Two quick checks",
+    "intro": "Not a test. They help us make sure the explanation landed, and help us improve it.",
+    "questions": {
+      "q_predict": "Does this tell you whether you can get pregnant?",
+      "q_change": "Is this about how things are changing, rather than a verdict?"
+    },
+    "correct": "Yes, exactly.",
+    "incorrect": {
+      "q_predict": "It doesn't. Masar shows direction and what is unknown; it cannot predict pregnancy for anyone.",
+      "q_change": "It is. Think of it as a map of movement, not a result."
+    },
+    "thanks": "Thank you. This helps us see where explanations fall short.",
+    "answered": "Answered"
+  },
+  "livingWell": {
+    "title": "Living Well",
+    "subtitle": "What you can influence, with the evidence labelled honestly. Education only.",
+    "hubs": "Hubs",
+    "cannot": "What this cannot do",
+    "askClinician": "Ask your clinician",
+    "copy": "Copy question",
+    "copied": "Copied",
+    "cardsFor": "Related to {domain}",
+    "questionList": "Your question list",
+    "questionListBody": "Questions you've copied, ready for an appointment.",
+    "emptyList": "Copy a question from any card to start a list.",
+    "backToHubs": "All hubs"
+  },
+  "actions": {
+    "title": "Your next steps",
+    "subtitle": "Options, ordered by your intention. None of them is a recommendation; you choose.",
+    "types": {
+      "Learn": "Learn",
+      "Optimise": "Optimise",
+      "TestDiscuss": "Discuss a test",
+      "Counsel": "Counselling",
+      "PreserveDiscuss": "Preservation discussion",
+      "Refer": "Specialist referral"
+    },
+    "states": {
+      "Suggested": "Suggested",
+      "Requested": "Requested",
+      "Confirmed": "Confirmed",
+      "Attended": "Attended",
+      "OutcomeRecorded": "Outcome recorded",
+      "Declined": "Declined",
+      "Expired": "Expired"
+    },
+    "titles": {
+      "counsel_cycle": "Talk about cycle changes",
+      "test_thyroid": "Ask whether a thyroid test would help",
+      "counsel_preconception": "Preconception counselling",
+      "preserve_discuss": "Discuss fertility preservation",
+      "refer_andrology": "Andrology or urology referral",
+      "test_semen": "Ask about a semen analysis",
+      "optimise_smoking": "Support to stop smoking",
+      "counsel_family": "Talk about family history",
+      "refer_antenatal": "Antenatal review",
+      "counsel_support": "Wellbeing support",
+      "counsel_reserve": "Talk about your AMH in context",
+      "test_metabolic": "Metabolic review with your GP",
+      "learn_cycle": "Understand cycle changes",
+      "learn_reserve": "Fertility across life stages",
+      "learn_metabolic": "Metabolic health and reproduction",
+      "learn_male": "Men's reproductive lifestyle",
+      "learn_conditions": "Your conditions and reproduction",
+      "learn_lifestyle": "Lifestyle foundations",
+      "learn_pregnancy_stress": "Stress and mood in pregnancy",
+      "learn_life_stages": "Fertility across life stages",
+      "optimise_sleep": "Protect sleep",
+      "optimise_activity": "Build up weekly movement",
+      "optimise_stress": "Small, repeatable calm",
+      "optimise_laughter": "Make room for laughter and people"
+    },
+    "reasons": {
+      "t1_cycle": "Your cycles have been irregular for more than three months.",
+      "t1_thyroid": "Thyroid changes are a common, treatable reason for cycle change.",
+      "t1b": "You've had no period for 90 days or more.",
+      "t2": "A recorded condition is relevant to your plans.",
+      "t3": "You're 35 or older and thinking about later, with no reserve results yet.",
+      "t4": "A semen value is below the reference limit. Often repeated; a specialist interprets it.",
+      "t4b": "Smoking and a higher BMI together are associated with semen changes.",
+      "t4b_smoking": "Stopping is the single most modifiable factor here.",
+      "t5": "A family history item can change what is worth checking.",
+      "t6": "A recorded condition during pregnancy deserves a prompt review.",
+      "t7": "You reported very high stress. You deserve support in its own right.",
+      "tr": "Your AMH is lower than the typical reference. It's quantity, not quality, and needs context.",
+      "tm": "A metabolic reading is in a range clinicians like to review.",
+      "learn_shifting": "Something is shifting here; understanding it is a good first step.",
+      "learn_discuss": "Reading about this helps you prepare for the conversation.",
+      "opt_smoking": "You're currently smoking.",
+      "opt_sleep": "Your usual sleep is under seven hours.",
+      "opt_activity": "You're under 150 minutes of activity a week.",
+      "opt_stress": "Your stress is on the higher side.",
+      "opt_laughter": "Few days of laughter or connection lately.",
+      "intent_trying": "You're trying now; preconception counselling is offered early.",
+      "intent_pregnant": "You're pregnant; mood and stress deserve attention.",
+      "intent_maybe_35": "Timing may matter for your plans."
+    },
+    "expect": {
+      "Learn": "Ten minutes of reading. Evidence labelled, nothing to decide.",
+      "Optimise": "A habit to try for a month. Record a check-in to see the direction.",
+      "TestDiscuss": "A short conversation with your GP about whether a test adds anything.",
+      "Counsel": "A 30-minute appointment with a counsellor or clinician who sees your one-pager, if you've shared it.",
+      "PreserveDiscuss": "A specialist conversation about options, timing and limits. Nothing is decided in the room.",
+      "Refer": "A referral to a specialist clinic. Typically seen within a few weeks."
+    },
+    "buttons": {
+      "request": "Request",
+      "confirm": "Mark confirmed",
+      "attended": "Mark attended",
+      "outcome": "Record outcome",
+      "decline": "Not now",
+      "open": "Open"
+    },
+    "trackerTitle": "Your path",
+    "elapsed": "{days} days from signal to request",
+    "requestedOn": "Requested on {date}. This is saved in your record; it will still be here when you come back.",
+    "confirmedOn": "Confirmed on {date}.",
+    "sequence": {
+      "title": "From understanding to next steps",
+      "body": "Nothing here jumps straight to a referral. The order is deliberate.",
+      "understand": {
+        "title": "Understand",
+        "body": "What changed, how clearly it can be seen, and what is still unknown."
+      },
+      "learn": {
+        "title": "Learn what you can influence",
+        "body": "Living Well shows the evidence, labelled honestly."
+      },
+      "ask": {
+        "title": "Ask for a conversation",
+        "body": "A counselling request is saved and tracked from today. You can decline at any time."
+      },
+      "clinician": {
+        "title": "A clinician reviews, if you allow it",
+        "body": "Their decision is theirs, recorded under their name, and visible to you."
+      }
+    },
+    "empty": "No steps yet. Add information to your profile and Masar will suggest options.",
+    "clinicianPreference": "You can ask for a clinician of a particular gender when booking."
+  },
+  "couple": {
+    "title": "Couple",
+    "subtitle": "Two people, two sets of switches. Each of you decides which areas the other can see, as directions only.",
+    "notLinked": "You're not linked with a partner in this prototype.",
+    "iShare": "Areas I share with {name}",
+    "theyShare": "{name} shares with me",
+    "notShared": "Not shared",
+    "save": "Save sharing",
+    "saved": "Sharing updated and logged.",
+    "partnerOff": "{name} has sharing switched off."
+  },
+  "clinician": {
+    "queueTitle": "Signal queue",
+    "queueSubtitle": "People with an area worth discussing and no counselling yet, oldest signal first. Locked rows have switched access off.",
+    "cols": {
+      "person": "Person",
+      "signals": "Areas",
+      "oldest": "Oldest signal",
+      "counsel": "Counselling",
+      "lastReview": "Last review"
+    },
+    "locked": "Access switched off",
+    "open": "Open one-pager",
+    "noSignals": "No discussion areas",
+    "oneTitle": "{name}, {age}",
+    "consentedSources": "{n} of {total} sources shared",
+    "trend": "Trend, 24 months",
+    "provenance": "Provenance",
+    "gaps": "Data gaps",
+    "discussion": "Suggested discussion points",
+    "discussionHint": "Generated from readable rules. You decide what matters.",
+    "decide": "Your review",
+    "Accept": "Accept",
+    "Modify": "Modify",
+    "Override": "Override",
+    "reasonLabel": "Reason (required for override)",
+    "noteLabel": "Note for the record",
+    "record": "Record review",
+    "recorded": "Review recorded and logged.",
+    "referral": "Steps",
+    "reviews": "Previous reviews",
+    "noReviews": "No reviews yet.",
+    "deniedTitle": "This view is switched off",
+    "deniedBody": "This person has chosen not to share their trajectory with clinicians right now. Nothing was shown. The attempt has been written to their access log, where they can see it.",
+    "deniedVerify": "Verification: the server answered this request with HTTP 403 and logged it as \"{reason}\". The page was not hidden by the browser; no data left the record.",
+    "deniedLogged": "Written to the person's access log at {at}.",
+    "oneIntro": "{name} has shared this view with you. Everything below is what {name} can see, plus the readable rules behind it. It updates when consent changes.",
+    "decideNote": "Masar's options are educational suggestions generated from readable rules. Recording a review is your clinical decision, and the patient sees it as yours.",
+    "backToQueue": "Back to queue",
+    "intention": "Stated intention",
+    "tier": "Clinician only",
+    "workspace": "Clinician workspace",
+    "greeting": "Hello, {name}",
+    "kpis": {
+      "review": "Need review",
+      "inFlight": "Counselling under way",
+      "oldest": "Oldest open signal",
+      "locked": "Access switched off"
+    }
+  },
+  "population": {
+    "title": "Population insight",
+    "subtitle": "Who has a signal but no counselling yet, where the pathway leaks, and whether reach is equal. Synthetic people only.",
+    "banner": "Every number on this page is computed from synthetic records and labelled as such. Groups smaller than {k} are suppressed.",
+    "consented": "{n} people included (opted in)",
+    "excluded": "{n} excluded (no analytics consent)",
+    "funnel": "Pathway funnel",
+    "funnelSteps": {
+      "signal": "Signal",
+      "counselSuggested": "Counselling suggested",
+      "counselRequested": "Requested",
+      "counselAttended": "Attended",
+      "referralCompleted": "Referral completed"
+    },
+    "medianRequest": "Median days, signal to request",
+    "medianAttend": "Median days, signal to attended",
+    "heatmap": "Who has a signal and no counselling",
+    "heatmapHint": "Rows: age band. Columns: recorded condition. Shade: share counselled. Hatched: suppressed (< {k}).",
+    "equity": "Equity of reach",
+    "equityHint": "Signal and counselling rates by group. Equal reach means similar bars.",
+    "groups": {
+      "nationality": "Nationality",
+      "language": "Language",
+      "sex": "Sex",
+      "intention": "Intention",
+      "ageBand": "Age band"
+    },
+    "conditionBuckets": {
+      "pcos": "PCOS",
+      "thyroid": "Thyroid",
+      "metabolic": "Metabolic",
+      "other": "Other",
+      "none": "None recorded"
+    },
+    "signalRate": "Signal",
+    "counselledRate": "Counselled",
+    "falseReassurance": "False-reassurance monitor",
+    "falseReassuranceHint": "Areas shown 'Stable' that later moved to 'Worth discussing'. {n} of {total} evaluated.",
+    "metrics": "Prototype honesty metrics",
+    "metricLabels": {
+      "teachBack": "Teach-back correct",
+      "uncertainty": "Insights disclosing unknowns",
+      "blocked": "Blocked access attempts",
+      "revocations": "Revocations honoured",
+      "guard": "Guard activations (shade instead of stable)"
+    },
+    "notKpi": "Deliberately not measured: pregnancies, conceptions, preservation uptake or any reproductive choice.",
+    "suppressed": "suppressed",
+    "none": "none",
+    "workspace": "Health-system workspace",
+    "kpis": {
+      "uptake": "Counselling uptake",
+      "uptakeHint": "{n} of {total} suggested requests saved",
+      "referral": "Referral completed",
+      "referralHint": "{n} completed from identified need",
+      "days": "Days from identified need to request",
+      "completeness": "People included"
+    }
+  },
+  "about": {
+    "title": "How Masar decides what to show",
+    "subtitle": "Every threshold is written here in plain language. Rules compute. Humans advise. AI, where used, only rephrases approved text.",
+    "rulesTitle": "Rules",
+    "triggersTitle": "When we suggest a conversation",
+    "refusedTitle": "What we refused to build",
+    "refused": [
+      "A fertility score or pregnancy probability.",
+      "A diagnosis of any kind.",
+      "A chatbot that answers medical questions freely.",
+      "Streaks, alarms or fear messaging.",
+      "Any pathway for employers, insurers or marketing to see data.",
+      "A claim that this is validated or connected to real health records."
+    ],
+    "evidenceTitle": "Evidence library"
+  },
+  "rules": {
+    "r0_no_score": "Masar never sums areas into a number. Each area has a direction and how much we can see, nothing more.",
+    "r1_confidence": "Visibility: no readings means 'mostly in shade'; only old readings means 'faint'; two or more recent readings means 'partial'; four or more recent readings including the key one means 'clear'. Labs count as recent for 12 months, cycle dates for 6, check-ins for 3.",
+    "r2_guard": "If an area has almost no recorded information, it can never be shown as 'Stable'. It is shown as 'Not enough data for a trend'.",
+    "c1_regularity": "Cycles are called irregular when any is shorter than 21 or longer than 35 days, or when the spread of the last three exceeds 7 days.",
+    "c2_persistent": "Irregular recent cycles after irregular earlier cycles (more than three months) are 'worth discussing'. Irregular after regular is 'shifting'. Regular after irregular is 'improving'.",
+    "c3_amenorrhoea": "No period for 90 days or more is 'worth discussing'.",
+    "c4_conditions": "PCOS, endometriosis or a thyroid condition together with an intention of trying or maybe-later makes cycle health 'worth discussing'.",
+    "o1_age_only": "Without AMH, antral follicle count or FSH, reserve is 'can't say yet'. Age is shown as context only.",
+    "o2_amh": "AMH below 1.0 ng/mL is 'worth discussing' as a reference for conversation, not a diagnosis. A fall of 25% or more between two results within 24 months is 'shifting'. A single typical result is reported as observed but is not called 'stable': direction needs two results.",
+    "o3_preserve": "Age 35 or older, intention maybe-later and no reserve results suggests a preservation discussion, never a recommendation.",
+    "m1_bmi_trend": "A BMI change of 1.0 or more between readings at least six months apart sets the direction (down from 25+ is improving, up is shifting).",
+    "m2_hba1c": "HbA1c of 6.5% or more, or 5.7% or more with pregnancy plans, is 'worth discussing'. A fall of 0.3 or more is 'improving'.",
+    "a1_semen": "Any semen value below the WHO 2021 reference (concentration 16 M/mL, motility 42%, volume 1.4 mL) is 'worth discussing'. Within limits is 'stable'.",
+    "a2_lifestyle": "Without a semen analysis, current smoking plus BMI 30 or more is 'shifting'; stopping smoking is 'improving'; otherwise 'can't say yet'.",
+    "k1_intention": "A recorded condition with an intention of trying or maybe-later is 'worth discussing'.",
+    "k2_pregnant": "A recorded condition during pregnancy is 'worth discussing' promptly.",
+    "l1_supportive": "Each check-in counts supportive habits: sleep 7 to 9 hours, 150+ minutes of activity, not currently smoking, low alcohol, stress under 6, laughter or connection on 3+ days. One more than last time is 'improving', one fewer is 'shifting'.",
+    "l2_distress": "Stress of 8 or more is 'worth discussing' and surfaces wellbeing support."
+  },
+  "triggers": {
+    "T1_cycle_persistent": "Cycles irregular for more than three months",
+    "T1b_amenorrhoea": "No period for 90 days or more",
+    "T2_condition_intention": "A recorded condition and plans for a pregnancy",
+    "T3_age35_no_reserve": "Age 35+, thinking about later, no reserve results",
+    "T4_semen_below_reference": "A semen value below the WHO reference",
+    "T4b_male_metabolic_smoking": "Current smoking together with BMI 30+",
+    "T5_family_history": "Family history of early menopause or a genetic condition",
+    "T6_pregnant_concern": "A recorded condition during pregnancy",
+    "T7_distress": "Very high stress reported",
+    "TR_amh_low": "AMH lower than the typical reference",
+    "TM_hba1c": "HbA1c in a range worth reviewing",
+    "TM_bmi": "BMI of 35 or more"
+  },
+  "metabolic": {
+    "whatIs": "What is metabolic health?",
+    "whatIsBody": "Metabolic health describes how the body manages processes such as blood sugar and blood pressure. Weight trends and physical activity can provide additional context. These factors may inform broader health discussions, but they do not independently determine fertility.",
+    "noScore": "Nothing here is combined into a score. Four separate readings, each with its own date.",
+    "categories": {
+      "weight": {
+        "title": "Weight trend",
+        "short": "Weight",
+        "body": "Body mass index over time. One reading is a snapshot; two or more, months apart, show a trend."
+      },
+      "sugar": {
+        "title": "Blood sugar",
+        "short": "Blood sugar",
+        "body": "HbA1c, an average of blood sugar over about three months. Usually from a laboratory."
+      },
+      "pressure": {
+        "title": "Blood pressure",
+        "short": "Blood pressure",
+        "body": "The top (systolic) number from a blood pressure reading, at a clinic or at home."
+      },
+      "activity": {
+        "title": "Physical activity",
+        "short": "Activity",
+        "body": "Minutes of moderate activity in a typical week, from a check-in or a connected device."
+      }
+    },
+    "status": {
+      "available": "Available",
+      "single": "Recorded once",
+      "outdated": "Outdated",
+      "missing": "Not recorded"
+    },
+    "statusHint": {
+      "available": "Two or more readings in range. A direction can be seen.",
+      "single": "One recent reading. A direction needs a second one over time.",
+      "outdated": "The latest reading is more than {months} months old, so it no longer counts towards direction.",
+      "missing": "Nothing recorded yet. Nothing can be said about this."
+    },
+    "latest": "Latest: {value} · {date} · {source}",
+    "readings": "{n} readings",
+    "add": {
+      "weight": "Add a BMI reading",
+      "sugar": "Add an HbA1c result",
+      "pressure": "Add a blood pressure reading",
+      "activity": "Do a quick check-in"
+    },
+    "connect": "Or switch on a record source"
+  },
+  "emptyState": {
+    "title": "Nothing can be said about {domain} yet",
+    "body": "Masar has no usable readings for this area. That is not a bad sign and not a good one; it is simply unseen. Below are the things that would let it come into view.",
+    "noStable": "Masar never calls an area stable without readings to compare. Silence is not reassurance.",
+    "improve": "How to improve this view",
+    "addYourself": "Add it yourself",
+    "connect": "{n} record sources are switched off",
+    "connectOne": "One record source is switched off",
+    "connectCta": "Review in Your data",
+    "import": "Import a simulated record or lab result",
+    "footnote": "Every link here opens a screen that really records that information. Nothing is added to your record until you save it.",
+    "cardBody": "No usable readings for this area yet. Nothing is being called stable."
+  },
+  "timeline": {
+    "title": "Your health story, over time",
+    "body": "What was already recorded, what arrived recently, and the moments Masar's reading of this area actually changed. Older readings are marked so they are not mistaken for current ones.",
+    "legend": "Legend",
+    "tags": {
+      "recorded": "Previously recorded",
+      "new": "Newly added",
+      "change": "Changed",
+      "unchanged": "No change",
+      "first": "First reading",
+      "outdated": "Outdated"
+    },
+    "said": "Summary at the time:",
+    "noTrend": "A trend cannot be established yet. It takes at least two comparable readings, months apart, to see a direction.",
+    "noChange": "The reading of this area has not changed across these snapshots. New information was added, but it did not move the picture.",
+    "empty": "Nothing recorded for this area yet.",
+    "more": "{n} earlier entries not shown",
+    "values": {
+      "regular": "regular",
+      "irregular": "irregular",
+      "never": "never",
+      "former": "former",
+      "current": "current",
+      "low": "low",
+      "high": "high"
+    }
+  },
+  "demo": {
+    "label": "Guided demo",
+    "title": "One journey. Better-informed decisions.",
+    "subtitle": "Meet Fatima and Mariam. See how the same health platform responds differently depending on what each person has shared, and how one new piece of information can change the picture.",
+    "problem": "Most reproductive-health tools hand people a score. Masar does something quieter: it shows what has changed, how clearly it can be seen, and what would help see more. Nothing is called stable without evidence, and nothing leaves a person's record without their say.",
+    "meet": "Meet the people in this story",
+    "personas": {
+      "fatima": {
+        "name": "Fatima",
+        "line": "28 · not planning for now · has shared very little so far",
+        "body": "Fatima has told Masar her age, one cycle length and how she is feeling this month. She has not connected any records or lab results, and her clinician access is switched off. Her story shows what honest looks like when there is almost nothing to go on."
+      },
+      "mariam": {
+        "name": "Mariam",
+        "line": "33 · maybe in a few years · living with PCOS",
+        "body": "Mariam has eighteen months of cycle notes, simulated health-record readings of weight and blood pressure, an older HbA1c and a Health Age tile. Her cycles have moved from regular to irregular. Her clinician, partner and population analytics are all switched on. Her story shows what changes when there is a history to compare against."
+      },
+      "also": "Also in the story: Dr Layla, who reviews Mariam's screen, and Sara, who reads Masar in Arabic."
+    },
+    "facts": {
+      "age": "Age",
+      "intention": "Where she is",
+      "data": "In her record",
+      "dataValue": "{sources} sources on · {n} readings"
+    },
+    "chaptersHeading": "Six short chapters",
+    "chapters": {
+      "fatima": {
+        "title": "What honest looks like with very little",
+        "hook": "Fatima opens her trajectory. Masar says what it cannot see yet, and what would help."
+      },
+      "mariam": {
+        "title": "What changes when there is a history",
+        "hook": "Mariam opens the same screen. Eighteen months of notes make a real trend visible."
+      },
+      "change": {
+        "title": "One new result, one clearer picture",
+        "hook": "A simulated lab result arrives. Watch what it adds, and what it still cannot establish."
+      },
+      "action": {
+        "title": "From understanding to next steps",
+        "hook": "Mariam asks for a counselling conversation. The request is saved and tracked from today."
+      },
+      "journey": {
+        "title": "A clinician joins, then Mariam changes her mind",
+        "hook": "Dr Layla sees Mariam's screen because Mariam allowed it. When Mariam switches that off, the door closes for real."
+      },
+      "arabic": {
+        "title": "The same care, in Arabic",
+        "hook": "Sara reads her trajectory right to left, with every word translated, not just the heading."
+      }
+    },
+    "guide": {
+      "fatima_home": {
+        "title": "Fatima's trajectory",
+        "notice": "Most areas read \"Not enough information yet\"; the rest say only what one reading allows. Nothing is called stable without evidence."
+      },
+      "fatima_metabolic": {
+        "title": "Fatima's metabolic health",
+        "notice": "Four categories, each saying whether it is recorded. The actions below actually add data."
+      },
+      "mariam_home": {
+        "title": "Mariam's trajectory",
+        "notice": "Cycle health is now worth discussing. The glow shows how clearly each area can be seen."
+      },
+      "mariam_cycle": {
+        "title": "Mariam's cycle health, over time",
+        "notice": "Scroll to \"Your health story\": previously recorded, newly added, and real change are told apart."
+      },
+      "mariam_import": {
+        "title": "A simulated lab result arrives",
+        "notice": "Press \"Add a simulated AMH result\". The before and after is shown, and a second press adds nothing."
+      },
+      "mariam_request": {
+        "title": "Mariam's next steps",
+        "notice": "Request the counselling conversation. The confirmation comes from the saved record, not a pop-up."
+      },
+      "layla_review": {
+        "title": "Dr Layla reviews Mariam",
+        "notice": "Mariam allowed this. Dr Layla sees a one-page summary and can record a review."
+      },
+      "mariam_revoke": {
+        "title": "Mariam changes her mind",
+        "notice": "Switch \"My clinician\" off. The change is written to Mariam's access log straight away."
+      },
+      "layla_blocked": {
+        "title": "Dr Layla tries again",
+        "notice": "The screen is blocked by the server, not hidden. The attempt is logged for Mariam to see."
+      },
+      "sara_ar": {
+        "title": "Sara, in Arabic",
+        "notice": "Right-to-left layout, Arabic type, every label translated. Use the language switch to compare."
+      }
+    },
+    "rail": {
+      "label": "Guided demo",
+      "chapters": "Chapters",
+      "chapterOf": "Chapter {n} of {total}",
+      "back": "Back",
+      "next": "Next",
+      "finish": "Finish",
+      "exit": "Leave demo"
+    },
+    "start": "Start guided demo",
+    "resume": "Resume guided demo",
+    "startHint": "Each chapter signs you in as the right person and opens the real screen. A slim guide at the bottom tells you what to notice.",
+    "doneTitle": "That was the whole journey.",
+    "doneBody": "Fatima saw what was missing and how to add it. Mariam saw a real change, added one result, asked for a conversation, let a clinician in and then closed the door. Sara read all of it in Arabic. Nothing on those screens was a score, and nothing was shown without consent.",
+    "exploreHeading": "Explore screens individually",
+    "exploreBody": "Open any screen on its own, outside the story.",
+    "explore": {
+      "fatimaTrajectory": "Fatima's trajectory",
+      "mariamPrivacy": "Mariam's data settings and access log",
+      "mariamCycle": "Mariam's cycle health detail",
+      "mariamActions": "Mariam's next steps",
+      "mariamLivingWell": "Living Well hubs",
+      "omarCouple": "Omar's couple view",
+      "laylaQueue": "Dr Layla's review queue",
+      "saraArabic": "Sara in Arabic",
+      "population": "Population view and honesty metrics",
+      "howItWorks": "How it works and what we refused to build"
+    },
+    "go": "Open",
+    "synthetic": "Everyone in this demo is synthetic. Fatima, Mariam, Omar, Sara and Dr Layla are invented people with invented records. No real patient data is used anywhere, and no real laboratory or health-record system is contacted.",
+    "reset": "Reset demo data",
+    "resetHint": "Puts Fatima, Mariam, Omar and Sara back to their starting point. The population cohort is untouched.",
+    "resetConfirm": "Reset the four demo people to their seeded state?",
+    "resetDone": "Demo data reset.",
+    "importButton": "Add a simulated AMH result",
+    "importCard": {
+      "title": "A new lab result arrives",
+      "body": "Mariam has no egg-reserve lab context yet. Pressing the button writes one simulated AMH result through the same path a connected laboratory would use, then recomputes her view.",
+      "bodyHas": "Mariam's record already holds one simulated AMH result, added during this demo. Pressing the button again adds nothing: the same reading on the same day is never written twice.",
+      "added": "Added to Mariam's record",
+      "already": "This result is already in Mariam's record. Nothing was added a second time.",
+      "blocked": "Mariam has lab results switched off, so nothing was written. The blocked attempt is in her access log.",
+      "before": "Before",
+      "after": "After",
+      "whatAdds": "What this adds",
+      "whatAddsBody": "A first lab reading for egg-reserve context, with a date and reference range. The area moves from unseen to faintly seen, the value is reported as observed, and the explanation below now mentions it.",
+      "cannot": "What it cannot establish",
+      "cannotBody": "One AMH reading is not a trend, says nothing about egg quality, and is not a fertility score. A second reading over time is what would show direction.",
+      "reference": "Reference ≥ {ref} {unit}",
+      "source": "Lab results · simulated",
+      "persisted": "This result is saved. It stays in Mariam's record until the demo is reset.",
+      "noteStatic": "Add the result to see the before and after."
+    },
+    "startChapters": "Chapter walkthrough"
+  },
+  "import": {
+    "title": "Import synthetic data",
+    "body": "Simulated connectors. Each button writes a FHIR-shaped synthetic observation if that source is switched on in your data settings.",
+    "lab_amh": "Lab: AMH result",
+    "lab_tsh": "Lab: TSH result",
+    "lab_hba1c": "Lab: HbA1c result",
+    "lab_semen": "Lab: semen analysis",
+    "device_sleep": "Device: a week of sleep and activity",
+    "malaffi_bmi": "Malaffi: BMI and blood pressure",
+    "healthage": "Health Age tile",
+    "done": "Imported {n} observations from {source}.",
+    "blocked": "Blocked: {source} is switched off. The block was logged.",
+    "duplicate": "Already in your record today from {source}. Nothing was added twice.",
+    "lastSync": "Last sync {date}",
+    "never": "never"
+  },
+  "footer": {
+    "disclaimer": "Masar is a hackathon prototype using synthetic people. It is not clinically validated, not a medical device, and not connected to Malaffi, Health Age or any real record system."
+  },
+  "account": {
+    "menu": "Account menu",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "demoMode": "Demo mode",
+    "demoSwitch": "Switch demo person",
+    "demoBanner": "Synthetic people only. No real health records are connected."
+  },
+  "dashboard": {
+    "eyebrow": "Masar · Reproductive health",
+    "headline": "Understand your health. Decide what comes next.",
+    "subheadline": "A personal view of your recorded information, what has changed, and what may be worth discussing.",
+    "nav": {
+      "label": "On this page",
+      "trajectory": "Trajectory",
+      "insights": "Attention",
+      "steps": "Next step",
+      "areas": "By area",
+      "overview": "Overview",
+      "details": "Details"
+    },
+    "context": {
+      "label": "Patient context",
+      "activePerson": "Active profile",
+      "noConditions": "No conditions recorded",
+      "goal": "Reproductive goal / life stage",
+      "latestObservation": "Latest recorded observation",
+      "noneRecorded": "None recorded",
+      "observationsCount": "{n} recorded observations · {sources} of {total} sources on",
+      "syntheticNotice": "Synthetic demonstration profile. No real patient data."
+    },
+    "trajectory": {
+      "title": "Your health trajectory",
+      "subtitle": "A chronological view of recorded observations—not a prediction of fertility.",
+      "areaPicker": "Choose an area",
+      "measuredVsInterpreted": "Readings are what was recorded, with date and source. The summary is how Masar's readable rules describe them. A new reading does not always change the summary.",
+      "measure": "Measure",
+      "previous": "Previously recorded information",
+      "latest": "Most recent information",
+      "comparison": "Comparison",
+      "readings": "Readings: {n}",
+      "days": "days",
+      "cycleEarlier": "The three cycles before the latest three",
+      "cycleRecent": "Latest three cycles",
+      "lastOn": "latest {date}",
+      "noEarlier": "Nothing earlier recorded",
+      "cmp": {
+        "single": "Only one reading is recorded, so no comparison is possible.",
+        "tooClose": "The two latest readings are {days} days apart. Masar does not compare readings less than a week apart.",
+        "same": "Same value as the earlier reading, {days} days apart.",
+        "delta": "{change} compared with the earlier reading, {days} days apart.",
+        "textChanged": "Changed from {from} to {to}.",
+        "textSame": "Same answer as the earlier reading.",
+        "previousOutdated": "The earlier reading is older than its freshness window.",
+        "cycleFew": "Cycle dates recorded: {n}. At least three are needed before Masar describes a pattern.",
+        "cycleNoEarlier": "There is no earlier set of three cycles, so Masar cannot compare recent cycles with earlier ones.",
+        "cycleSets": "Average of the latest three: {recent} days. Average of the three before: {earlier} days.",
+        "disclaimer": "A difference between two readings is a fact about the record, not a judgement. Whether it matters is a clinical question."
+      },
+      "nothingRecorded": "Nothing is recorded in this area yet.",
+      "nothingRecordedBody": "There is nothing to compare, and Masar does not fill the gap with an assumption.",
+      "chartTitle": "Readings over time",
+      "noChart": "No chart for this area",
+      "noChartBody": "A chart needs at least two readings of the same measure, a week or more apart. Fewer would draw a line the records do not support.",
+      "cannotTitle": "What we cannot tell yet",
+      "cannotNoReadings": "Nothing here is recorded, so no change over time can be described.",
+      "cannotNoComparison": "No measure in this area has two readings a week or more apart, so no change over time can be shown.",
+      "cannotPredict": "Masar describes recorded information only. It does not predict outcomes or what will happen next.",
+      "interpretationTitle": "How the summary changed",
+      "interpretationNote": "These are recalculated summaries, not new measurements.",
+      "noInterpretation": "No summary has been stored for this area yet.",
+      "firstRead": "First read as",
+      "noChangeSince": "Masar's reading of this area has not changed since.",
+      "logTitle": "Chronological log",
+      "latestLine": "Latest",
+      "previousLine": "Before that",
+      "oneMeasurement": "One measurement recorded ({date}). A trend needs at least two readings, a week or more apart.",
+      "detailsToggle": "Readings, comparisons and history",
+      "detailsHint": "Every recorded reading, how it compares with the one before, and how Masar's summary changed.",
+      "reason": {
+        "first": "First summary",
+        "inputs": "Your records or settings changed",
+        "time": "A reading passed its freshness window",
+        "unknown": "Recalculated"
+      }
+    },
+    "insights": {
+      "title": "What deserves your attention",
+      "subtitle": "The most relevant point from your records, and what it can and cannot tell you.",
+      "suggests": "What the evidence suggests",
+      "cannot": "What this can't tell you",
+      "discuss": "Worth raising with a clinician",
+      "discussFlagged": "Recorded: {items}. A clinician can read this alongside your full history. This is not a diagnosis.",
+      "discussDirection": "This may be worth raising at an appointment if it continues or concerns you. A clinician can read it alongside your full history; Masar does not diagnose.",
+      "nextLabel": "Next step",
+      "evidenceToggle": "See the evidence behind this",
+      "evidenceRecords": "Records this is based on",
+      "observedOn": "Observed",
+      "noDate": "no date",
+      "fromProfile": "Your profile",
+      "noRecordsUsed": "No recorded values feed this insight.",
+      "evidenceBase": "Published evidence",
+      "limitations": "Limitations",
+      "uncertainty": "Remaining uncertainty",
+      "noneYetTitle": "Nothing stands out yet",
+      "noneYetBody": "There isn't enough recorded information to point to anything specific. Adding a few items would help.",
+      "noInfoTitle": "Not enough information yet",
+      "noInfoBody": "For these areas there are no usable measurements, so no trend or conclusion is shown.",
+      "wouldHelp": "Would help",
+      "flaggedBecause": "Why this is shown",
+      "metabolicEmpty": "Not enough information yet. We don't have recorded measurements to identify a trend.",
+      "genericEmpty": "Not enough information yet. We don't have enough recorded observations in this area to identify a trend.",
+      "addRelevant": "Add relevant information",
+      "cannotByDomain": {
+        "cycle": "Cycle patterns alone do not confirm ovulation, egg quality, or pregnancy potential, and do not establish a medical diagnosis.",
+        "reserve": "AMH and age cannot measure egg quality, predict natural conception, or establish fertility status on their own.",
+        "metabolic": "Weight, blood sugar, blood pressure, and activity provide general health context; they do not independently determine fertility.",
+        "male": "A single semen or lifestyle observation does not establish male fertility status; parameters vary between samples and require clinical review.",
+        "conditions": "Recorded conditions indicate topics for clinical review; they are not a fertility prognosis or autonomous clinical advice.",
+        "lifestyle": "Self-reported sleep, stress, smoking, and activity describe modifiable wellbeing context, not a clinical fertility measurement."
+      },
+      "recorded": "What was recorded",
+      "matters": "Why it may matter",
+      "explanationToggle": "View explanation",
+      "moreToggle": "{n} other points from your records",
+      "assisted": "Plain-language wording (Gemini, with your permission)"
+    },
+    "connections": {
+      "title": "How your information connects",
+      "subtitle": "Recorded items that are relevant together in a clinical conversation. Masar does not conclude that one causes another.",
+      "caution": "These associations are for discussion with a clinician. Masar does not conclude cause and effect, and nothing here is a diagnosis.",
+      "items": {
+        "condition_cycle": {
+          "title": "A recorded condition and a cycle pattern",
+          "body": "You have a recorded condition that can relate to cycles, and your recent cycles are flagged. They are relevant together in a clinical conversation; the records do not show that one explains the other."
+        },
+        "metabolic_cycle": {
+          "title": "Metabolic readings and your cycles",
+          "body": "Some metabolic readings and your cycle pattern are both flagged. Clinicians often look at them together; the records here cannot show that either one is behind the other."
+        },
+        "planning_timing": {
+          "title": "Your plans and the areas flagged",
+          "body": "Your recorded goal is to plan a pregnancy now or later, and at least one area is marked for discussion. A clinician can weigh timing against your history; Masar does not set a timeline."
+        },
+        "male_metabolic": {
+          "title": "Semen results and metabolic readings",
+          "body": "A semen-related result and some metabolic readings are both flagged. They are relevant together in a conversation; this record cannot show that one causes the other."
+        },
+        "reserve_context": {
+          "title": "A reserve result next to other flagged areas",
+          "body": "A recorded AMH result sits next to other flagged areas. AMH reflects approximate egg quantity, not quality, and cannot on its own explain the other findings."
+        }
+      }
+    },
+    "steps": {
+      "title": "Your next step",
+      "subtitle": "One or two things worth doing now, why they are offered, and where each one stands.",
+      "pathwayTitle": "Your care pathway",
+      "pathwayBody": "Each step shows only what has actually been recorded, with its date.",
+      "noPathway": "No consultation or counselling step has been suggested from your current record.",
+      "othersTitle": "Things you can do now",
+      "items": {
+        "complete": {
+          "title": "Complete your health profile",
+          "body": "Adding these would let Masar describe more: {items}.",
+          "cta": "Add information"
+        },
+        "review": {
+          "title": "Review a recorded result",
+          "body": "{factor}: {value} (recorded {date}) sits under “{area}”, which Masar marks “{direction}”. Open it to see what it does and does not show.",
+          "cta": "Review this result"
+        },
+        "prepare": {
+          "title": "Prepare questions for a clinician",
+          "body": "Copy questions from Living Well into one list to bring to an appointment. The list is saved on this device only.",
+          "cta": "Open question list"
+        },
+        "learn": {
+          "title": "Read about a factor you can influence",
+          "body": "{title}. Evidence is labelled, and nothing here asks you to decide.",
+          "cta": "Open"
+        }
+      },
+      "noneTitle": "No action is justified by your current record",
+      "noneBody": "Masar does not suggest counselling or referral without supporting evidence. You can add information to your profile or read the education hubs.",
+      "reviewsTitle": "Clinician review",
+      "reviewsNone": "No clinician has recorded a review of your summary.",
+      "reviewsHint": "Recorded under the clinician's name, not by Masar.",
+      "more": "{n} more on the Next steps page",
+      "alsoTitle": "Also useful",
+      "all": "See all next steps"
+    },
+    "carePath": {
+      "followUp": "Follow-up recorded",
+      "notYet": "Not yet recorded",
+      "noDate": "Recorded, no date stored",
+      "scheduled": "Scheduled for {date}",
+      "whatNext": "What happens next:",
+      "next": {
+        "Suggested": "This was suggested from your recorded information. Nothing has been sent to anyone. Choose Request to save your request.",
+        "Requested": "Your request is saved in your record. This prototype books no appointment and sends no message. Mark it confirmed once you have a time.",
+        "Confirmed": "You marked this as confirmed. After the appointment, mark it attended.",
+        "Attended": "Marked as attended. Record what happened to keep a follow-up in your record.",
+        "OutcomeRecorded": "Follow-up recorded. This pathway is complete.",
+        "Declined": "You chose not now. Nothing was sent. Masar can suggest it again if your record changes.",
+        "Expired": "This step is no longer suggested by your current record."
+      }
+    },
+    "card": {
+      "title": "By area",
+      "subtitle": "Each area shows what is recorded, what that does and does not mean, and the next step.",
+      "recorded": "Recorded",
+      "meaning": "What it tells you",
+      "next": "Next step",
+      "nothingRecorded": "Nothing recorded in this area.",
+      "noLabs": "No laboratory results recorded.",
+      "reserveNotAssessed": "Masar has not assessed egg reserve. Age alone is not a measurement of it.",
+      "cycleDates": "Cycle dates recorded: {n}. Within the last six months: {recent}.",
+      "cycleFew": "Three recent cycle dates are needed before Masar describes a pattern.",
+      "profileRecorded": "recorded in your profile",
+      "open": "Open details"
+    },
+    "overview": {
+      "title": "What we know so far",
+      "goal": "Your goal",
+      "summary": "{n} recorded observations. The most recent is from {date}.",
+      "summaryNone": "Nothing has been recorded yet.",
+      "withInfo": "Information recorded in: {areas}.",
+      "noInfo": "Nothing recorded yet in: {areas}.",
+      "missing": "Would help to add: {items}.",
+      "relevanceNote": "General health indicators such as weight, blood sugar, blood pressure, sleep and activity do not predict fertility on their own. Masar shows them only as background for a conversation with a clinician.",
+      "goalBody": {
+        "NotPlanning": "You are not planning a pregnancy right now. Masar can help you keep track of your recorded information and understand what may be worth raising at a routine appointment.",
+        "MaybeLater": "You may plan a pregnancy in the next few years. Masar can help you see how your recorded information relates to that question and what to prepare for a conversation with a clinician.",
+        "TryingNow": "You are trying for a pregnancy now. Masar can help you prepare for a conversation with a clinician about what your recorded information does and does not show.",
+        "Pregnant": "You are pregnant. Masar focuses on wellbeing, follow-up of any recorded conditions, and questions to bring to your care team.",
+        "PreferNotToSay": "You have chosen not to share a goal. Masar shows general information about your records and keeps its suggestions neutral."
+      }
+    },
+    "details": {
+      "title": "Your information in detail",
+      "subtitle": "Everything recorded, grouped by how closely it relates to reproductive health.",
+      "toggle": "Show details by area",
+      "groups": {
+        "reproductive": {
+          "title": "Reproductive health records",
+          "body": "Cycle dates, laboratory results and semen analysis are the most direct information."
+        },
+        "history": {
+          "title": "Medical history",
+          "body": "Conditions and family history a clinician may want to consider."
+        },
+        "context": {
+          "title": "General health context",
+          "body": "Weight, blood sugar, blood pressure, sleep and activity. These do not predict fertility on their own, but they can matter for a conversation about your health."
+        }
+      }
+    }
+  },
+  "forbidden": {
+    "title": "This workspace is not available to you",
+    "body": "You are signed in, but this area is for a different role. Patient, clinician and health-system views are kept separate. Access is checked on the server, not only by hiding a menu item.",
+    "home": "Go to your home"
+  },
+  "journey": {
+    "start": "Start your journey",
+    "startHint": "A guided path: consent, optional health questions, then your personal view.",
+    "roles": {
+      "eyebrow": "Who is using Masar",
+      "title": "Choose how you want to enter",
+      "subtitle": "This demonstration uses synthetic people. Pick a path that matches the role you want to explore.",
+      "continue": "Continue",
+      "seededHint": "Seeded story personas remain available from Demo sign-in if judges need a fixed case.",
+      "female": {
+        "title": "Person · Female",
+        "body": "Optional reproductive and health questions, then a personal trajectory."
+      },
+      "male": {
+        "title": "Person · Male",
+        "body": "Optional health and male-factor questions, then a personal trajectory."
+      },
+      "clinician": {
+        "title": "Clinician",
+        "body": "Guidelines consent, then the authorised patient review workspace."
+      },
+      "admin": {
+        "title": "Health system",
+        "body": "Guidelines consent, then aggregate pathway and equity metrics."
+      },
+      "workspaces": "Clinician and system workspaces"
+    },
+    "consent": {
+      "eyebrow": "Consent",
+      "title": "Before we continue",
+      "subtitle": "Masar only uses what you agree to share. You can change your mind later in Your data.",
+      "accept": "I understand and continue",
+      "decline": "Go back",
+      "declineHint": "If you decline, you return to the start. Nothing is stored against a new journey until you accept.",
+      "points": {
+        "guidelines": "You are reviewing a prototype. It is not a medical device and does not replace clinical care.",
+        "synthetic": "All people and records in this demo are synthetic. No real Abu Dhabi health records are connected.",
+        "control": "Consent is granular and revocable. Reproductive information is not used for employment or insurance.",
+        "share": "Continuing allows Masar to store the answers you choose to give for your personal view."
+      }
+    },
+    "stepper": {
+      "progress": "Question set {current} of {total}",
+      "optional": "Every question is optional. Skip anything you prefer not to answer.",
+      "titles": {
+        "intention": "Where are you with planning?",
+        "cycle": "Cycle length context",
+        "conditions": "Conditions and family history",
+        "lifestyle": "Lifestyle and recovery",
+        "labs": "Laboratory results you may already have",
+        "medications": "Medications"
+      },
+      "bodies": {
+        "intention": "This shapes which options appear later. It is not a fertility label.",
+        "cycle": "Choose a pattern that roughly matches recent cycles, or skip.",
+        "conditions": "Select anything that applies, or prefer not to say.",
+        "lifestyle": "A rough picture of sleep, movement and stress is enough.",
+        "labs": "Optional illustrative values for the demo. Discuss real results with a clinician.",
+        "medications": "Optional. Skip if you prefer not to list medicines."
+      },
+      "cyclePresets": {
+        "regular": "About 28–30 days",
+        "longer": "Often longer than 35 days",
+        "irregular": "Varying lengths"
+      },
+      "lifestylePresets": {
+        "steady": "Steady sleep and activity",
+        "busy": "Busy, shorter sleep",
+        "smoking": "Current smoker"
+      },
+      "labsHint": "Selecting an option adds a synthetic reading for this demonstration only.",
+      "medsPresets": {
+        "none": "No medicines to list",
+        "metformin": "Metformin",
+        "thyroid": "Thyroid medicine"
+      },
+      "short": {
+        "intention": "Planning",
+        "cycle": "Cycles",
+        "conditions": "History",
+        "lifestyle": "Lifestyle",
+        "labs": "Labs",
+        "medications": "Meds"
+      }
+    },
+    "prepare": {
+      "eyebrow": "Preparing",
+      "title": "Preparing your view",
+      "body": "Masar is arranging what you shared into a longitudinal picture—direction of change, not a one-off label.",
+      "hint": "This usually takes a few seconds.",
+      "aria": "Quiet pulse while your view is prepared",
+      "stages": {
+        "gather": "Gathering what you shared",
+        "align": "Aligning domains over time",
+        "summarise": "Writing a cautious summary"
+      }
+    },
+    "ai": {
+      "eyebrow": "Optional explanation",
+      "title": "May we use Gemini for plain-language wording?",
+      "subtitle": "Direction of change still comes from readable rules. Gemini only helps phrase what those rules already found—if you allow it.",
+      "accept": "Allow Gemini wording",
+      "decline": "Continue without Gemini",
+      "noKey": "No Gemini key is configured on this server. You can still continue; wording will use Masar’s built-in text.",
+      "points": {
+        "rules": "Rules compute direction, confidence and what is still unknown.",
+        "gemini": "Gemini may rephrase approved text into shorter plain language. It does not invent numbers.",
+        "noScore": "Masar never produces a fertility score or diagnosis.",
+        "decline": "If you decline, you still see your dashboard with Masar’s standard explanations."
+      }
+    },
+    "loading": "Working…",
+    "progressAria": "Journey progress"
+  }
+}
