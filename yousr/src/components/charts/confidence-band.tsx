@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import {
+  Area,
   CartesianGrid,
   Line,
-  LineChart,
+  ComposedChart,
   ReferenceArea,
   ResponsiveContainer,
   Tooltip,
@@ -34,6 +35,7 @@ export function ConfidenceBand({
   nowIso: string;
 }) {
   const { t, locale } = useI18n();
+  const gid = useId();
   const data = useMemo(
     () => points.map((p) => ({ ...p, ts: new Date(p.at).getTime() })).sort((a, b) => a.ts - b.ts),
     [points],
@@ -51,10 +53,16 @@ export function ConfidenceBand({
   const xMin = Math.min(data[0].ts, staleCut);
 
   return (
-    <div className="h-64 w-full" dir="ltr">
+    <div className="relative h-72 w-full rounded-xl bg-gradient-to-b from-white/40 to-dawn-50/50 p-1" dir="ltr">
       <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 12, right: 16, bottom: 4, left: -8 }}>
-          <CartesianGrid stroke="var(--dawn-200)" strokeDasharray="2 4" vertical={false} />
+        <ComposedChart data={data} margin={{ top: 16, right: 18, bottom: 6, left: -4 }}>
+          <defs>
+            <linearGradient id={`${gid}-line`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--mist-500)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="var(--mist-500)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--dawn-200)" strokeDasharray="2 5" vertical={false} />
           <XAxis
             dataKey="ts"
             type="number"
@@ -63,34 +71,58 @@ export function ConfidenceBand({
             stroke="var(--ink-400)"
             fontSize={11}
             tickLine={false}
+            axisLine={false}
           />
-          <YAxis domain={[yMin, yMax]} stroke="var(--ink-400)" fontSize={11} tickLine={false} axisLine={false} width={40} />
-          {/* reference band = the range we can speak to for conversation */}
+          <YAxis
+            domain={[yMin, yMax]}
+            stroke="var(--ink-400)"
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
+            width={42}
+          />
           <ReferenceArea
             y1={band.low ?? yMin}
             y2={band.high ?? yMax}
             fill="var(--mist-300)"
-            fillOpacity={0.28}
+            fillOpacity={0.22}
             stroke="none"
           />
-          {/* shade = readings older than the freshness window */}
-          <ReferenceArea x1={xMin} x2={staleCut} fill="var(--slate-200)" fillOpacity={0.45} stroke="none" />
+          <ReferenceArea x1={xMin} x2={staleCut} fill="var(--slate-200)" fillOpacity={0.35} stroke="none" />
           <Tooltip
-            cursor={{ stroke: "var(--peach-300)" }}
-            contentStyle={{ background: "var(--dawn-50)", border: "1px solid var(--dawn-200)", borderRadius: 12, fontSize: 12 }}
+            cursor={{ stroke: "var(--mist-300)", strokeDasharray: "4 4" }}
+            contentStyle={{
+              background: "color-mix(in srgb, var(--dawn-50) 92%, white)",
+              border: "1px solid var(--dawn-200)",
+              borderRadius: 12,
+              fontSize: 12,
+              boxShadow: "var(--shadow-soft)",
+            }}
             labelFormatter={(v) => formatDate(new Date(Number(v)), locale)}
-            formatter={(value, _n, item) => [`${value} ${band.unit}`, String((item.payload as ChartPoint).source)]}
+            formatter={(value, _n, item) => [
+              `${value} ${band.unit}`,
+              String((item.payload as ChartPoint).source),
+            ]}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="none"
+            fill={`url(#${gid}-line)`}
+            isAnimationActive
+            animationDuration={900}
           />
           <Line
             type="monotone"
             dataKey="value"
-            stroke="var(--peach-700)"
-            strokeWidth={2}
-            dot={{ r: 4, fill: "var(--peach-500)", stroke: "var(--dawn-50)", strokeWidth: 2 }}
-            activeDot={{ r: 6 }}
+            stroke="var(--mist-700)"
+            strokeWidth={2.25}
+            dot={{ r: 4.5, fill: "var(--mist-500)", stroke: "var(--dawn-50)", strokeWidth: 2 }}
+            activeDot={{ r: 7, fill: "var(--mist-700)", stroke: "white", strokeWidth: 2 }}
             isAnimationActive
+            animationDuration={1100}
           />
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
       <table className="sr-only-table">
         <caption>{t("domainDetail.chart")}</caption>

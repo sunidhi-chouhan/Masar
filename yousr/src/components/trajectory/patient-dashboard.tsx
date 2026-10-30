@@ -26,9 +26,11 @@ import { hubsForDomain } from "@/lib/living-well/content";
 import { formatDate } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/config";
 import type { Translator } from "@/lib/i18n/translate";
-import { LinkButton, Page, SimulatedBadge } from "@/components/ui/atoms";
+import { LinkButton, Page } from "@/components/ui/atoms";
 import { Reveal } from "@/components/ui/motion";
 import { DomainCard } from "@/components/trajectory/domain-card";
+import { DashboardHero } from "@/components/trajectory/dashboard-hero";
+import { DetailsGroup } from "@/components/trajectory/details-groups";
 import { IntentionPicker } from "@/components/trajectory/intention-picker";
 import { MetabolicBreakdown } from "@/components/trajectory/metabolic-breakdown";
 import {
@@ -352,9 +354,13 @@ export async function PatientDashboard({
     .map((u) => t(`missing.${u.missing}`));
 
   const resultOf = (d: Domain) => results.findIndex((r) => r.domain === d);
+  const sparkFor = (d: Domain) => {
+    const area = areas.find((a) => a.domain === d);
+    return area?.chart?.points ?? [];
+  };
   const card = (d: Domain) => {
     const i = resultOf(d);
-    if (i < 0) return null; // area not applicable to this person (e.g. male-factor for a woman)
+    if (i < 0) return null;
     return (
       <DomainCard
         key={d}
@@ -362,6 +368,7 @@ export async function PatientDashboard({
         facts={factsByDomain[d]}
         next={insightItems[i].next}
         breakdown={d === "metabolic" ? breakdown : null}
+        sparkPoints={sparkFor(d)}
       />
     );
   };
@@ -374,46 +381,45 @@ export async function PatientDashboard({
     { key: "context", domains: ["metabolic", "lifestyle"] },
   ];
 
+  const areasWatch = results.filter(
+    (r) =>
+      r.confidence !== "InsufficientData" &&
+      (r.direction === "Discuss" || r.direction === "Shifting"),
+  ).length;
+  const areasKnown = results.filter((r) => factsByDomain[r.domain].total > 0).length;
+  const radarNodes = areas.map((a) => ({
+    domain: a.domain,
+    direction: a.direction,
+    confidence: a.confidence,
+    hasChart: Boolean(a.chart),
+  }));
+  const conditionsLabel =
+    bundle.profile.conditions.length > 0
+      ? bundle.profile.conditions.map((c) => t(`factors.${c}`)).join(", ")
+      : null;
+
   return (
     <Page wide>
       <Reveal>
-        <header className="border-b border-dawn-200 pb-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="label-caps">{t("dashboard.eyebrow")}</p>
-            <SimulatedBadge />
-          </div>
-          <h1 className="mt-2 max-w-3xl text-ink-900">{t("dashboard.headline")}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-ink-600 md:text-[0.95rem]">{t("dashboard.subheadline")}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <LinkButton href={`/${locale}/profile`} tone="primary">
-              {t("trajectory.addData")}
-            </LinkButton>
-            <LinkButton href={`/${locale}/privacy`} tone="ghost">
-              {t("nav.privacy")}
-            </LinkButton>
-          </div>
-        </header>
+        <DashboardHero
+          name={name}
+          age={age}
+          intentionLabel={t(`intentions.${bundle.user.intention}`)}
+          conditionsLabel={conditionsLabel}
+          readings={bundle.observations.length}
+          areasKnown={areasKnown}
+          areasWatch={areasWatch}
+          nodes={radarNodes}
+        />
       </Reveal>
 
       <Reveal delay={0.06}>
-        <section id="overview" className="mt-7 scroll-mt-20" aria-labelledby="overview-heading">
-          <div className="surface-paper grid gap-0 overflow-hidden lg:grid-cols-[1.2fr_1fr]">
-            <div className="p-4 md:p-5">
-              <h2 id="overview-heading" className="text-ink-900">
+        <section id="overview" className="mt-8 scroll-mt-20" aria-labelledby="overview-heading">
+          <div className="grid gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-white to-dawn-50 shadow-[var(--shadow-soft)] lg:grid-cols-[1.2fr_1fr]">
+            <div className="p-5 md:p-6">
+              <h2 id="overview-heading" className="font-display text-xl tracking-tight text-ink-900">
                 {t("dashboard.overview.title")}
               </h2>
-              <p className="mt-1.5 text-sm font-medium text-ink-900">
-                {name}{" "}
-                <span className="font-normal text-ink-600">
-                  · {t("common.age", { age })}
-                </span>
-                {bundle.profile.conditions.length > 0 ? (
-                  <span className="font-normal text-ink-600">
-                    {" "}
-                    · {bundle.profile.conditions.map((c) => t(`factors.${c}`)).join(", ")}
-                  </span>
-                ) : null}
-              </p>
               <div className="mt-3 space-y-1.5 text-sm text-ink-600">
                 <p>
                   {latestObs
@@ -431,7 +437,7 @@ export async function PatientDashboard({
                   <p>{t("dashboard.overview.noInfo", { areas: withoutInfo.join(", ") })}</p>
                 ) : null}
                 {missingItems.length > 0 ? (
-                  <p className="rounded-md border border-dashed border-dawn-300 bg-dawn-50/80 px-3 py-2 text-ink-600">
+                  <p className="rounded-xl border border-dashed border-dawn-300 bg-dawn-50/80 px-3 py-2 text-ink-600">
                     {t("dashboard.overview.missing", { items: missingItems.join("; ") })}
                   </p>
                 ) : null}
@@ -439,7 +445,7 @@ export async function PatientDashboard({
               <p className="mt-3 text-xs text-ink-400">{t("dashboard.context.syntheticNotice")}</p>
             </div>
 
-            <div className="border-t border-dawn-200 bg-mist-100/35 p-4 md:border-t-0 md:border-s md:p-5">
+            <div className="border-t border-dawn-200/80 bg-mist-100/40 p-5 md:border-t-0 md:border-s md:p-6">
               <p className="label-caps">{t("dashboard.overview.goal")}</p>
               <div className="mt-1.5">
                 <IntentionPicker current={bundle.user.intention} />
@@ -455,11 +461,11 @@ export async function PatientDashboard({
         </section>
       </Reveal>
 
-      <div className="mt-9 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         <Reveal delay={0.1} className="min-w-0">
           <section id="trajectory" className="scroll-mt-20" aria-labelledby="trajectory-heading">
-            <div className="mb-3">
-              <h2 id="trajectory-heading" className="text-ink-900">
+            <div className="mb-4">
+              <h2 id="trajectory-heading" className="font-display text-2xl tracking-tight text-ink-900">
                 {t("dashboard.trajectory.title")}
               </h2>
               <p className="mt-1 text-sm text-ink-600">{t("dashboard.trajectory.subtitle")}</p>
@@ -471,8 +477,8 @@ export async function PatientDashboard({
         <div className="space-y-8">
           <Reveal delay={0.14}>
             <section id="insights" className="scroll-mt-20" aria-labelledby="insights-heading">
-              <div className="mb-3">
-                <h2 id="insights-heading" className="text-ink-900">
+              <div className="mb-4">
+                <h2 id="insights-heading" className="font-display text-xl tracking-tight text-ink-900">
                   {t("dashboard.insights.title")}
                 </h2>
                 <p className="mt-1 text-sm text-ink-600">{t("dashboard.insights.subtitle")}</p>
@@ -487,8 +493,8 @@ export async function PatientDashboard({
 
           <Reveal delay={0.18}>
             <section id="steps" className="scroll-mt-20" aria-labelledby="steps-heading">
-              <div className="mb-3">
-                <h2 id="steps-heading" className="text-ink-900">
+              <div className="mb-4">
+                <h2 id="steps-heading" className="font-display text-xl tracking-tight text-ink-900">
                   {t("dashboard.steps.title")}
                 </h2>
                 <p className="mt-1 text-sm text-ink-600">{t("dashboard.steps.subtitle")}</p>
@@ -508,50 +514,39 @@ export async function PatientDashboard({
       </div>
 
       <Reveal delay={0.22}>
-        <section id="details" className="mt-9 scroll-mt-20" aria-labelledby="details-heading">
-          <details className="group surface-paper">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg p-4 md:p-5 [&::-webkit-details-marker]:hidden">
-              <span>
-                <span id="details-heading" className="block text-lg font-semibold text-ink-900">
-                  {t("dashboard.details.title")}
-                </span>
-                <span className="mt-0.5 block text-sm text-ink-600">{t("dashboard.details.subtitle")}</span>
-              </span>
-              <span className="shrink-0 text-sm font-medium text-mist-700">
-                {t("dashboard.details.toggle")}{" "}
-                <span aria-hidden className="inline-block transition-transform group-open:rotate-180">
-                  ⌄
-                </span>
-              </span>
-            </summary>
-            <div className="space-y-8 border-t border-dawn-200 p-4 md:p-5">
-              {groups
-                .filter((g) => g.domains.some((d) => resultOf(d) >= 0))
-                .map((g) => (
-                  <div key={g.key}>
-                    <h3 className="text-ink-900">{t(`dashboard.details.groups.${g.key}.title`)}</h3>
-                    <p className="mt-1 mb-3 max-w-2xl text-sm text-ink-600">
-                      {t(`dashboard.details.groups.${g.key}.body`)}
-                    </p>
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">{g.domains.map(card)}</div>
-                    {g.key === "context" ? (
-                      <div className="mt-4">
-                        <MetabolicBreakdown categories={breakdown} compactHeader />
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              <p className="border-t border-dawn-200 pt-4 text-xs text-ink-600">
-                <LinkButton href={`/${locale}/import`} tone="ghost">
-                  {t("import.title")}
-                </LinkButton>
-              </p>
+        <section id="details" className="mt-12 scroll-mt-20" aria-labelledby="details-heading">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 id="details-heading" className="font-display text-2xl tracking-tight text-ink-900">
+                {t("dashboard.details.title")}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-ink-600">{t("dashboard.details.subtitle")}</p>
             </div>
-          </details>
+            <LinkButton href={`/${locale}/import`} tone="ghost">
+              {t("import.title")}
+            </LinkButton>
+          </div>
+          <div className="space-y-6">
+            {groups
+              .filter((g) => g.domains.some((d) => resultOf(d) >= 0))
+              .map((g) => (
+                <DetailsGroup
+                  key={g.key}
+                  groupKey={g.key}
+                  footer={
+                    g.key === "context" ? (
+                      <MetabolicBreakdown categories={breakdown} compactHeader />
+                    ) : null
+                  }
+                >
+                  {g.domains.map(card)}
+                </DetailsGroup>
+              ))}
+          </div>
         </section>
       </Reveal>
 
-      <p className="mt-8 border-t border-dawn-200 pt-4 text-xs text-ink-600">{t("common.notDiagnosis")}</p>
+      <p className="mt-10 border-t border-dawn-200 pt-4 text-xs text-ink-600">{t("common.notDiagnosis")}</p>
     </Page>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useState, useTransition, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
 import {
   CONDITION_CODES,
@@ -20,9 +20,16 @@ import {
   updateIntention,
 } from "@/server/actions/patient";
 import { advanceStepper } from "@/server/actions/journey";
-import { Button } from "@/components/ui/atoms";
-import { JourneyPulseDots, useDelayedFlag } from "@/components/journey/journey-loaders";
+import {
+  JourneyButtonLoader,
+  JourneyPulseDots,
+  useDelayedFlag,
+  useJourneyMotion,
+} from "@/components/journey/journey-loaders";
 import { JourneyStepTracker } from "@/components/journey/journey-progress";
+import { JourneySurface } from "@/components/journey/journey-surface";
+
+const LUX = [0.16, 1, 0.3, 1] as const;
 
 type Step = "intention" | "cycle" | "conditions" | "lifestyle" | "labs" | "medications";
 
@@ -61,26 +68,32 @@ export function JourneyStepper({
   intention: Intention;
 }) {
   const { t } = useI18n();
-  const reduce = useReducedMotion();
+  const { animate, live, dur } = useJourneyMotion();
   const steps = stepsFor(sex);
   const [i, setI] = useState(Math.min(Math.max(0, initialIndex), steps.length - 1));
   const [pending, start] = useTransition();
-  const showLoader = useDelayedFlag(pending);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  /** Veil waits 300ms; buttons show loader immediately so clicks feel responsive. */
+  const showVeil = useDelayedFlag(pending, 300);
   const step = steps[i];
   const shortLabels = steps.map((s) => t(`journey.stepper.short.${s}`));
+  const chipLoading = (key: string) => pending && busyKey === key;
 
   const goNext = () => {
+    setBusyKey("skip");
     start(async () => {
       if (i >= steps.length - 1) {
         await advanceStepper(locale, i + 1, true);
       } else {
         await advanceStepper(locale, i + 1, false);
         setI((x) => x + 1);
+        setBusyKey(null);
       }
     });
   };
 
-  const run = (fn: () => Promise<void>) =>
+  const run = (key: string, fn: () => Promise<void>) => {
+    setBusyKey(key);
     start(async () => {
       await fn();
       if (i >= steps.length - 1) {
@@ -88,8 +101,10 @@ export function JourneyStepper({
       } else {
         await advanceStepper(locale, i + 1, false);
         setI((x) => x + 1);
+        setBusyKey(null);
       }
     });
+  };
 
   return (
     <div>
@@ -98,61 +113,85 @@ export function JourneyStepper({
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={reduce ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduce ? undefined : { opacity: 0, y: -6 }}
-          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={live ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          exit={animate ? { opacity: 0, y: -8 } : undefined}
+          transition={{ duration: dur(0.36), ease: LUX }}
         >
-          <h1 className="text-ink-900">{t(`journey.stepper.titles.${step}`)}</h1>
+          <h1 className="font-display text-[clamp(1.45rem,3vw,1.9rem)] tracking-tight text-ink-900">
+            {t(`journey.stepper.titles.${step}`)}
+          </h1>
           <p className="mt-1.5 max-w-xl text-sm text-ink-600">{t(`journey.stepper.bodies.${step}`)}</p>
           <p className="mt-2 text-xs text-ink-400">{t("journey.stepper.optional")}</p>
 
-          {/* Card: border only — ui-design-brain (no shadow + border) */}
-          <div
-            className={`relative mt-6 rounded-lg border border-dawn-200 bg-white p-5 md:p-6 ${
-              pending ? "pointer-events-none opacity-80" : ""
-            }`}
-          >
-            {step === "intention" ? (
-              <IntentionBlock
-                current={intention}
-                onPick={(v) => run(() => updateIntention(v))}
-              />
-            ) : null}
-            {step === "cycle" ? (
-              <CycleBlock onSave={(lengths, absent) => run(() => saveCycles(lengths, absent))} />
-            ) : null}
-            {step === "conditions" ? (
-              <ConditionsBlock
-                initialC={conditions}
-                initialF={familyHistory}
-                onSave={(c, f) => run(() => saveConditions(c, f))}
-              />
-            ) : null}
-            {step === "lifestyle" ? (
-              <LifestyleBlock onSave={(v) => run(() => saveCheckin(v))} />
-            ) : null}
-            {step === "labs" ? (
-              <LabsBlock
-                codes={sex === "female" ? [...LAB_CODES_F] : [...LAB_CODES_M]}
-                onSave={(c, v, d) => run(() => saveLab(c, v, d))}
-              />
-            ) : null}
-            {step === "medications" ? (
-              <MedsBlock onSave={(m) => run(() => saveMedications(m))} />
-            ) : null}
-
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-dawn-200 pt-4">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={goNext}
-                className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-ink-600 underline-offset-4 hover:underline disabled:opacity-50"
-              >
-                {t("common.skip")}
-              </button>
-              <JourneyPulseDots label={t("journey.loading")} active={showLoader} />
-            </div>
+          <div className={`relative mt-6 ${pending ? "pointer-events-none" : ""}`}>
+            <JourneySurface
+              tone={step === "labs" || step === "medications" ? "dawn" : "mist"}
+              showMotif={step === "intention" || step === "cycle"}
+              busy={showVeil}
+              busyLabel={t("journey.saving")}
+              footer={
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={goNext}
+                    aria-busy={chipLoading("skip")}
+                    className="inline-flex min-h-11 min-w-[7rem] items-center justify-center rounded-lg px-3 text-sm font-medium text-ink-600 transition-colors hover:bg-dawn-100/80 hover:text-ink-900 disabled:opacity-60"
+                  >
+                    {chipLoading("skip") ? (
+                      <JourneyButtonLoader label={t("journey.loading")} withLabel={false} />
+                    ) : (
+                      t("common.skip")
+                    )}
+                  </button>
+                  {pending && busyKey && busyKey !== "skip" ? (
+                    <JourneyPulseDots label={t("journey.saving")} withLabel />
+                  ) : null}
+                </div>
+              }
+            >
+              {step === "intention" ? (
+                <IntentionBlock
+                  current={intention}
+                  isBusy={chipLoading}
+                  onPick={(v) => run(`intention:${v}`, () => updateIntention(v))}
+                />
+              ) : null}
+              {step === "cycle" ? (
+                <CycleBlock
+                  isBusy={chipLoading}
+                  onSave={(key, lengths, absent) => run(key, () => saveCycles(lengths, absent))}
+                />
+              ) : null}
+              {step === "conditions" ? (
+                <ConditionsBlock
+                  initialC={conditions}
+                  initialF={familyHistory}
+                  saving={chipLoading("conditions:save")}
+                  onSave={(c, f) => run("conditions:save", () => saveConditions(c, f))}
+                />
+              ) : null}
+              {step === "lifestyle" ? (
+                <LifestyleBlock
+                  isBusy={chipLoading}
+                  onSave={(key, v) => run(key, () => saveCheckin(v))}
+                />
+              ) : null}
+              {step === "labs" ? (
+                <LabsBlock
+                  codes={sex === "female" ? [...LAB_CODES_F] : [...LAB_CODES_M]}
+                  isBusy={chipLoading}
+                  onSave={(key, c, v, d) => run(key, () => saveLab(c, v, d))}
+                />
+              ) : null}
+              {step === "medications" ? (
+                <MedsBlock
+                  isBusy={chipLoading}
+                  onSave={(key, m) => run(key, () => saveMedications(m))}
+                />
+              ) : null}
+            </JourneySurface>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -160,59 +199,113 @@ export function JourneyStepper({
   );
 }
 
+function ChipRow({ children }: { children: ReactNode }) {
+  const { animate, live } = useJourneyMotion();
+  return (
+    <motion.div
+      className="mt-4 flex flex-wrap gap-2"
+      initial="hidden"
+      animate={live ? "show" : "hidden"}
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: animate ? 0.045 : 0 } },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function OptionChip({
   on,
   onClick,
   label,
+  loading = false,
 }: {
   on?: boolean;
   onClick: () => void;
   label: string;
+  loading?: boolean;
 }) {
-  const reduce = useReducedMotion();
+  const { animate, dur } = useJourneyMotion();
+  const { t } = useI18n();
   return (
     <motion.button
       type="button"
       aria-pressed={on}
+      aria-busy={loading}
+      disabled={loading}
       onClick={onClick}
-      whileTap={reduce ? undefined : { scale: 0.98 }}
-      className={`inline-flex min-h-11 items-center rounded-md border px-3.5 py-2 text-sm transition-colors ${
-        on
+      variants={{
+        hidden: { opacity: 0, y: 6 },
+        show: { opacity: 1, y: 0, transition: { duration: dur(0.3), ease: LUX } },
+      }}
+      whileHover={animate && !loading ? { y: -2 } : undefined}
+      whileTap={animate && !loading ? { scale: 0.97 } : undefined}
+      className={`inline-flex min-h-11 min-w-[4.5rem] items-center justify-center rounded-xl border px-3.5 py-2 text-sm shadow-[var(--shadow-soft)] transition-[background-color,border-color,box-shadow] ${
+        loading
           ? "border-mist-500 bg-mist-100 text-mist-700"
-          : "border-dawn-300 bg-white text-ink-900 hover:bg-dawn-100"
+          : on
+            ? "border-mist-500 bg-mist-100 text-mist-700"
+            : "border-transparent bg-white/80 text-ink-900 hover:border-mist-300 hover:bg-white hover:shadow-[var(--shadow-lift)]"
       }`}
     >
-      {label}
+      {loading ? <JourneyButtonLoader label={t("journey.loading")} withLabel={false} /> : label}
     </motion.button>
   );
 }
 
-function IntentionBlock({ current, onPick }: { current: Intention; onPick: (v: Intention) => void }) {
+function IntentionBlock({
+  current,
+  onPick,
+  isBusy,
+}: {
+  current: Intention;
+  onPick: (v: Intention) => void;
+  isBusy: (key: string) => boolean;
+}) {
   const { t } = useI18n();
   return (
-    <div className="flex flex-wrap gap-2">
+    <ChipRow>
       {INTENTIONS.map((v) => (
-        <OptionChip key={v} on={v === current} onClick={() => onPick(v)} label={t(`intentions.${v}`)} />
+        <OptionChip
+          key={v}
+          on={v === current}
+          onClick={() => onPick(v)}
+          label={t(`intentions.${v}`)}
+          loading={isBusy(`intention:${v}`)}
+        />
       ))}
-    </div>
+    </ChipRow>
   );
 }
 
-function CycleBlock({ onSave }: { onSave: (lengths: number[], absent?: number) => void }) {
+function CycleBlock({
+  onSave,
+  isBusy,
+}: {
+  onSave: (key: string, lengths: number[], absent?: number) => void;
+  isBusy: (key: string) => boolean;
+}) {
   const { t } = useI18n();
   const presets = [
-    { label: t("journey.stepper.cyclePresets.regular"), lengths: [28, 29, 28] },
-    { label: t("journey.stepper.cyclePresets.longer"), lengths: [35, 38, 42] },
-    { label: t("journey.stepper.cyclePresets.irregular"), lengths: [24, 41, 33] },
+    { key: "cycle:regular", label: t("journey.stepper.cyclePresets.regular"), lengths: [28, 29, 28] },
+    { key: "cycle:longer", label: t("journey.stepper.cyclePresets.longer"), lengths: [35, 38, 42] },
+    { key: "cycle:irregular", label: t("journey.stepper.cyclePresets.irregular"), lengths: [24, 41, 33] },
   ];
   return (
     <div>
       <p className="text-sm text-ink-600">{t("profile.cycleQ")}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <ChipRow>
         {presets.map((p) => (
-          <OptionChip key={p.label} onClick={() => onSave(p.lengths)} label={p.label} />
+          <OptionChip
+            key={p.key}
+            onClick={() => onSave(p.key, p.lengths)}
+            label={p.label}
+            loading={isBusy(p.key)}
+          />
         ))}
-      </div>
+      </ChipRow>
     </div>
   );
 }
@@ -221,12 +314,15 @@ function ConditionsBlock({
   initialC,
   initialF,
   onSave,
+  saving,
 }: {
   initialC: string[];
   initialF: string[];
   onSave: (c: string[], f: string[]) => void;
+  saving: boolean;
 }) {
   const { t } = useI18n();
+  const { animate } = useJourneyMotion();
   const [c, setC] = useState(initialC);
   const [f, setF] = useState(initialF);
   const toggle = (set: typeof setC, v: string) =>
@@ -234,37 +330,54 @@ function ConditionsBlock({
   return (
     <div>
       <p className="text-sm font-medium text-ink-900">{t("profile.conditionsQ")}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <ChipRow>
         {CONDITION_CODES.map((v) => (
           <OptionChip key={v} on={c.includes(v)} onClick={() => toggle(setC, v)} label={t(`factors.${v}`)} />
         ))}
         <OptionChip on={c.length === 0} onClick={() => setC([])} label={t("common.ratherNot")} />
-      </div>
+      </ChipRow>
       <p className="mt-5 text-sm font-medium text-ink-900">{t("profile.familyQ")}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <ChipRow>
         {FAMILY_HISTORY_CODES.map((v) => (
           <OptionChip key={v} on={f.includes(v)} onClick={() => toggle(setF, v)} label={t(`factors.family_${v}`)} />
         ))}
-      </div>
-      <Button className="mt-5" onClick={() => onSave(c, f)}>
-        {t("common.continue")}
-      </Button>
+      </ChipRow>
+      <motion.button
+        type="button"
+        disabled={saving}
+        aria-busy={saving}
+        onClick={() => onSave(c, f)}
+        whileHover={animate && !saving ? { y: -1 } : undefined}
+        whileTap={animate && !saving ? { scale: 0.98 } : undefined}
+        className="mt-5 inline-flex min-h-11 min-w-[10rem] items-center justify-center rounded-lg bg-mist-700 px-5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-mist-500 disabled:opacity-80"
+      >
+        {saving ? <JourneyButtonLoader label={t("journey.saving")} onDark /> : t("common.continue")}
+      </motion.button>
     </div>
   );
 }
 
-function LifestyleBlock({ onSave }: { onSave: (v: Parameters<typeof saveCheckin>[0]) => void }) {
+function LifestyleBlock({
+  onSave,
+  isBusy,
+}: {
+  onSave: (key: string, v: Parameters<typeof saveCheckin>[0]) => void;
+  isBusy: (key: string) => boolean;
+}) {
   const { t } = useI18n();
   const presets = [
     {
+      key: "life:steady",
       label: t("journey.stepper.lifestylePresets.steady"),
       v: { sleep: 7.5, activity: 150, smoking: "never" as const, alcohol: 0, stress: 4, laughter: 4, heat: "low" as const },
     },
     {
+      key: "life:busy",
       label: t("journey.stepper.lifestylePresets.busy"),
       v: { sleep: 6, activity: 60, smoking: "never" as const, alcohol: 2, stress: 7, laughter: 2, heat: "low" as const },
     },
     {
+      key: "life:smoking",
       label: t("journey.stepper.lifestylePresets.smoking"),
       v: { sleep: 6.5, activity: 90, smoking: "current" as const, alcohol: 4, stress: 6, laughter: 2, heat: "high" as const },
     },
@@ -272,11 +385,16 @@ function LifestyleBlock({ onSave }: { onSave: (v: Parameters<typeof saveCheckin>
   return (
     <div>
       <p className="text-sm text-ink-600">{t("profile.lifestyleQ")}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <ChipRow>
         {presets.map((p) => (
-          <OptionChip key={p.label} onClick={() => onSave(p.v)} label={p.label} />
+          <OptionChip
+            key={p.key}
+            onClick={() => onSave(p.key, p.v)}
+            label={p.label}
+            loading={isBusy(p.key)}
+          />
         ))}
-      </div>
+      </ChipRow>
     </div>
   );
 }
@@ -284,13 +402,15 @@ function LifestyleBlock({ onSave }: { onSave: (v: Parameters<typeof saveCheckin>
 function LabsBlock({
   codes,
   onSave,
+  isBusy,
 }: {
   codes: string[];
-  onSave: (code: string, value: number, date: string) => void;
+  onSave: (key: string, code: string, value: number, date: string) => void;
+  isBusy: (key: string) => boolean;
 }) {
   const { t } = useI18n();
   const today = new Date().toISOString().slice(0, 10);
-  const presets: { code: string; value: number; label: string }[] = codes.slice(0, 4).map((code) => {
+  const presets: { key: string; code: string; value: number; label: string }[] = codes.slice(0, 4).map((code) => {
     const defaults: Record<string, number> = {
       amh: 2.1,
       tsh: 2.4,
@@ -302,6 +422,7 @@ function LabsBlock({
       semen_volume: 2.5,
     };
     return {
+      key: `lab:${code}`,
       code,
       value: defaults[code] ?? 1,
       label: t(`factors.${LAB_FACTOR[code] ?? code}`),
@@ -311,34 +432,46 @@ function LabsBlock({
     <div>
       <p className="text-sm text-ink-600">{t("profile.labsQ")}</p>
       <p className="mt-1 text-xs text-ink-400">{t("journey.stepper.labsHint")}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <ChipRow>
         {presets.map((p) => (
           <OptionChip
-            key={p.code}
-            onClick={() => onSave(p.code, p.value, today)}
+            key={p.key}
+            onClick={() => onSave(p.key, p.code, p.value, today)}
             label={`${p.label} · ${p.value}${OBS_CODES[p.code as keyof typeof OBS_CODES] !== "text" ? ` ${OBS_CODES[p.code as keyof typeof OBS_CODES]}` : ""}`}
+            loading={isBusy(p.key)}
           />
         ))}
-      </div>
+      </ChipRow>
     </div>
   );
 }
 
-function MedsBlock({ onSave }: { onSave: (m: string[]) => void }) {
+function MedsBlock({
+  onSave,
+  isBusy,
+}: {
+  onSave: (key: string, m: string[]) => void;
+  isBusy: (key: string) => boolean;
+}) {
   const { t } = useI18n();
   const options = [
-    { label: t("journey.stepper.medsPresets.none"), meds: [] as string[] },
-    { label: t("journey.stepper.medsPresets.metformin"), meds: ["Metformin"] },
-    { label: t("journey.stepper.medsPresets.thyroid"), meds: ["Levothyroxine"] },
+    { key: "meds:none", label: t("journey.stepper.medsPresets.none"), meds: [] as string[] },
+    { key: "meds:metformin", label: t("journey.stepper.medsPresets.metformin"), meds: ["Metformin"] },
+    { key: "meds:thyroid", label: t("journey.stepper.medsPresets.thyroid"), meds: ["Levothyroxine"] },
   ];
   return (
     <div>
       <p className="text-sm text-ink-600">{t("profile.medsQ")}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <ChipRow>
         {options.map((o) => (
-          <OptionChip key={o.label} onClick={() => onSave(o.meds)} label={o.label} />
+          <OptionChip
+            key={o.key}
+            onClick={() => onSave(o.key, o.meds)}
+            label={o.label}
+            loading={isBusy(o.key)}
+          />
         ))}
-      </div>
+      </ChipRow>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
 import { formatDate } from "@/lib/i18n/format";
 import type { Confidence, Direction, Domain, Unknown } from "@/lib/domain/types";
@@ -10,7 +11,11 @@ import type { MeasureRow, Pt } from "@/lib/engine/trajectory";
 import type { TimelineEvent } from "@/server/patient";
 import { ConfidenceBand, type ChartPoint } from "@/components/charts/confidence-band";
 import { DirectionBadge } from "@/components/ui/atoms";
+import { useJourneyMotion } from "@/components/journey/journey-loaders";
+import { ChronoOrbit, DomainSphere } from "./section-figures";
 import { Timeline } from "./timeline";
+
+const LUX = [0.16, 1, 0.3, 1] as const;
 
 export interface TrajectoryArea {
   domain: Domain;
@@ -37,8 +42,18 @@ function avg(xs: number[]): number {
  */
 export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: TrajectoryArea[]; initialDomain: Domain; nowIso: string }) {
   const { t, locale } = useI18n();
+  const { animate, dur } = useJourneyMotion();
   const [selected, setSelected] = useState<Domain>(initialDomain);
   const area = areas.find((a) => a.domain === selected) ?? areas[0];
+
+  useEffect(() => {
+    const onSelect = (e: Event) => {
+      const domain = (e as CustomEvent<{ domain: Domain }>).detail?.domain;
+      if (domain && areas.some((a) => a.domain === domain)) setSelected(domain);
+    };
+    window.addEventListener("masar:select-domain", onSelect);
+    return () => window.removeEventListener("masar:select-domain", onSelect);
+  }, [areas]);
 
   const value = (p: Pt) =>
     p.value !== null ? `${fmtNum(p.value)}${p.unit ? ` ${p.unit}` : ""}` : p.text ? t(`timeline.values.${p.text}`) : "—";
@@ -121,54 +136,95 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
   const oneReading = primary && !primary.cycleSets && primary.count === 1;
 
   return (
-    <div className="surface-paper overflow-hidden">
+    <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-mist-100/40 shadow-[var(--shadow-soft)]">
       <div
         role="group"
         aria-label={t("dashboard.trajectory.areaPicker")}
-        className="flex gap-1 overflow-x-auto border-b border-dawn-200 bg-dawn-50/90 p-2"
+        className="grid grid-cols-2 gap-1.5 border-b border-dawn-200/80 bg-dawn-50/60 p-2.5 sm:grid-cols-[repeat(auto-fit,minmax(7.25rem,1fr))]"
       >
         {areas.map((a) => {
           const none = a.confidence === "InsufficientData";
           const on = a.domain === selected;
           return (
-            <button
+            <motion.button
               key={a.domain}
               type="button"
               aria-pressed={on}
+              aria-label={t(`domains.${a.domain}`)}
+              title={t(`domains.${a.domain}`)}
               onClick={() => setSelected(a.domain)}
-              className={`shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              whileHover={animate && !on ? { y: -1 } : undefined}
+              whileTap={animate ? { scale: 0.98 } : undefined}
+              className={`relative flex min-h-12 items-center justify-center gap-1.5 rounded-full px-2.5 py-2 text-center text-xs font-semibold leading-snug transition-colors sm:text-sm ${
                 on
-                  ? "bg-mist-700 text-white shadow-sm"
+                  ? "bg-mist-700 text-white shadow-[var(--shadow-soft)]"
                   : none
                     ? "border border-dashed border-dawn-300 bg-transparent text-ink-600 hover:bg-dawn-100"
-                    : "bg-transparent text-ink-700 hover:bg-dawn-100 hover:text-ink-900"
+                    : "bg-white/80 text-ink-700 hover:bg-white hover:text-ink-900"
               }`}
             >
-              {t(`domains.${a.domain}`)}
-            </button>
+              <span className={`inline-flex ${on ? "opacity-90" : "opacity-70"}`} aria-hidden>
+                <DomainSphere
+                  domain={a.domain}
+                  direction={none ? "Unknown" : a.direction}
+                  size={22}
+                />
+              </span>
+              {t(`domains.short.${a.domain}`)}
+              {on ? (
+                <motion.span
+                  layoutId="traj-tab-dot"
+                  className="absolute inset-x-4 -bottom-px h-0.5 rounded-full bg-peach-400"
+                  transition={animate ? { type: "spring", stiffness: 380, damping: 32 } : { duration: 0 }}
+                />
+              ) : null}
+            </motion.button>
           );
         })}
       </div>
 
-      <div className="p-4 md:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-ink-900">{t(`domains.${area.domain}`)}</h3>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={area.domain}
+          className="p-4 md:p-6"
+          initial={animate ? { opacity: 0, y: 8 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          exit={animate ? { opacity: 0, y: -6 } : undefined}
+          transition={{ duration: dur(0.35), ease: LUX }}
+        >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <ChronoOrbit
+              readingCount={area.rows.reduce((n, r) => n + r.count, 0)}
+              hasChart={Boolean(area.chart && area.chart.points.length >= 2)}
+              className="hidden sm:block"
+            />
+            <div className="min-w-0">
+              <h3 className="font-display text-xl tracking-tight text-ink-900">
+                {t(`domains.${area.domain}`)}
+              </h3>
+              <p className="mt-0.5 text-xs text-ink-500">
+                {t("dashboard.trajectory.readings", {
+                  n: area.rows.reduce((sum, r) => sum + r.count, 0),
+                })}
+              </p>
+            </div>
+          </div>
           <DirectionBadge direction={area.direction} confidence={area.confidence} compact />
         </div>
 
-        {/* Simple trajectory: a chart only when the readings can support one */}
         {area.chart && area.chart.points.length >= 2 ? (
-          <div className="mt-3">
+          <div className="mt-4">
             <p className="mb-2 text-xs text-ink-600">{t("domainDetail.chartLegend")}</p>
             <ConfidenceBand points={area.chart.points} band={area.chart.band} staleMonths={area.chart.staleMonths} nowIso={nowIso} />
           </div>
         ) : area.rows.length === 0 ? (
-          <div className="mt-3 rounded-md border border-dashed border-slate-400 bg-dawn-50/70 p-4 text-sm">
+          <div className="mt-4 rounded-xl border border-dashed border-slate-400/70 bg-dawn-50/80 p-5 text-sm">
             <p className="font-medium text-ink-900">{t("dashboard.trajectory.nothingRecorded")}</p>
             <p className="mt-1 text-xs text-ink-600">{t("dashboard.trajectory.nothingRecordedBody")}</p>
           </div>
         ) : (
-          <div className="mt-3 rounded-md border border-dashed border-slate-400 bg-dawn-50/70 p-4 text-sm">
+          <div className="mt-4 rounded-xl border border-dashed border-slate-400/70 bg-dawn-50/80 p-5 text-sm">
             <p className="font-medium text-ink-900">
               {oneReading
                 ? t("dashboard.trajectory.oneMeasurement", { date: formatDate(primary.latest.at, locale) })
@@ -178,18 +234,31 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
           </div>
         )}
 
-        {/* Latest next to the one before it, for the main measure */}
         {primary ? (
-          <div className="mt-4">
+          <div className="mt-5">
             <p className="text-sm font-medium text-ink-900">{t(`factors.${primary.factor}`)}</p>
             <div className="mt-2 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-dawn-200 bg-dawn-50/50 p-3.5 text-xs">
-                <p className="label-caps">{t("dashboard.trajectory.previousLine")}</p>
-                <div className="mt-1.5">{primary.cycleSets ? cyclePrevious(primary) : pointCell(primary.previous, t("dashboard.trajectory.noEarlier"))}</div>
+              <div className="relative overflow-hidden rounded-[1.5rem] bg-dawn-50/90 p-3.5 text-xs shadow-[var(--shadow-soft)]">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -start-4 -top-4 h-16 w-16 rounded-full bg-dawn-200/50"
+                />
+                <p className="relative label-caps">{t("dashboard.trajectory.previousLine")}</p>
+                <div className="relative mt-1.5">
+                  {primary.cycleSets
+                    ? cyclePrevious(primary)
+                    : pointCell(primary.previous, t("dashboard.trajectory.noEarlier"))}
+                </div>
               </div>
-              <div className="rounded-lg border border-mist-300 bg-mist-100/50 p-3.5 text-xs ring-1 ring-mist-300/40">
-                <p className="label-caps text-mist-700">{t("dashboard.trajectory.latestLine")}</p>
-                <div className="mt-1.5">{primary.cycleSets ? cycleLatest(primary) : pointCell(primary.latest, "—")}</div>
+              <div className="relative overflow-hidden rounded-[1.5rem] bg-mist-100/70 p-3.5 text-xs shadow-[var(--shadow-soft)] ring-1 ring-mist-300/50">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -end-3 -top-3 h-14 w-14 rounded-full bg-mist-300/40"
+                />
+                <p className="relative label-caps text-mist-700">{t("dashboard.trajectory.latestLine")}</p>
+                <div className="relative mt-1.5">
+                  {primary.cycleSets ? cycleLatest(primary) : pointCell(primary.latest, "—")}
+                </div>
               </div>
             </div>
             {hasPair || !oneReading ? <p className="mt-2 text-xs text-ink-600">{comparison(primary)}</p> : null}
@@ -325,7 +394,8 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
             </div>
           </div>
         </details>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

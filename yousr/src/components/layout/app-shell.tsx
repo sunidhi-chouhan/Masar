@@ -57,14 +57,16 @@ export function AppShell({
   const { t, locale } = useI18n();
   const pathname = usePathname();
   const onJourney = pathname.includes("/journey");
+  const onMarketingHome =
+    !session && (pathname === `/${locale}` || pathname === `/${locale}/`);
   const items = navFor(session?.role);
   const isActive = (href: string) => {
     if (href === "/trajectory" && pathname === `/${locale}`) return true;
     return pathname === `/${locale}${href}` || pathname.startsWith(`/${locale}${href}/`);
   };
 
-  // Journey owns its chrome; avoid competing section nav during onboarding.
-  if (onJourney) {
+  // Journey + marketing landing own their chrome.
+  if (onJourney || onMarketingHome) {
     return <div className="relative flex min-h-dvh flex-col">{children}</div>;
   }
 

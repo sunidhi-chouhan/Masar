@@ -4,7 +4,8 @@ import { getJourneyState } from "@/lib/journey/state";
 import { decideAiExplanation } from "@/server/actions/journey";
 import { JourneyShell } from "@/components/journey/journey-shell";
 import { JourneySubmitButton } from "@/components/journey/journey-submit";
-import { SimulatedBadge } from "@/components/ui/atoms";
+import { JourneyIntro, JourneyStaggerList } from "@/components/journey/journey-intro";
+import { JourneySurface } from "@/components/journey/journey-surface";
 
 export default async function JourneyAiPage({ params }: PageProps<"/[locale]/journey/ai">) {
   const { locale, t } = await pageContext(params);
@@ -12,20 +13,22 @@ export default async function JourneyAiPage({ params }: PageProps<"/[locale]/jou
   if (!journey || journey.path !== "patient") redirect(`/${locale}/journey`);
   const hasKey = Boolean(process.env.GEMINI_API_KEY?.trim());
 
+  const points = [
+    t("journey.ai.points.rules"),
+    t("journey.ai.points.gemini"),
+    t("journey.ai.points.noScore"),
+    t("journey.ai.points.decline"),
+  ];
+
   return (
     <JourneyShell stepLabel={t("journey.ai.eyebrow")} progress={0.9}>
-      <div className="flex flex-wrap items-center gap-2">
-        <SimulatedBadge />
-      </div>
-      <h1 className="mt-2 text-ink-900">{t("journey.ai.title")}</h1>
-      <p className="mt-2 max-w-xl text-sm text-ink-600">{t("journey.ai.subtitle")}</p>
+      <JourneyIntro title={t("journey.ai.title")} body={t("journey.ai.subtitle")} />
 
-      <div className="mt-6 space-y-3 rounded-lg border border-dawn-200 bg-white p-5 text-sm text-ink-600 md:p-6">
-        <p>{t("journey.ai.points.rules")}</p>
-        <p>{t("journey.ai.points.gemini")}</p>
-        <p>{t("journey.ai.points.noScore")}</p>
-        <p>{t("journey.ai.points.decline")}</p>
-        {!hasKey ? <p className="text-xs text-ink-400">{t("journey.ai.noKey")}</p> : null}
+      <div className="mt-7">
+        <JourneySurface tone="dawn" showMotif>
+          <JourneyStaggerList items={points} />
+          {!hasKey ? <p className="mt-4 text-xs text-ink-400">{t("journey.ai.noKey")}</p> : null}
+        </JourneySurface>
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-3">

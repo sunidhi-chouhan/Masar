@@ -117,6 +117,14 @@
     "male": "Male factor context",
     "conditions": "Conditions and history",
     "lifestyle": "Lifestyle and recovery",
+    "short": {
+      "cycle": "Cycle",
+      "reserve": "Egg reserve",
+      "metabolic": "Metabolic",
+      "male": "Male factor",
+      "conditions": "Conditions",
+      "lifestyle": "Lifestyle"
+    },
     "about": {
       "cycle": "How regular your cycles are and what influences them.",
       "reserve": "Age and, where available, lab context about the quantity of remaining eggs. Never quality.",
@@ -1055,6 +1063,18 @@
     "eyebrow": "Masar · Reproductive health",
     "headline": "Understand your health. Decide what comes next.",
     "subheadline": "A personal view of your recorded information, what has changed, and what may be worth discussing.",
+    "hero": {
+      "greeting": "Welcome back, {name}",
+      "title": "Your trajectory",
+      "tagline": "A longitudinal view of what has changed — direction and confidence per area, never a fertility score.",
+      "statReadings": "Readings",
+      "statKnown": "Areas with data",
+      "statWatch": "Closer look"
+    },
+    "radar": {
+      "label": "Your areas at a glance",
+      "hint": "Tap an area to open its trajectory below."
+    },
     "nav": {
       "label": "On this page",
       "trajectory": "Trajectory",
@@ -1288,14 +1308,17 @@
       "toggle": "Show details by area",
       "groups": {
         "reproductive": {
+          "tag": "Closest link",
           "title": "Reproductive health records",
           "body": "Cycle dates, laboratory results and semen analysis are the most direct information."
         },
         "history": {
+          "tag": "Clinical context",
           "title": "Medical history",
           "body": "Conditions and family history a clinician may want to consider."
         },
         "context": {
+          "tag": "Supporting picture",
           "title": "General health context",
           "body": "Weight, blood sugar, blood pressure, sleep and activity. These do not predict fertility on their own, but they can matter for a conversation about your health."
         }
@@ -1312,24 +1335,31 @@
     "startHint": "A guided path: consent, optional health questions, then your personal view.",
     "roles": {
       "eyebrow": "Who is using Masar",
+      "brandLine": "A calmer way to see change over time",
       "title": "Choose how you want to enter",
       "subtitle": "This demonstration uses synthetic people. Pick a path that matches the role you want to explore.",
       "continue": "Continue",
+      "enterPath": "Enter this path",
+      "personalPaths": "Personal paths",
       "seededHint": "Seeded story personas remain available from Demo sign-in if judges need a fixed case.",
       "female": {
         "title": "Person · Female",
+        "tag": "Personal view",
         "body": "Optional reproductive and health questions, then a personal trajectory."
       },
       "male": {
         "title": "Person · Male",
+        "tag": "Personal view",
         "body": "Optional health and male-factor questions, then a personal trajectory."
       },
       "clinician": {
         "title": "Clinician",
+        "tag": "Workspace",
         "body": "Guidelines consent, then the authorised patient review workspace."
       },
       "admin": {
         "title": "Health system",
+        "tag": "Workspace",
         "body": "Guidelines consent, then aggregate pathway and equity metrics."
       },
       "workspaces": "Clinician and system workspaces"
@@ -1419,6 +1449,97 @@
       }
     },
     "loading": "Working…",
-    "progressAria": "Journey progress"
+    "saving": "Saving…",
+    "progressAria": "Journey progress",
+    "skipToContent": "Skip to content"
+  },
+  "landing": {
+    "bio": {
+      "skipToContent": "Skip to content",
+      "navSignals": "What you see",
+      "navTimeline": "Over time",
+      "navEnter": "Enter",
+      "heroImageAlt": "Soft natural light across a calm interior space",
+      "heroTitle": "See change earlier. Decide with clarity.",
+      "heroBody": "Masar watches the direction of your reproductive health over time—not a score, not a verdict—so options stay personal, calm and in your control.",
+      "ctaEnter": "Start your journey",
+      "ctaTimeline": "See how it works",
+      "privacyLine": "You choose what is shared. Employment and insurance are never purposes.",
+      "signalsEyebrow": "What you will see",
+      "signalsTitle": "Direction, confidence, and what is still unknown",
+      "signalsBody": "Each area of your health shows how things are moving, how sure Masar can be, and what would narrow the picture—never a fertility label.",
+      "pillars": {
+        "direction": {
+          "title": "Direction of change",
+          "body": "Improving, stable, shifting, or worth discussing—with the date and source beside every reading."
+        },
+        "confidence": {
+          "title": "Honest confidence",
+          "body": "High, moderate, low, or not enough information. Missing data is never called stable."
+        },
+        "consent": {
+          "title": "Consent you can revoke",
+          "body": "Share by purpose. There is no setting for employers, insurers or marketing apps."
+        }
+      },
+      "readout": {
+        "illustrative": "Illustrative synthetic readout",
+        "area": "Area",
+        "direction": "Direction",
+        "note": "Still unknown"
+      },
+      "metrics": {
+        "cycle": {
+          "label": "Cycle health",
+          "direction": "Shifting",
+          "note": "Three recent cycle lengths would clarify the pattern."
+        },
+        "metabolic": {
+          "label": "Metabolic health",
+          "direction": "Discuss",
+          "note": "A recent HbA1c would narrow this conversation."
+        },
+        "unknown": {
+          "label": "Egg reserve context",
+          "direction": "Not enough information",
+          "note": "An AMH result is for discussion with a clinician—not a verdict."
+        }
+      },
+      "timelineEyebrow": "Over time",
+      "timelineTitle": "From a quiet signal to a timely conversation",
+      "timelineBody": "Masar holds the thread between what is recorded and what may be worth discussing—without rushing you.",
+      "stepOf": "Step {n} of {total}",
+      "nodes": {
+        "signal": {
+          "tag": "Notice",
+          "title": "A signal appears",
+          "body": "Something in your records shifts—or stays missing. Masar surfaces it with context, not alarms."
+        },
+        "pattern": {
+          "tag": "Pattern",
+          "title": "The pattern holds or changes",
+          "body": "Direction and confidence update as new readings arrive. Uncertainty stays visible."
+        },
+        "option": {
+          "tag": "Options",
+          "title": "Options, not prescriptions",
+          "body": "Intention-aware choices are listed neutrally—learn, optimise, discuss tests, or speak with a clinician."
+        },
+        "counsel": {
+          "tag": "Care",
+          "title": "A clinician keeps the decision",
+          "body": "When discussion is warranted, Masar routes you toward care. Software never substitutes clinical advice."
+        }
+      },
+      "evidence": {
+        "title": "Rules compute. Humans advise.",
+        "body": "Readable rules decide direction. Optional wording help never invents numbers or diagnoses.",
+        "disclaimer": "Synthetic demonstration · not clinically validated"
+      },
+      "enterEyebrow": "Begin",
+      "enterTitle": "Choose how you want to enter",
+      "enterBody": "This demonstration uses synthetic people. Pick a path that matches the role you want to explore.",
+      "photoCredit": "Photography is illustrative and does not depict real patients."
+    }
   }
 }
