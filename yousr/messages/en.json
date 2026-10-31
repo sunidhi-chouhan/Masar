@@ -43,7 +43,14 @@
     "demo": "Guided demo",
     "login": "Demo sign-in",
     "home": "Home",
-    "journey": "Start journey"
+    "journey": "Start journey",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "groups": {
+      "path": "Your path",
+      "you": "You",
+      "workspace": "Workspace"
+    }
   },
   "tiers": {
     "Education": "Education",

@@ -42,24 +42,33 @@ export function LivingWellCard({ card }: { card: CardData }) {
   };
 
   return (
-    <article className="surface-paper lift flex h-full flex-col p-5">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-ink-900">{pick(card, "title", locale)}</h3>
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white/95 p-5 shadow-[var(--shadow-soft)] ring-1 ring-dawn-200/60 transition-shadow hover:shadow-[var(--shadow-lift)]">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -end-8 -top-8 h-24 w-24 rounded-full bg-mist-100/80 opacity-70 blur-xl"
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <h3 className="font-display text-lg tracking-tight text-ink-900">{pick(card, "title", locale)}</h3>
         <EvidenceChip strength={card.strength} compact />
       </div>
-      <p className="mt-3 text-ink-900">{pick(card, "claim", locale)}</p>
-      <div className="mt-3 rounded-md border border-dashed border-slate-400/70 bg-slate-200/30 p-3 text-sm text-slate-600">
+      <p className="relative mt-3 text-sm leading-relaxed text-ink-900">{pick(card, "claim", locale)}</p>
+      <div className="relative mt-3 rounded-2xl border border-dashed border-slate-400/60 bg-slate-200/25 p-3 text-sm text-slate-600">
         <p className="label-caps mb-1 !text-slate-600">{t("livingWell.cannot")}</p>
         {pick(card, "cannot", locale)}
       </div>
-      <div className="mt-4 flex-1 rounded-md bg-mist-100/60 p-3 text-sm">
+      <div className="relative mt-4 flex-1 rounded-2xl bg-mist-100/50 p-3.5 text-sm">
         <p className="label-caps mb-1">{t("livingWell.askClinician")}</p>
         <p className="text-ink-900">{question}</p>
-        <button type="button" onClick={copy} className="mt-2 text-xs text-mist-700 underline-offset-4 hover:underline" aria-live="polite">
+        <button
+          type="button"
+          onClick={copy}
+          className="mt-2.5 inline-flex min-h-9 items-center rounded-lg bg-mist-700 px-3 text-xs font-semibold text-white hover:bg-mist-500"
+          aria-live="polite"
+        >
           {copied ? t("livingWell.copied") : t("livingWell.copy")}
         </button>
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-400">
+      <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-400">
         <TierRibbon tier="Education" />
         {ev ? (
           <a href={ev.url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
@@ -81,20 +90,37 @@ export function QuestionList() {
     return () => window.removeEventListener("masar-questions", sync);
   }, []);
   return (
-    <aside className="surface p-5">
-      <h2 className="text-ink-900">{t("livingWell.questionList")}</h2>
+    <aside className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-mist-100/40 p-5 shadow-[var(--shadow-soft)]">
+      <h2 className="font-display text-xl tracking-tight text-ink-900">{t("livingWell.questionList")}</h2>
       <p className="mt-1 text-sm text-ink-600">{t("livingWell.questionListBody")}</p>
       {list.length ? (
-        <ol className="mt-3 list-decimal space-y-2 ps-5 text-sm text-ink-900">
-          {list.map((q) => (
-            <li key={q}>{q}</li>
+        <ol className="mt-4 space-y-2">
+          {list.map((q, i) => (
+            <li
+              key={q}
+              className="flex gap-2.5 rounded-2xl bg-dawn-50/90 px-3 py-2.5 text-sm text-ink-900"
+            >
+              <span
+                aria-hidden
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-mist-100 text-[11px] font-bold text-mist-700"
+              >
+                {i + 1}
+              </span>
+              <span>{q}</span>
+            </li>
           ))}
         </ol>
       ) : (
-        <p className="mt-3 text-sm text-ink-400">{t("livingWell.emptyList")}</p>
+        <p className="mt-4 rounded-2xl border border-dashed border-dawn-300 bg-dawn-50/50 px-3 py-4 text-sm text-ink-400">
+          {t("livingWell.emptyList")}
+        </p>
       )}
       {list.length ? (
-        <button type="button" onClick={() => writeQuestionList([])} className="mt-3 text-xs text-ink-400 underline-offset-4 hover:underline">
+        <button
+          type="button"
+          onClick={() => writeQuestionList([])}
+          className="mt-3 text-xs text-ink-400 underline-offset-4 hover:underline"
+        >
           {t("common.cancel")}
         </button>
       ) : null}

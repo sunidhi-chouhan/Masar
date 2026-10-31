@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { CONDITION_CODES, FAMILY_HISTORY_CODES, INTENTIONS, OBS_CODES, type Intention, type Sex } from "@/lib/domain/types";
 import { saveCheckin, saveConditions, saveCycles, saveLab, saveMedications, updateIntention } from "@/server/actions/patient";
 import { Button, LinkButton } from "@/components/ui/atoms";
+import { JourneyButtonLoader } from "@/components/journey/journey-loaders";
 
 type Step = "intention" | "cycle" | "conditions" | "lifestyle" | "labs" | "medications";
 
@@ -47,26 +48,47 @@ export function ProfileWizard(p: Props) {
 
   return (
     <div>
-      <ol className="flex flex-wrap gap-2" aria-label="Steps">
-        {steps.map((s, idx) => (
-          <li key={s}>
-            <button
-              type="button"
-              onClick={() => {
-                setSaved(false);
-                setI(idx);
-              }}
-              aria-current={idx === i ? "step" : undefined}
-              className={`rounded-pill border px-3 py-1 text-xs ${
-                idx === i ? "border-peach-500 bg-peach-200/60 text-ink-900" : done.has(s) || s === "intention" ? "border-mist-300 bg-mist-100 text-mist-700" : "border-dawn-300 text-ink-600"
-              }`}
-            >
-              {t(`profile.steps.${s}`)}
-            </button>
-          </li>
-        ))}
+      <ol className="flex flex-wrap items-center gap-2" aria-label="Steps">
+        {steps.map((s, idx) => {
+          const complete = done.has(s) || s === "intention";
+          const current = idx === i;
+          return (
+            <li key={s} className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSaved(false);
+                  setI(idx);
+                }}
+                aria-current={current ? "step" : undefined}
+                className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  current
+                    ? "bg-mist-700 text-white shadow-[var(--shadow-soft)]"
+                    : complete
+                      ? "bg-mist-100 text-mist-700"
+                      : "bg-dawn-100 text-ink-500"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`flex h-6 w-6 items-center justify-center rounded-pill text-[10px] font-bold ${
+                    current ? "bg-white/20 text-white" : complete ? "bg-mist-700 text-white" : "bg-white text-ink-400"
+                  }`}
+                >
+                  {complete && !current ? "✓" : idx + 1}
+                </span>
+                <span className="hidden sm:inline">{t(`profile.steps.${s}`)}</span>
+              </button>
+              {idx < steps.length - 1 ? (
+                <span aria-hidden className="hidden h-px w-3 bg-dawn-300 sm:block" />
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
-      <p className="mt-2 text-xs text-ink-400">{t("profile.completeness", { done: done.size, total: steps.length - 1 })}</p>
+      <p className="mt-2 text-xs text-ink-400">
+        {t("profile.completeness", { done: done.size, total: steps.length - 1 })}
+      </p>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -75,7 +97,7 @@ export function ProfileWizard(p: Props) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -12 }}
           transition={{ duration: 0.3 }}
-          className="surface-paper mt-6 p-6"
+          className="mt-6 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-dawn-50/70 p-5 shadow-[var(--shadow-soft)] md:p-6"
         >
           {step === "intention" ? <IntentionStep current={p.intention} onPick={(v) => run(() => updateIntention(v))} /> : null}
           {step === "cycle" ? <CycleStep onSave={(lengths, absent) => run(() => saveCycles(lengths, absent))} /> : null}
@@ -86,16 +108,16 @@ export function ProfileWizard(p: Props) {
           {step === "labs" ? <LabStep codes={p.sex === "female" ? [...LAB_CODES_F] : [...LAB_CODES_M]} onSave={(c, v, d) => run(() => saveLab(c, v, d))} /> : null}
           {step === "medications" ? <MedsStep initial={p.medications} onSave={(m) => run(() => saveMedications(m))} /> : null}
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-dawn-200 pt-4">
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-dawn-200/80 pt-4">
             <button type="button" onClick={next} className="text-sm text-ink-600 underline-offset-4 hover:underline">
               {t("common.skip")}
             </button>
             {saved ? (
-              <span className="text-sm text-mist-700" aria-live="polite">
+              <span className="text-sm font-medium text-mist-700" aria-live="polite">
                 {t("profile.saved")}
               </span>
             ) : null}
-            {pending ? <span className="text-sm text-ink-400">…</span> : null}
+            {pending ? <JourneyButtonLoader label={t("journey.saving")} withLabel={false} /> : null}
             <LinkButton href={p.trajectoryHref} tone="ghost" className="ms-auto">
               {t("profile.finish")} →
             </LinkButton>

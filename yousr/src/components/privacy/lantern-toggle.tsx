@@ -29,7 +29,13 @@ export function LanternToggle({ id, label, hint, on, onToggle, simulated }: Prop
   };
 
   return (
-    <div className={`surface-paper flex items-center gap-4 p-4 transition-colors ${optimistic ? "" : "bg-dawn-50/60"}`}>
+    <div
+      className={`flex items-center gap-4 overflow-hidden rounded-[1.5rem] p-4 shadow-[var(--shadow-soft)] transition-colors ${
+        optimistic
+          ? "bg-gradient-to-br from-white to-amber-100/40 ring-1 ring-amber-300/40"
+          : "bg-dawn-50/80 ring-1 ring-dawn-200/60"
+      }`}
+    >
       <button
         type="button"
         role="switch"
@@ -38,7 +44,7 @@ export function LanternToggle({ id, label, hint, on, onToggle, simulated }: Prop
         aria-describedby={`${id}-hint`}
         disabled={pending}
         onClick={flip}
-        className="relative h-12 w-12 shrink-0 rounded-pill focus-visible:outline-mist-500"
+        className="relative h-14 w-14 shrink-0 rounded-pill focus-visible:outline-mist-500"
       >
         <motion.span
           aria-hidden

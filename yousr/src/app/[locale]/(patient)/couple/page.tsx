@@ -3,9 +3,11 @@ import { coupleFor } from "@/server/couple";
 import { authorize } from "@/lib/consent/authorize";
 import { loadPatientBundle } from "@/server/patient";
 import { domainsFor, type Sex } from "@/lib/domain/types";
-import { GlowField, Page } from "@/components/ui/atoms";
+import { Page } from "@/components/ui/atoms";
 import { Reveal } from "@/components/ui/motion";
+import { PageHero } from "@/components/layout/page-hero";
 import { CouplePanel, type PartnerView } from "@/components/couple/couple-panel";
+import { InsightHalo } from "@/components/trajectory/section-figures";
 
 export default async function CouplePage({ params }: PageProps<"/[locale]/couple">) {
   const { locale, t, session } = await requireRole(params, ["patient"]);
@@ -15,26 +17,40 @@ export default async function CouplePage({ params }: PageProps<"/[locale]/couple
   let partnerShares: PartnerView[] = [];
   let partnerSharingOn = false;
   if (link) {
-    const decision = await authorize({ actor, subjectId: link.partner.id, purpose: "PartnerShare", resource: "couple", silent: true });
+    const decision = await authorize({
+      actor,
+      subjectId: link.partner.id,
+      purpose: "PartnerShare",
+      resource: "couple",
+      silent: true,
+    });
     partnerSharingOn = decision.allowed;
     if (decision.allowed) {
-      // Same gate, same purpose: the View is logged on the partner's ledger.
-      // Only the domains they scoped are kept, and only as directions.
-      const partnerBundle = await loadPatientBundle(actor, link.partner.id, "PartnerShare", "couple:partner");
+      const partnerBundle = await loadPatientBundle(
+        actor,
+        link.partner.id,
+        "PartnerShare",
+        "couple:partner",
+      );
       partnerShares = partnerBundle.results
         .filter((r) => (decision.scopes ?? []).includes(r.domain))
-        .map((r) => ({ domain: r.domain, direction: r.direction, confidence: r.confidence }));
+        .map((r) => ({
+          domain: r.domain,
+          direction: r.direction,
+          confidence: r.confidence,
+        }));
     }
   }
 
   return (
     <div className="relative overflow-hidden">
-      <GlowField variant="amber" />
       <Page wide>
-        <Reveal>
-          <h1 className="text-ink-900">{t("couple.title")}</h1>
-          <p className="mt-2 max-w-2xl text-ink-600">{t("couple.subtitle")}</p>
-        </Reveal>
+        <PageHero
+          title={t("couple.title")}
+          subtitle={t("couple.subtitle")}
+          tier="DecisionSupport"
+          figure={<InsightHalo direction="Stable" />}
+        />
         <Reveal delay={0.1} className="mt-8">
           {link ? (
             <CouplePanel
@@ -46,7 +62,10 @@ export default async function CouplePage({ params }: PageProps<"/[locale]/couple
               partnerHue={link.partner.hue}
             />
           ) : (
-            <p className="text-ink-600">{t("couple.notLinked")}</p>
+            <div className="overflow-hidden rounded-[1.75rem] border border-dashed border-dawn-300 bg-dawn-50/70 p-8 text-center">
+              <InsightHalo direction="Unknown" className="mx-auto" />
+              <p className="mt-4 text-ink-600">{t("couple.notLinked")}</p>
+            </div>
           )}
         </Reveal>
       </Page>

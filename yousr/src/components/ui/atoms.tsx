@@ -152,6 +152,10 @@ export function SimulatedBadge() {
 /* ---------- page container ---------- */
 export function Page({ children, wide = false, className = "" }: { children: ReactNode; wide?: boolean; className?: string }) {
   return (
-    <div className={`relative mx-auto w-full px-4 py-6 md:py-8 ${wide ? "max-w-6xl" : "max-w-3xl"} ${className}`}>{children}</div>
+    <div
+      className={`relative mx-auto w-full px-4 py-6 md:px-6 md:py-8 ${wide ? "max-w-7xl" : "max-w-3xl"} ${className}`}
+    >
+      {children}
+    </div>
   );
 }

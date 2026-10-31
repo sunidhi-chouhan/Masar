@@ -15,7 +15,7 @@ export function ConsentCentre({ state, hasPartner }: { state: ConsentState; hasP
     <div className="space-y-10">
       <section aria-labelledby="sources-h">
         <SectionHeading title={t("privacy.sourcesHeading")} body={t("privacy.sourcesBody")} />
-        <div className="grid gap-3">
+        <div className="mt-4 grid gap-3">
           {DATA_SOURCES.map((s: DataSourceId) => (
             <LanternToggle
               key={s}
@@ -32,7 +32,7 @@ export function ConsentCentre({ state, hasPartner }: { state: ConsentState; hasP
 
       <section aria-labelledby="recipients-h">
         <SectionHeading title={t("privacy.whoCanSee")} body={t("privacy.whoCanSeeBody")} />
-        <div className="grid gap-3">
+        <div className="mt-4 grid gap-3">
           {RECIPIENTS.filter((r) => r !== "Partner" || hasPartner).map((r) => (
             <LanternToggle
               key={r}
@@ -56,22 +56,30 @@ export function PurposeFirewall() {
   const { t } = useI18n();
   const blocked = ["employer", "insurer", "unrelated"] as const;
   return (
-    <section aria-labelledby="firewall-h" className="rounded-lg border border-slate-200 bg-slate-200/30 p-5">
-      <h2 id="firewall-h" className="text-ink-900">
+    <section
+      aria-labelledby="firewall-h"
+      className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-slate-200/40 to-dawn-50 p-5 shadow-[var(--shadow-soft)] md:p-6"
+    >
+      <h2 id="firewall-h" className="font-display text-xl tracking-tight text-ink-900">
         {t("privacy.firewall.title")}
       </h2>
       <p className="mt-1 text-sm text-ink-600">{t("privacy.firewall.body")}</p>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+      <ul className="mt-5 grid gap-3 sm:grid-cols-3">
         {blocked.map((b) => (
-          <li key={b} className="flex items-center gap-3 rounded-md border border-slate-200 bg-dawn-50/70 p-3">
+          <li
+            key={b}
+            className="flex items-center gap-3 rounded-[1.25rem] bg-white/80 p-3.5 ring-1 ring-slate-200/80"
+          >
             <span
               aria-hidden
-              className="relative h-9 w-9 shrink-0 rounded-pill bg-slate-200"
-              style={{ boxShadow: "inset 0 0 0 2px var(--slate-400)" }}
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-slate-200"
             >
-              <span className="absolute inset-0 m-auto h-[2px] w-6 rotate-45 bg-slate-600" style={{ top: "50%" }} />
+              <span className="absolute h-[2px] w-7 rotate-45 bg-slate-600" />
+              <span className="h-6 w-6 rounded-pill border-2 border-slate-400" />
             </span>
-            <span className="text-sm text-slate-600 line-through decoration-slate-400">{t(`privacy.firewall.${b}`)}</span>
+            <span className="text-sm text-slate-600 line-through decoration-slate-400">
+              {t(`privacy.firewall.${b}`)}
+            </span>
           </li>
         ))}
       </ul>

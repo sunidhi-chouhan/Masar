@@ -1,9 +1,11 @@
 import { requireRole } from "@/lib/page-context";
 import { prisma } from "@/lib/db/prisma";
 import { parseJsonArray, type Intention, type Sex } from "@/lib/domain/types";
-import { GlowField, Page } from "@/components/ui/atoms";
+import { Page } from "@/components/ui/atoms";
 import { Reveal } from "@/components/ui/motion";
+import { PageHero } from "@/components/layout/page-hero";
 import { ProfileWizard } from "@/components/profile/profile-wizard";
+import { DomainSphere } from "@/components/trajectory/section-figures";
 
 export default async function ProfilePage({ params, searchParams }: PageProps<"/[locale]/profile">) {
   const { locale, t, session } = await requireRole(params, ["patient"]);
@@ -12,12 +14,13 @@ export default async function ProfilePage({ params, searchParams }: PageProps<"/
   const user = await prisma.user.findUniqueOrThrow({ where: { id: session.userId }, include: { profile: true } });
   return (
     <div className="relative overflow-hidden">
-      <GlowField variant="dawn" />
       <Page>
-        <Reveal>
-          <h1 className="text-ink-900">{t("profile.title")}</h1>
-          <p className="mt-2 text-ink-600">{t("profile.subtitle")}</p>
-        </Reveal>
+        <PageHero
+          title={t("profile.title")}
+          subtitle={t("profile.subtitle")}
+          tier="DecisionSupport"
+          figure={<DomainSphere domain="lifestyle" direction="Stable" size={88} />}
+        />
         <Reveal delay={0.1} className="mt-8">
           <ProfileWizard
             sex={user.sex as Sex}
