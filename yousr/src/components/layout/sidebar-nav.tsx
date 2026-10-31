@@ -12,7 +12,7 @@ export interface NavItem {
 }
 
 export function groupNavItems(items: NavItem[]): { id: "path" | "you" | "other"; items: NavItem[] }[] {
-  const pathKeys = new Set(["trajectory", "livingWell", "actions", "couple"]);
+  const pathKeys = new Set(["trajectory", "insights", "livingWell", "actions", "import", "couple"]);
   const youKeys = new Set(["privacy", "profile"]);
   const path: NavItem[] = [];
   const you: NavItem[] = [];

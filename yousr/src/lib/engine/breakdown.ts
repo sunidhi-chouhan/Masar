@@ -30,6 +30,7 @@ export const MISSING_ADD_PATH: Record<string, string> = {
   stress: "/profile?step=lifestyle",
   laughter: "/profile?step=lifestyle",
   conditions_step: "/profile?step=conditions",
+  conditions_detail: "/profile?step=conditions",
   medications: "/profile?step=medications",
 };
 

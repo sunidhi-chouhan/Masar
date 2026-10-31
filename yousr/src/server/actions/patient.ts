@@ -52,6 +52,16 @@ export async function updateIntention(intention: string) {
   revalidatePath("/", "layout");
 }
 
+export async function setPreferSameGenderClinician(prefer: boolean) {
+  const s = await requireSession();
+  await prisma.healthProfile.upsert({
+    where: { userId: s.userId },
+    create: { userId: s.userId, preferSameGenderClinician: prefer },
+    update: { preferSameGenderClinician: prefer },
+  });
+  revalidatePath("/", "layout");
+}
+
 interface CheckinPayload {
   sleep?: number;
   activity?: number;
@@ -182,8 +192,10 @@ export async function moveAction(actionId: string, to: string) {
 
 export async function answerTeachBack(domain: string, questionId: string, answer: "yes" | "no") {
   const s = await requireSession();
-  if (!(DOMAINS as readonly string[]).includes(domain)) return false;
-  return recordTeachBack(s.userId, domain as Domain, questionId, answer);
+  if (!(DOMAINS as readonly string[]).includes(domain)) return { correct: false, escalated: false };
+  const result = await recordTeachBack(s.userId, domain as Domain, questionId, answer);
+  if (result.escalated) revalidatePath("/", "layout");
+  return result;
 }
 
 export async function saveCoupleScopes(scopes: string[]) {

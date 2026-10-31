@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "check:trajectory": "tsx scripts/check-trajectory.ts",
+    "check:partner-share": "tsx scripts/check-partner-share.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",

@@ -23,27 +23,42 @@ function Tag({ tone, children }: { tone: "new" | "outdated" | "change" | "record
  * same line as the readings that arrived, so a person can tell apart what
  * was already there, what is new, what actually changed, and what has aged.
  */
+const WINDOW_MONTHS = 24;
+
 export function Timeline({
   events: allEvents,
   limit = 14,
   measurementsOnly = false,
+  nowIso,
 }: {
   events: TimelineEvent[];
   limit?: number;
   /** show only recorded readings; recalculated summaries are listed elsewhere */
   measurementsOnly?: boolean;
+  /** ISO now — marks readings outside the ~24-month longitudinal window */
+  nowIso?: string;
 }) {
   const { t, locale } = useI18n();
   const events = measurementsOnly ? allEvents.filter((e) => e.kind === "observation") : allEvents;
   if (!events.length) return <p className="text-sm text-ink-400">{t("timeline.empty")}</p>;
 
-  const readings = events.filter((e) => e.kind === "observation");
-  const snapshots = events.filter((e) => e.kind === "snapshot");
+  const now = nowIso ? new Date(nowIso) : new Date();
+  const windowMs = WINDOW_MONTHS * 30.44 * 86_400_000;
+  const outsideWindow = events.filter((e) => now.getTime() - new Date(e.at).getTime() > windowMs).length;
+  const inWindow = events.filter((e) => now.getTime() - new Date(e.at).getTime() <= windowMs);
+  const focus = inWindow.length ? inWindow : events;
+
+  const readings = focus.filter((e) => e.kind === "observation");
+  const snapshots = focus.filter((e) => e.kind === "snapshot");
   const changes = snapshots.filter((e) => e.kind === "snapshot" && e.changed);
-  const shown = events.slice(-limit).reverse();
+  const shown = focus.slice(-limit).reverse();
 
   return (
     <div>
+      <p className="mb-2 text-xs text-ink-500">{t("timeline.window", { months: WINDOW_MONTHS })}</p>
+      {outsideWindow > 0 ? (
+        <p className="mb-3 text-xs text-ink-400">{t("timeline.outsideWindow", { n: outsideWindow, months: WINDOW_MONTHS })}</p>
+      ) : null}
       <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600" aria-label={t("timeline.legend")}>
         <li className="flex items-center gap-1.5">
           <Tag tone="recorded">{t("timeline.tags.recorded")}</Tag>

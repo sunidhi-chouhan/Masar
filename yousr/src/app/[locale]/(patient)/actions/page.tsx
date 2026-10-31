@@ -7,7 +7,9 @@ import { Page, SectionHeading } from "@/components/ui/atoms";
 import { Reveal, Stagger, StaggerItem } from "@/components/ui/motion";
 import { PageHero } from "@/components/layout/page-hero";
 import { ActionCard, type ActionRow } from "@/components/actions/action-card";
+import { ClinicianGenderPref } from "@/components/actions/clinician-pref";
 import { ChronoOrbit } from "@/components/trajectory/section-figures";
+import { prisma } from "@/lib/db/prisma";
 
 const TYPE_ORDER: ActionType[] = ["Refer", "Counsel", "PreserveDiscuss", "TestDiscuss", "Optimise", "Learn"];
 
@@ -27,7 +29,10 @@ export default async function ActionsPage({ params }: PageProps<"/[locale]/actio
     "actions",
   );
   await syncDerived(bundle);
-  const rows = await listActions(session.userId);
+  const [rows, profile] = await Promise.all([
+    listActions(session.userId),
+    prisma.healthProfile.findUnique({ where: { userId: session.userId } }),
+  ]);
 
   const toRow = (a: (typeof rows)[number]): ActionRow => ({
     id: a.id,
@@ -68,11 +73,14 @@ export default async function ActionsPage({ params }: PageProps<"/[locale]/actio
             <p className="text-xs text-ink-500">
               {t("trajectory.intentionLabel", {
                 intention: t(`intentions.${bundle.user.intention}`),
-              })}{" "}
-              · {t("actions.clinicianPreference")}
+              })}
             </p>
           }
         />
+
+        <Reveal delay={0.04} className="mt-4">
+          <ClinicianGenderPref initial={Boolean(profile?.preferSameGenderClinician)} />
+        </Reveal>
 
         <Reveal delay={0.05} className="mt-6 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-dawn-50/80 p-5 shadow-[var(--shadow-soft)] md:p-6">
           <p className="font-display text-xl tracking-tight text-ink-900">{t("actions.sequence.title")}</p>

@@ -354,7 +354,7 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
             <div>
               <p className="label-caps">{t("dashboard.trajectory.logTitle")}</p>
               <div className="mt-2">
-                <Timeline events={area.timeline} limit={8} measurementsOnly />
+                <Timeline events={area.timeline} limit={8} measurementsOnly nowIso={nowIso} />
               </div>
             </div>
 

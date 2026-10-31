@@ -55,54 +55,28 @@ export function DomainRadar({ nodes }: { nodes: RadarNode[] }) {
       <svg viewBox="0 0 320 236" className="mx-auto h-auto w-full max-w-sm" role="img" aria-hidden>
         <defs>
           <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--mist-300)" stopOpacity="0.45" />
-            <stop offset="70%" stopColor="var(--mist-100)" stopOpacity="0.12" />
+            <stop offset="0%" stopColor="var(--mist-100)" stopOpacity="0.55" />
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <circle cx={cx} cy={cy} r="108" fill="url(#radar-glow)" />
-        {[42, 78, 108].map((r) => (
-          <circle
-            key={r}
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="var(--dawn-200)"
+        {/* Soft wash only — no concentric rings (those read as a score dial). */}
+        <circle cx={cx} cy={cy} r="100" fill="url(#radar-glow)" />
+        {positions.map((p) => (
+          <line
+            key={`spoke-${p.domain}`}
+            x1={cx}
+            y1={cy}
+            x2={p.x}
+            y2={p.y}
+            stroke="var(--dawn-300)"
             strokeWidth="1"
-            strokeDasharray={r === 78 ? "0" : "2 6"}
-            opacity={0.85}
+            strokeOpacity="0.55"
           />
         ))}
-        {positions.map((p, i) => {
-          const next = positions[(i + 1) % positions.length];
-          const d = `M ${p.x} ${p.y} Q ${cx} ${cy} ${next.x} ${next.y}`;
-          return animate ? (
-            <motion.path
-              key={`arc-${p.domain}`}
-              d={d}
-              fill="none"
-              stroke="var(--mist-300)"
-              strokeWidth="1"
-              strokeOpacity="0.55"
-              animate={{ pathLength: [0.2, 1], opacity: [0.25, 0.7, 0.4] }}
-              transition={{ duration: 4, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
-            />
-          ) : (
-            <path
-              key={`arc-${p.domain}`}
-              d={d}
-              fill="none"
-              stroke="var(--mist-300)"
-              strokeWidth="1"
-              strokeOpacity="0.45"
-            />
-          );
-        })}
-        <circle cx={cx} cy={cy} r="6" fill="var(--mist-700)" opacity="0.85" />
+        <circle cx={cx} cy={cy} r="5" fill="var(--mist-700)" opacity="0.75" />
         <text
           x={cx}
-          y={cy + 22}
+          y={cy + 20}
           textAnchor="middle"
           className="fill-ink-400"
           style={{ fontSize: 9, letterSpacing: "0.12em" }}

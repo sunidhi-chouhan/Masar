@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/page-context";
 import { clinicianQueue } from "@/server/clinician";
+import { metricsSnapshot } from "@/server/metrics";
 import { ageFromBirthYear } from "@/lib/domain/types";
 import { formatDate } from "@/lib/i18n/format";
 import { Page } from "@/components/ui/atoms";
 
 export default async function ClinicianQueuePage({ params }: PageProps<"/[locale]/clinician">) {
   const { locale, t, session } = await requireRole(params, ["clinician"]);
-  const rows = await clinicianQueue({ userId: session.userId, role: session.role });
+  const [rows, metrics] = await Promise.all([
+    clinicianQueue({ userId: session.userId, role: session.role }),
+    metricsSnapshot(),
+  ]);
   const name = locale === "ar" ? session.nameAr : session.name;
 
   const needingReview = rows.filter((r) => r.consented && r.discussDomains.length > 0).length;
@@ -24,7 +28,7 @@ export default async function ClinicianQueuePage({ params }: PageProps<"/[locale
       <h1 className="mt-1 text-ink-900">{t("clinician.greeting", { name })}</h1>
       <p className="mt-2 max-w-2xl text-ink-600">{t("clinician.queueSubtitle")}</p>
 
-      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <li className="surface-paper p-4">
           <p className="label-caps">{t("clinician.kpis.review")}</p>
           <p className="mt-1 font-display text-3xl text-ink-900">{needingReview}</p>
@@ -40,6 +44,13 @@ export default async function ClinicianQueuePage({ params }: PageProps<"/[locale
         <li className="surface-paper p-4">
           <p className="label-caps">{t("clinician.kpis.locked")}</p>
           <p className="mt-1 font-display text-3xl text-ink-900">{locked}</p>
+        </li>
+        <li className="surface-paper p-4">
+          <p className="label-caps">{t("population.metricLabels.teachBack")}</p>
+          <p className="mt-1 font-display text-3xl text-ink-900">
+            {metrics.teachBackCorrectRate === null ? "—" : `${metrics.teachBackCorrectRate}%`}
+          </p>
+          <p className="mt-1 text-xs text-ink-400">n={metrics.teachBackCount}</p>
         </li>
       </ul>
 

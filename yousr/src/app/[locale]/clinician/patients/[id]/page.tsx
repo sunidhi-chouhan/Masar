@@ -57,6 +57,12 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
             {t("clinician.consentedSources", { n: bundle.sources.length, total: DATA_SOURCES.length })} · {t("access.consented")}
           </p>
           <p className="surface mt-4 max-w-2xl p-3 text-sm text-ink-600">{t("clinician.oneIntro", { name })}</p>
+          <p
+            role="status"
+            className="mt-3 max-w-2xl rounded-xl border border-amber-300/70 bg-amber-100/50 px-4 py-3 text-sm text-amber-900"
+          >
+            {t("clinician.decisionBanner")}
+          </p>
         </Reveal>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">

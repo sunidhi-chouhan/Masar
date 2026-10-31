@@ -23,6 +23,18 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ab
           <p className="mt-2 max-w-2xl text-ink-600">{t("about.subtitle")}</p>
         </Reveal>
 
+        <Reveal delay={0.04} className="mt-10">
+          <h2 className="text-ink-900">{t("about.outcomesTitle")}</h2>
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {(["longitudinal", "plain", "options", "clinician", "privacy", "evidence"] as const).map((key) => (
+              <li key={key} className="surface-paper p-4">
+                <p className="label-caps text-ink-400">{t(`about.outcomes.${key}.outcome`)}</p>
+                <p className="mt-1 text-sm text-ink-900">{t(`about.outcomes.${key}.feature`)}</p>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+
         <div className="mt-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <Reveal delay={0.05}>
             <h2 className="text-ink-900">{t("about.rulesTitle")}</h2>

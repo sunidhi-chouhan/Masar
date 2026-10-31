@@ -22,6 +22,7 @@ import { assessAll, type AssessInput } from "@/lib/engine/assess";
 import { DOMAIN_CODES } from "@/lib/engine/breakdown";
 import { stalenessFor } from "@/lib/engine/trajectory";
 import { routeActions } from "@/lib/router/care-router";
+import { logAudit } from "@/server/audit";
 
 export interface PatientBundle {
   user: {
@@ -77,6 +78,9 @@ export async function loadPatientBundle(
     completedSteps: parseJsonArray<string>(user.profile?.completed),
   };
   const results = assessAll(profile, observations);
+  // PartnerShare is directions-only: never hand raw observations or driver values
+  // to callers that render the couple view (contract enforced in toPartnerShareViews).
+  const partnerSafe = purpose === "PartnerShare";
   return {
     user: {
       id: user.id,
@@ -90,9 +94,16 @@ export async function loadPatientBundle(
       hue: user.hue,
     },
     profile,
-    observations,
+    observations: partnerSafe ? [] : observations,
     sources: decision.sources,
-    results,
+    results: partnerSafe
+      ? results.map((r) => ({
+          ...r,
+          drivers: [],
+          unknowns: [],
+          triggers: [],
+        }))
+      : results,
   };
 }
 
@@ -168,6 +179,26 @@ async function syncDerivedNow(bundle: PatientBundle) {
   }
   const suggestions = routeActions(profile, results);
   const existing = await prisma.careAction.findMany({ where: { userId: user.id } });
+
+  // Age out Suggested/Requested options that were never taken up (90 days).
+  const ACTION_EXPIRY_MS = 90 * 86_400_000;
+  const now = Date.now();
+  for (const e of existing) {
+    if (e.state !== "Suggested" && e.state !== "Requested") continue;
+    const ageMs = now - e.suggestedAt.getTime();
+    if (ageMs < ACTION_EXPIRY_MS) continue;
+    await prisma.careAction.update({ where: { id: e.id }, data: { state: "Expired" } });
+    await logAudit({
+      actorId: null,
+      actorRole: "system",
+      subjectId: user.id,
+      type: "ActionTransition",
+      resource: `action:${e.type}:${e.domain}`,
+      detail: `${e.state}->Expired`,
+    });
+    e.state = "Expired";
+  }
+
   for (const s of suggestions) {
     const dup = existing.find(
       (e) => e.type === s.type && e.domain === s.domain && e.titleKey === s.titleKey && e.state !== "Expired",

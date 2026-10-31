@@ -2,12 +2,13 @@ import { requireRole } from "@/lib/page-context";
 import { coupleFor } from "@/server/couple";
 import { authorize } from "@/lib/consent/authorize";
 import { loadPatientBundle } from "@/server/patient";
-import { domainsFor, type Sex } from "@/lib/domain/types";
+import { domainsFor, type Domain, type Sex } from "@/lib/domain/types";
 import { Page } from "@/components/ui/atoms";
 import { Reveal } from "@/components/ui/motion";
 import { PageHero } from "@/components/layout/page-hero";
 import { CouplePanel, type PartnerView } from "@/components/couple/couple-panel";
 import { InsightHalo } from "@/components/trajectory/section-figures";
+import { toPartnerShareViews } from "@/lib/couple/partner-view";
 
 export default async function CouplePage({ params }: PageProps<"/[locale]/couple">) {
   const { locale, t, session } = await requireRole(params, ["patient"]);
@@ -32,13 +33,10 @@ export default async function CouplePage({ params }: PageProps<"/[locale]/couple
         "PartnerShare",
         "couple:partner",
       );
-      partnerShares = partnerBundle.results
-        .filter((r) => (decision.scopes ?? []).includes(r.domain))
-        .map((r) => ({
-          domain: r.domain,
-          direction: r.direction,
-          confidence: r.confidence,
-        }));
+      partnerShares = toPartnerShareViews(
+        partnerBundle.results,
+        (decision.scopes ?? []) as Domain[],
+      ) as PartnerView[];
     }
   }
 
@@ -49,7 +47,7 @@ export default async function CouplePage({ params }: PageProps<"/[locale]/couple
           title={t("couple.title")}
           subtitle={t("couple.subtitle")}
           tier="DecisionSupport"
-          figure={<InsightHalo direction="Stable" />}
+          figure={<InsightHalo direction="Unknown" />}
         />
         <Reveal delay={0.1} className="mt-8">
           {link ? (

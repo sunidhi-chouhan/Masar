@@ -43,6 +43,7 @@ import {
 } from "@/components/trajectory/key-insights";
 import { NextSteps, type NextStep } from "@/components/actions/next-steps";
 import type { ActionRow } from "@/components/actions/action-card";
+import { AskMasarPanel } from "@/components/trajectory/ask-masar-panel";
 import { hasAiExplanationConsent } from "@/server/consent";
 import { paraphraseWithGemini } from "@/server/ai/gemini";
 
@@ -509,6 +510,10 @@ export async function PatientDashboard({
                 actionsHref={`/${locale}/actions`}
               />
             </section>
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <AskMasarPanel />
           </Reveal>
         </div>
       </div>

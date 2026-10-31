@@ -518,8 +518,10 @@ function assessConditions(p: AssessInput, obs: ObservationLite[], now: Date): Do
       drivers.push({ factor: `family_${f}`, modifiability: "NonModifiable", evidenceId: "ev-nice-cg156", strength: "Moderate" });
     }
     if (p.conditions.length === 0 && p.familyHistory.length === 0) {
-      direction = "Stable";
+      // Completing the step with nothing recorded is not "all clear" / Stable.
+      direction = "Unknown";
       observedKey = "conditions_none";
+      unknowns.push({ missing: "conditions_detail", wouldNarrow: "conditions" });
     } else if (p.intention === "Pregnant" && p.conditions.length > 0) {
       direction = "Discuss";
       triggers.push(TRIGGERS.T6_pregnant_concern);
@@ -543,7 +545,14 @@ function assessConditions(p: AssessInput, obs: ObservationLite[], now: Date): Do
     unknowns.push({ missing: "medications", wouldNarrow: "conditions" });
   }
 
-  const confidence = completed ? (p.completedSteps.includes("medications") ? "High" : "Moderate") : "InsufficientData";
+  const noneRecorded = completed && p.conditions.length === 0 && p.familyHistory.length === 0;
+  const confidence = !completed
+    ? "InsufficientData"
+    : noneRecorded
+      ? "Low"
+      : p.completedSteps.includes("medications")
+        ? "High"
+        : "Moderate";
   return guard({
     domain: "conditions",
     direction,

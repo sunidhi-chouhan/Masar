@@ -1,4 +1,5 @@
 import "server-only";
+import { rejectsClinicalInvention } from "@/lib/ai/reject";
 
 /**
  * Privacy-gated plain-language paraphrase via Gemini.
@@ -57,10 +58,7 @@ export async function paraphraseWithGemini(input: GeminiExplainInput): Promise<s
     };
     const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
     if (!text) return null;
-    // Soft reject score-like phrasing.
-    if (/fertility score|pregnancy probability|\binfertile\b|\bfertile\b|risk score/i.test(text)) {
-      return null;
-    }
+    if (rejectsClinicalInvention(text)) return null;
     return text;
   } catch {
     return null;

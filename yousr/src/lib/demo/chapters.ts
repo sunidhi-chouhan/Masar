@@ -98,6 +98,8 @@ export function prevPosition(p: DemoPosition): DemoPosition | null {
 /** Routes offered under "Explore screens individually" on the landing page. */
 export const EXPLORE_ROUTES: { key: string; persona: string; path: string; locale?: Locale }[] = [
   { key: "fatimaTrajectory", persona: "u_fatima", path: "/trajectory" },
+  { key: "mariamInsights", persona: "u_mariam", path: "/insights" },
+  { key: "mariamImport", persona: "u_mariam", path: "/import" },
   { key: "mariamPrivacy", persona: "u_mariam", path: "/privacy" },
   { key: "mariamCycle", persona: "u_mariam", path: "/trajectory/cycle" },
   { key: "mariamActions", persona: "u_mariam", path: "/actions" },

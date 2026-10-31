@@ -128,7 +128,7 @@ export default async function DomainDetailPage({ params }: PageProps<"/[locale]/
         <Reveal delay={0.18} className="mt-8 surface-paper p-5">
           <h2 className="text-ink-900">{t("timeline.title")}</h2>
           <p className="mb-4 mt-1 text-sm text-ink-600">{t("timeline.body")}</p>
-          <Timeline events={timeline} />
+          <Timeline events={timeline} nowIso={now.toISOString()} />
         </Reveal>
 
         {result.drivers.length ? (

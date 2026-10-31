@@ -8,7 +8,7 @@ import { EquityBars, FunnelChart, Heatmap } from "@/components/population/charts
 export default async function PopulationPage({ params }: PageProps<"/[locale]/population">) {
   const { locale, t, session } = await requireRole(params, ["admin"]);
   const [report, metrics] = await Promise.all([populationReport({ userId: session.userId, role: session.role }), metricsSnapshot()]);
-  const groups = ["nationality", "language", "intention", "ageBand"] as const;
+  const groups = ["sex", "nationality", "language", "intention", "ageBand"] as const;
 
   const suggested = report.funnel.counselSuggested || 1;
   const uptake = Math.round((report.funnel.counselRequested / suggested) * 100);
@@ -87,11 +87,24 @@ export default async function PopulationPage({ params }: PageProps<"/[locale]/po
           <div className="surface-paper p-5">
             <h2 className="text-ink-900">{t("population.falseReassurance")}</h2>
             <p className="mt-1 text-sm text-ink-600">
-              {t("population.falseReassuranceHint", { n: report.falseReassurance.stableThenDiscuss, total: report.falseReassurance.evaluated })}
+              {t("population.falseReassuranceHint", {
+                n: report.falseReassurance.stableThenDiscuss,
+                total: report.falseReassurance.evaluated,
+              })}
             </p>
             <p className="mt-4 font-display text-5xl text-ink-900">
               {report.falseReassurance.stableThenDiscuss}
               <span className="text-2xl text-ink-400"> / {report.falseReassurance.evaluated}</span>
+            </p>
+            <p className="mt-4 border-t border-dawn-200 pt-3 text-sm text-ink-600">
+              {t("population.falseReassuranceClinician", {
+                n: report.falseReassurance.stableThenClinicianOverride,
+                total: report.falseReassurance.overrideEvaluated,
+              })}
+            </p>
+            <p className="mt-2 font-display text-3xl text-ink-900">
+              {report.falseReassurance.stableThenClinicianOverride}
+              <span className="text-lg text-ink-400"> / {report.falseReassurance.overrideEvaluated}</span>
             </p>
           </div>
 

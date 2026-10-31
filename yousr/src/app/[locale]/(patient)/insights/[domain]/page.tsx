@@ -8,6 +8,7 @@ import { DirectionBadge, GlowField, LinkButton, Page, TierRibbon } from "@/compo
 import { Reveal } from "@/components/ui/motion";
 import { EvidenceList, UnknownCards } from "@/components/trajectory/drivers";
 import { TeachBackSheet } from "@/components/trajectory/teach-back-sheet";
+import { AskMasarPanel } from "@/components/trajectory/ask-masar-panel";
 
 export default async function InsightPage({ params }: PageProps<"/[locale]/insights/[domain]">) {
   const { domain } = await params;
@@ -53,6 +54,10 @@ export default async function InsightPage({ params }: PageProps<"/[locale]/insig
 
         <Reveal delay={0.2} className="mt-10">
           <TeachBackSheet domain={domain as Domain} />
+        </Reveal>
+
+        <Reveal delay={0.22} className="mt-8">
+          <AskMasarPanel />
         </Reveal>
 
         <Reveal delay={0.25} className="mt-8 flex flex-wrap gap-2">

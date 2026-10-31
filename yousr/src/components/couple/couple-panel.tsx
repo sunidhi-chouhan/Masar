@@ -30,7 +30,7 @@ function DualOrbs({
         transition={animate ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined}
         className="relative"
       >
-        <DomainSphere domain="cycle" direction="Stable" size={64} />
+        <DomainSphere domain="cycle" direction="Unknown" size={64} />
       </motion.div>
       <span className="h-px w-8 bg-dawn-300" />
       <motion.div
@@ -102,7 +102,7 @@ export function CouplePanel({
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
-                      <DomainSphere domain={d} direction={on ? "Stable" : "Unknown"} size={28} />
+                      <DomainSphere domain={d} direction="Unknown" size={28} />
                       {t(`domains.${d}`)}
                     </span>
                     <span

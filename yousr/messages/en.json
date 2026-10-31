@@ -32,8 +32,10 @@
   },
   "nav": {
     "trajectory": "Trajectory",
+    "insights": "Insights",
     "livingWell": "Living Well",
     "actions": "Next steps",
+    "import": "Import",
     "privacy": "Your data",
     "profile": "Profile",
     "couple": "Couple",
@@ -155,7 +157,7 @@
     "glycaemic": "Blood sugar (HbA1c)",
     "blood_pressure": "Blood pressure",
     "activity": "Physical activity",
-    "health_age": "Health Age",
+    "health_age": "Health Age (simulated · not a fertility measure)",
     "semen_concentration": "Sperm concentration",
     "semen_motility": "Sperm motility",
     "semen_volume": "Semen volume",
@@ -187,7 +189,7 @@
     "pcos_features_modifiable": "The condition itself is not a choice, but several of its features respond to lifestyle.",
     "amh_quantity_not_quality": "Reflects approximate quantity of eggs, not quality. A weak predictor of natural conception.",
     "semen_varies_between_samples": "Results vary between samples; one value is never a verdict.",
-    "health_age_simulated": "Simulated Health Age tile; a real deployment would read the programme's value."
+    "health_age_simulated": "Simulated Health Age tile from the programme. It is general wellbeing context, not a fertility measure or score. A real deployment would read the programme's value."
   },
   "missing": {
     "tsh": "A thyroid test (TSH)",
@@ -199,6 +201,7 @@
     "semen_analysis": "A semen analysis",
     "heat_exposure": "Whether your routine involves heat exposure",
     "conditions_step": "Your conditions and history",
+    "conditions_detail": "Any conditions or family history that apply to you",
     "medications": "Your current medications",
     "sleep": "Your usual sleep",
     "activity": "Your weekly activity",
@@ -234,7 +237,7 @@
     "male_lifestyle_shifting": "Current smoking together with a higher BMI.",
     "male_lifestyle_only": "Lifestyle recorded, but no semen analysis yet.",
     "conditions_not_completed": "The conditions step hasn't been completed.",
-    "conditions_none": "No conditions or relevant family history recorded.",
+    "conditions_none": "No conditions or family history recorded yet. That is not the same as all clear—adding detail would narrow this.",
     "conditions_pregnant": "You're pregnant and have a recorded condition.",
     "conditions_review": "A recorded condition is relevant to your plans.",
     "conditions_family": "A family history item is worth a conversation.",
@@ -349,7 +352,7 @@
       "SelfReport": "Cycle dates, check-ins, conditions.",
       "MalaffiMock": "Conditions, blood pressure, BMI from the exchange.",
       "LabMock": "AMH, HbA1c, TSH, semen analysis.",
-      "HealthAgeMock": "Your Health Age tile from the programme.",
+      "HealthAgeMock": "Simulated Health Age tile. General wellbeing context—not a fertility measure or score.",
       "DeviceMock": "Sleep and activity from a wearable."
     },
     "recipients": {
@@ -481,6 +484,9 @@
   },
   "insights": {
     "title": "Understanding {domain}",
+    "hubTitle": "What this means",
+    "hubSubtitle": "Four-stanza plain-language readings for each area—direction, evidence, and what remains unknown. Not a score.",
+    "open": "Open insight",
     "observed": "Observed",
     "whyMatters": "Why it may matter",
     "evidence": "Evidence",
@@ -489,6 +495,18 @@
     "cannotConclude": "What this cannot tell you",
     "cannotBody": "Whether you can or cannot conceive. Whether you have a diagnosis. What will happen next year. Those are conversations with a clinician, with all your context.",
     "nextSteps": "See your next steps"
+  },
+  "askMasar": {
+    "title": "Ask Masar",
+    "intro": "Type a question about what you see here. Masar never answers personal medical “should I” questions—it hands you to a human pathway when needed.",
+    "placeholder": "e.g. What does changing mean? Or: should I consider IVF?",
+    "submit": "Send",
+    "neverAnswers": "No clinical advice from software.",
+    "handoff": "This needs a person, not software.",
+    "handoffBody": "Masar will not answer personal treatment or prediction questions. A counselling step has been added to your next steps so you can talk it through with a clinician.",
+    "distress": "Please reach out for support.",
+    "cta": "Open next steps",
+    "general": "For general education, Living Well has hubs you can read. For anything about your own options, use Next steps or talk with a clinician."
   },
   "teachback": {
     "title": "Two quick checks",
@@ -502,8 +520,12 @@
       "q_predict": "It doesn't. Masar shows direction and what is unknown; it cannot predict pregnancy for anyone.",
       "q_change": "It is. Think of it as a map of movement, not a result."
     },
+    "reExplain": "Again, plainly: Masar never predicts pregnancy and never scores fertility. It only describes direction and confidence from what is recorded.",
     "thanks": "Thank you. This helps us see where explanations fall short.",
-    "answered": "Answered"
+    "answered": "Answered",
+    "escalated": "A counselling step was added",
+    "escalatedBody": "Because the pregnancy-prediction check was missed twice, Masar suggested a conversation with a clinician—so the boundary is clear in your pathway, not only in this quiz.",
+    "seeCounsel": "See counselling in next steps"
   },
   "livingWell": {
     "title": "Living Well",
@@ -550,6 +572,9 @@
       "counsel_family": "Talk about family history",
       "refer_antenatal": "Antenatal review",
       "counsel_support": "Wellbeing support",
+      "counsel_should_i": "Talk through a personal question",
+      "counsel_teachback": "Clarify what Masar can and cannot say",
+      "refer_support": "Urgent wellbeing referral",
       "counsel_reserve": "Talk about your AMH in context",
       "test_metabolic": "Metabolic review with your GP",
       "learn_cycle": "Understand cycle changes",
@@ -577,6 +602,9 @@
       "t5": "A family history item can change what is worth checking.",
       "t6": "A recorded condition during pregnancy deserves a prompt review.",
       "t7": "You reported very high stress. You deserve support in its own right.",
+      "t8_should_i": "You asked a personal medical question Masar must not answer. A clinician conversation is the right next step.",
+      "t8_distress": "Your message suggested distress. Please seek support; a referral step is listed for you.",
+      "t9_teachback": "The pregnancy-prediction check was missed twice. A short counselling conversation can reset the boundary clearly.",
       "tr": "Your AMH is lower than the typical reference. It's quantity, not quality, and needs context.",
       "tm": "A metabolic reading is in a range clinicians like to review.",
       "learn_shifting": "Something is shifting here; understanding it is a good first step.",
@@ -631,7 +659,11 @@
       }
     },
     "empty": "No steps yet. Add information to your profile and Masar will suggest options.",
-    "clinicianPreference": "You can ask for a clinician of a particular gender when booking."
+    "clinicianPreference": "You can ask for a clinician of a particular gender when booking.",
+    "sameGender": {
+      "title": "Prefer a same-gender clinician when possible",
+      "body": "Noted for counselling and referral conversations in this prototype. It does not book an appointment; your clinic can honour the preference."
+    }
   },
   "couple": {
     "title": "Couple",
@@ -680,6 +712,7 @@
     "deniedVerify": "Verification: the server answered this request with HTTP 403 and logged it as \"{reason}\". The page was not hidden by the browser; no data left the record.",
     "deniedLogged": "Written to the person's access log at {at}.",
     "oneIntro": "{name} has shared this view with you. Everything below is what {name} can see, plus the readable rules behind it. It updates when consent changes.",
+    "decisionBanner": "Software direction is unchanged by your review. Your Accept / Modify / Override is the clinical record; Masar does not rewrite its rules based on it.",
     "decideNote": "Masar's options are educational suggestions generated from readable rules. Recording a review is your clinical decision, and the patient sees it as yours.",
     "backToQueue": "Back to queue",
     "intention": "Stated intention",
@@ -731,6 +764,7 @@
     "counselledRate": "Counselled",
     "falseReassurance": "False-reassurance monitor",
     "falseReassuranceHint": "Areas shown 'Stable' that later moved to 'Worth discussing'. {n} of {total} evaluated.",
+    "falseReassuranceClinician": "Software 'Stable' later followed by clinician Override/Modify. {n} of {total} with Stable history and a review.",
     "metrics": "Prototype honesty metrics",
     "metricLabels": {
       "teachBack": "Teach-back correct",
@@ -766,6 +800,33 @@
       "Any pathway for employers, insurers or marketing to see data.",
       "A claim that this is validated or connected to real health records."
     ],
+    "outcomesTitle": "Challenge outcomes → Masar",
+    "outcomes": {
+      "longitudinal": {
+        "outcome": "Longitudinal view of change",
+        "feature": "Trajectory orbs, 24-month timelines, staleness and direction + confidence per domain"
+      },
+      "plain": {
+        "outcome": "Plain-language interpretation",
+        "feature": "Insights four-stanza view, evidence chips, Living Well hubs, Ask Masar handoff (never clinical answers)"
+      },
+      "options": {
+        "outcome": "Timely personalized options",
+        "feature": "Intention selector, Care Router, action states including Expiry, same-gender clinician preference"
+      },
+      "clinician": {
+        "outcome": "Clinician and system usefulness",
+        "feature": "Signal queue, one-pager with decision banner, population funnel, equity (incl. sex), k=10"
+      },
+      "privacy": {
+        "outcome": "Privacy and non-discrimination",
+        "feature": "Granular consent, purpose firewall, PartnerShare directions-only, access log, revoke"
+      },
+      "evidence": {
+        "outcome": "Evidence of earlier action",
+        "feature": "Teach-back, time-to-counsel metrics, false-reassurance (trajectory + clinician override)"
+      }
+    },
     "evidenceTitle": "Evidence library"
   },
   "rules": {
@@ -798,6 +859,9 @@
     "T5_family_history": "Family history of early menopause or a genetic condition",
     "T6_pregnant_concern": "A recorded condition during pregnancy",
     "T7_distress": "Very high stress reported",
+    "T8_should_i": "Personal “should I” medical question (handoff)",
+    "T8_distress_chat": "Distress language in Ask Masar (handoff)",
+    "T9_teachback": "Teach-back missed twice on the fertility-score boundary",
     "TR_amh_low": "AMH lower than the typical reference",
     "TM_hba1c": "HbA1c in a range worth reviewing",
     "TM_bmi": "BMI of 35 or more"
@@ -879,6 +943,8 @@
     "noTrend": "A trend cannot be established yet. It takes at least two comparable readings, months apart, to see a direction.",
     "noChange": "The reading of this area has not changed across these snapshots. New information was added, but it did not move the picture.",
     "empty": "Nothing recorded for this area yet.",
+    "window": "Longitudinal window: last {months} months. Direction is judged inside this frame.",
+    "outsideWindow": "{n} older entries sit outside the {months}-month window and are not used for the current direction.",
     "more": "{n} earlier entries not shown",
     "values": {
       "regular": "regular",
@@ -1002,6 +1068,8 @@
     "exploreBody": "Open any screen on its own, outside the story.",
     "explore": {
       "fatimaTrajectory": "Fatima's trajectory",
+      "mariamInsights": "Mariam's insights hub (four-stanza views)",
+      "mariamImport": "Import a simulated lab or Health Age tile",
       "mariamPrivacy": "Mariam's data settings and access log",
       "mariamCycle": "Mariam's cycle health detail",
       "mariamActions": "Mariam's next steps",

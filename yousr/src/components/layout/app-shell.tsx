@@ -22,8 +22,10 @@ function navFor(role: Session["role"] | undefined): NavItem[] {
     case "patient":
       return [
         { href: "/trajectory", key: "trajectory" },
+        { href: "/insights", key: "insights" },
         { href: "/living-well", key: "livingWell" },
         { href: "/actions", key: "actions" },
+        { href: "/import", key: "import" },
         { href: "/couple", key: "couple" },
         { href: "/privacy", key: "privacy" },
         { href: "/profile", key: "profile" },

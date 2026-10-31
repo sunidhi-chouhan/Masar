@@ -14,6 +14,35 @@ export const NAV_ICONS: Record<string, ReactNode> = {
       />
     </svg>
   ),
+  insights: (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M12 4.5v2M12 17.5v2M4.5 12h2M17.5 12h2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.2 7.2l1.4 1.4M15.4 15.4l1.4 1.4M16.8 7.2l-1.4 1.4M8.6 15.4l-1.4 1.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
+  import: (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 4v10M8 10l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M5 18h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
   livingWell: (
     <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path

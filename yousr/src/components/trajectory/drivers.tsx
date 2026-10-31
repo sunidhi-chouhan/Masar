@@ -3,7 +3,7 @@
 import { useI18n } from "@/lib/i18n/client";
 import { formatDate } from "@/lib/i18n/format";
 import type { Driver, Modifiability, Unknown } from "@/lib/domain/types";
-import { EvidenceChip } from "@/components/ui/atoms";
+import { EvidenceChip, SimulatedBadge } from "@/components/ui/atoms";
 import { getEvidence } from "@/lib/evidence/library";
 
 const GROUPS: { key: Modifiability; label: string }[] = [
@@ -38,7 +38,10 @@ export function DriverGroups({ drivers }: { drivers: Driver[] }) {
                         {t(`factors.${d.factor}`)}
                         {d.valueLabel ? <span className="ms-2 font-normal text-ink-600">{d.valueLabel}</span> : null}
                       </p>
-                      <EvidenceChip strength={d.strength} />
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        {d.factor === "health_age" ? <SimulatedBadge /> : null}
+                        <EvidenceChip strength={d.strength} />
+                      </span>
                     </div>
                     <p className="mt-1 text-xs text-ink-400">
                       {d.source ? `${t(`privacy.sources.${d.source}`)}` : null}

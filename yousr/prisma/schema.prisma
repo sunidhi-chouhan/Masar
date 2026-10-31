@@ -41,14 +41,15 @@ model User {
 }
 
 model HealthProfile {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conditions    String   @default("[]") // JSON string[] of condition codes
-  familyHistory String   @default("[]") // JSON string[]
-  medications   String   @default("[]") // JSON string[]
-  completed     String   @default("[]") // JSON string[] of completed profile steps
-  updatedAt     DateTime @updatedAt
+  id                         String   @id @default(cuid())
+  userId                     String   @unique
+  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conditions                 String   @default("[]") // JSON string[] of condition codes
+  familyHistory              String   @default("[]") // JSON string[]
+  medications                String   @default("[]") // JSON string[]
+  completed                  String   @default("[]") // JSON string[] of completed profile steps
+  preferSameGenderClinician  Boolean  @default(false)
+  updatedAt                  DateTime @updatedAt
 }
 
 model DataSource {

@@ -34,7 +34,14 @@ export interface PopulationReport {
   funnel: Funnel;
   heatmap: HeatCell[];
   equity: EquityRow[];
-  falseReassurance: { stableThenDiscuss: number; evaluated: number };
+  falseReassurance: {
+    /** Domain was Stable in software then later Discuss (trajectory drift). */
+    stableThenDiscuss: number;
+    evaluated: number;
+    /** Software showed Stable and a clinician later Override/Modify — stronger brief definition. */
+    stableThenClinicianOverride: number;
+    overrideEvaluated: number;
+  };
   medianDaysSignalToRequest: number | null;
   medianDaysSignalToAttend: number | null;
 }
@@ -86,6 +93,7 @@ export async function populationReport(actor: { userId: string; role: string }):
       profile: true,
       assessments: { orderBy: { computedAt: "asc" } },
       careActions: true,
+      reviewsAsPatient: { orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -94,6 +102,8 @@ export async function populationReport(actor: { userId: string; role: string }):
   const daysToAttend: number[] = [];
   let stableThenDiscuss = 0;
   let evaluated = 0;
+  let stableThenClinicianOverride = 0;
+  let overrideEvaluated = 0;
   const heat = new Map<string, { total: number; counselled: number }>();
   const equityBuckets = new Map<string, { total: number; signal: number; counselled: number; days: number[] }>();
 
@@ -121,7 +131,7 @@ export async function populationReport(actor: { userId: string; role: string }):
       daysToAttend.push(Math.max(0, Math.round((attended.attendedAt.getTime() - firstSignal.computedAt.getTime()) / 86_400_000)));
     }
 
-    // false reassurance: a domain shown Stable that later moved to Discuss
+    // false reassurance (trajectory): Stable later contradicted by Discuss
     for (const domain of latestByDomain.keys()) {
       const seq = u.assessments.filter((a) => a.domain === domain);
       if (seq.length >= 2) {
@@ -129,6 +139,15 @@ export async function populationReport(actor: { userId: string; role: string }):
         if (seq.some((a, i) => a.direction === "Stable" && seq.slice(i + 1).some((b) => b.direction === "Discuss"))) {
           stableThenDiscuss++;
         }
+      }
+    }
+
+    // false reassurance (clinician): software Stable then clinician Override/Modify
+    const hadStable = u.assessments.some((a) => a.direction === "Stable");
+    if (hadStable && u.reviewsAsPatient.length) {
+      overrideEvaluated++;
+      if (u.reviewsAsPatient.some((r) => r.decision === "Override" || r.decision === "Modify")) {
+        stableThenClinicianOverride++;
       }
     }
 
@@ -188,7 +207,12 @@ export async function populationReport(actor: { userId: string; role: string }):
     funnel,
     heatmap,
     equity,
-    falseReassurance: { stableThenDiscuss, evaluated },
+    falseReassurance: {
+      stableThenDiscuss,
+      evaluated,
+      stableThenClinicianOverride,
+      overrideEvaluated,
+    },
     medianDaysSignalToRequest: median(daysToRequest),
     medianDaysSignalToAttend: median(daysToAttend),
   };
