@@ -97,7 +97,7 @@ export function ProfileWizard(p: Props) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -12 }}
           transition={{ duration: 0.3 }}
-          className="mt-6 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-dawn-50/70 p-5 shadow-[var(--shadow-soft)] md:p-6"
+          className="mt-6 overflow-hidden card p-5 md:p-6"
         >
           {step === "intention" ? <IntentionStep current={p.intention} onPick={(v) => run(() => updateIntention(v))} /> : null}
           {step === "cycle" ? <CycleStep onSave={(lengths, absent) => run(() => saveCycles(lengths, absent))} /> : null}
@@ -170,7 +170,7 @@ function CycleStep({ onSave }: { onSave: (lengths: number[], absent?: number) =>
             placeholder="28"
             aria-label={`${t("profile.steps.cycle")} ${idx + 1}`}
             onChange={(e) => setLengths((l) => l.map((x, j) => (j === idx ? e.target.value : x)))}
-            className="w-24 rounded-md border border-dawn-300 bg-dawn-50 px-3 py-2"
+            className="w-24 rounded-xl border border-dawn-300 bg-white px-3 py-2.5 outline-none transition-shadow focus:border-mist-500 focus:shadow-[0_0_0_3px_var(--mist-100)]"
           />
         ))}
         <button type="button" onClick={() => setLengths((l) => [...l, ""])} className="text-sm text-mist-700 underline-offset-4 hover:underline">
@@ -179,7 +179,7 @@ function CycleStep({ onSave }: { onSave: (lengths: number[], absent?: number) =>
       </div>
       <label className="mt-5 block text-sm text-ink-600">
         {t("profile.cycleAbsentQ")}
-        <input type="number" min={0} value={absent} onChange={(e) => setAbsent(e.target.value)} className="mt-1 block w-32 rounded-md border border-dawn-300 bg-dawn-50 px-3 py-2" />
+        <input type="number" min={0} value={absent} onChange={(e) => setAbsent(e.target.value)} className="mt-1 block w-32 rounded-xl border border-dawn-300 bg-white px-3 py-2.5 outline-none transition-shadow focus:border-mist-500 focus:shadow-[0_0_0_3px_var(--mist-100)]" />
       </label>
       <Button className="mt-5" onClick={() => onSave(lengths.map(Number).filter((n) => n > 0), absent ? Number(absent) : undefined)}>
         {t("common.save")}
@@ -324,7 +324,7 @@ function MedsStep({ initial, onSave }: { initial: string[]; onSave: (m: string[]
   return (
     <div>
       <h2 className="text-ink-900">{t("profile.medsQ")}</h2>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="mt-4 w-full rounded-md border border-dawn-300 bg-dawn-50 px-3 py-2" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="mt-4 w-full rounded-xl border border-dawn-300 bg-white px-3 py-2.5 outline-none transition-shadow focus:border-mist-500 focus:shadow-[0_0_0_3px_var(--mist-100)]" />
       <Button className="mt-4" onClick={() => onSave(text.split(",").map((s) => s.trim()).filter(Boolean))}>
         {t("common.save")}
       </Button>

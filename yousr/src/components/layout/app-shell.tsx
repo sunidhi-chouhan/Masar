@@ -103,6 +103,24 @@ export function AppShell({
         <SidebarNavLinks items={items} isActive={isActive} onNavigate={onNavigate} />
       </div>
       <div className="space-y-3 border-t border-dawn-200/80 p-3">
+        {session?.role === "patient" ? (
+          <a
+            href={`/${locale}/privacy`}
+            onClick={onNavigate}
+            className="block rounded-xl border border-mist-300/60 bg-mist-100/50 p-3 transition-colors hover:bg-mist-100"
+          >
+            <span className="flex items-center gap-2 text-[12.5px] font-semibold text-mist-700">
+              <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
+                <path d="M10 2.5 4 5v4.6c0 3.7 2.6 6.6 6 7.9 3.4-1.3 6-4.2 6-7.9V5l-6-2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="m7.4 10 1.8 1.8 3.5-3.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {t("nav.privacy")}
+            </span>
+            <span className="mt-1 block text-[11.5px] leading-snug text-ink-600">{t("footer.disclaimer")}</span>
+          </a>
+        ) : (
+          <p className="px-1 text-[10.5px] leading-snug text-ink-400">{t("footer.disclaimer")}</p>
+        )}
         {demoMode ? (
           <JourneyCta
             hasActiveDemo={hasActiveDemo}
@@ -110,7 +128,6 @@ export function AppShell({
             onNavigate={onNavigate}
           />
         ) : null}
-        <p className="px-1 text-[10px] leading-snug text-ink-400">{t("footer.disclaimer")}</p>
       </div>
     </>
   );
@@ -121,7 +138,7 @@ export function AppShell({
       <SidebarPanel
         className={`fixed inset-y-0 start-0 z-40 hidden ${SIDEBAR_W} md:flex`}
       >
-        <div className="border-b border-dawn-200/80 px-4 py-4">
+        <div className="px-5 pb-3 pt-5">
           <SidebarBrand />
         </div>
         {navBody()}
@@ -169,8 +186,8 @@ export function AppShell({
       </AnimatePresence>
 
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col md:ms-[15.5rem]">
-        <header className="sticky top-0 z-30 border-b border-dawn-200/80 bg-dawn-50/90 backdrop-blur">
-          <div className="flex items-center gap-2 px-3 py-2.5 md:px-5">
+        <header className="sticky top-0 z-30 border-b border-dawn-200/70 bg-dawn-50/80 backdrop-blur-xl">
+          <div className="flex h-14 items-center gap-2 px-3 md:px-8">
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-ink-700 hover:bg-dawn-100 md:hidden"
@@ -184,20 +201,23 @@ export function AppShell({
             <div className="min-w-0 md:hidden">
               <SidebarBrand />
             </div>
+            {demoMode ? (
+              <p
+                className="hidden items-center gap-2 rounded-full border border-dawn-200 bg-white px-3 py-1 text-[11.5px] text-ink-600 shadow-[var(--shadow-soft)] md:inline-flex"
+                title={t("account.demoBanner")}
+              >
+                <span aria-hidden className="dot bg-amber-400" />
+                <span className="font-semibold text-ink-900">{t("account.demoMode")}</span>
+                <span className="text-ink-400">·</span>
+                <span className="max-w-[28rem] truncate">{t("account.demoBanner")}</span>
+              </p>
+            ) : null}
             <div className="ms-auto flex items-center gap-2">
               <LocaleSwitch />
               <AccountMenu session={session} demoMode={demoMode} />
             </div>
           </div>
         </header>
-
-        {demoMode ? (
-          <p className="border-b border-dashed border-slate-400/60 bg-slate-200/30 px-4 py-1 text-center text-[11px] text-slate-600">
-            <span className="font-semibold uppercase tracking-wide">{t("account.demoMode")}</span>
-            {" · "}
-            {t("account.demoBanner")}
-          </p>
-        ) : null}
 
         <main className="relative flex-1">{children}</main>
 

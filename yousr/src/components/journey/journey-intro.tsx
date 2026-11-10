@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { SimulatedBadge } from "@/components/ui/atoms";
 import { useJourneyMotion } from "@/components/journey/journey-loaders";
-import { JourneyHorizonMark } from "@/components/journey/journey-path-motif";
 
 const LUX = [0.16, 1, 0.3, 1] as const;
 
@@ -35,29 +34,18 @@ function IntroBody({
       ) : null}
 
       {hero ? (
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-          <div className="min-w-0 max-w-xl">
-            {brandLine ? (
-              <p className="mb-2 font-display text-base text-mist-700 sm:text-lg">{brandLine}</p>
-            ) : null}
-            <h1 className="font-display text-[clamp(2rem,5vw,2.75rem)] leading-[1.12] tracking-tight text-ink-900">
-              {title}
-            </h1>
-            {body ? (
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-600 md:text-[0.95rem]">
-                {body}
-              </p>
-            ) : null}
-          </div>
-          <JourneyHorizonMark className="shrink-0 self-start sm:self-end sm:mb-1" />
+        <div className="min-w-0 max-w-2xl">
+          {brandLine ? <p className="mb-3 font-display text-lg italic text-mist-700">{brandLine}</p> : null}
+          <h1 className="text-[clamp(2.25rem,4.6vw,3.25rem)] leading-[1.02] tracking-[-0.025em] text-ink-900">{title}</h1>
+          {body ? <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-600">{body}</p> : null}
         </div>
       ) : (
         <>
-          <h1 className="font-display text-[clamp(1.65rem,3.5vw,2.15rem)] tracking-tight text-ink-900">
+          <h1 className="text-[clamp(2rem,3.8vw,2.6rem)] leading-[1.05] tracking-[-0.02em] text-ink-900">
             {title}
           </h1>
           {body ? (
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-600 md:text-[0.95rem]">
+            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-600">
               {body}
             </p>
           ) : null}
@@ -118,16 +106,16 @@ export function JourneyStaggerList({ items }: { items: string[] }) {
   const { live, animate, dur } = useJourneyMotion();
   if (!live) {
     return (
-      <ul className="list-disc space-y-2.5 ps-5 text-sm leading-relaxed text-ink-600">
+      <ul className="space-y-3.5 text-[14.5px] leading-relaxed text-ink-700">
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item} className="flex gap-3"><span aria-hidden className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-mist-100 text-mist-700"><svg viewBox="0 0 16 16" className="h-3 w-3" fill="none"><path d="m4 8.4 2.6 2.6L12 5.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span><span>{item}</span></li>
         ))}
       </ul>
     );
   }
   return (
     <motion.ul
-      className="list-disc space-y-2.5 ps-5 text-sm leading-relaxed text-ink-600"
+      className="space-y-3.5 text-[14.5px] leading-relaxed text-ink-700"
       initial={animate ? "hidden" : false}
       animate="show"
       variants={{
@@ -138,6 +126,7 @@ export function JourneyStaggerList({ items }: { items: string[] }) {
       {items.map((item) => (
         <motion.li
           key={item}
+          className="flex gap-3"
           variants={{
             hidden: { opacity: 0, x: -6 },
             show: {
@@ -147,7 +136,8 @@ export function JourneyStaggerList({ items }: { items: string[] }) {
             },
           }}
         >
-          {item}
+          <span aria-hidden className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-mist-100 text-mist-700"><svg viewBox="0 0 16 16" className="h-3 w-3" fill="none"><path d="m4 8.4 2.6 2.6L12 5.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+          <span>{item}</span>
         </motion.li>
       ))}
     </motion.ul>

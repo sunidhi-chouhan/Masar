@@ -1,90 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
 import { finishPrepare } from "@/server/actions/journey";
-import {
-  JourneyBreathingRing,
-  JourneyShimmerBar,
-  useJourneyMotion,
-} from "@/components/journey/journey-loaders";
-
-const ECG_PATH =
-  "M0 32 H40 L48 32 L56 10 L64 54 L72 32 H112 L120 32 L128 18 L136 46 L144 32 H184 L192 32 L200 14 L208 50 L216 32 H320";
+import { JourneyBreathingRing, useJourneyMotion } from "@/components/journey/journey-loaders";
 
 const STAGE_KEYS = ["gather", "align", "summarise"] as const;
-const LUX = [0.16, 1, 0.3, 1] as const;
 
-function EcgPanel({ animate }: { animate: boolean }) {
-  return (
-    <div className="relative mt-10 w-full max-w-md overflow-hidden rounded-lg border border-dawn-200 bg-white px-3 py-6">
-      <svg
-        className="pointer-events-none absolute inset-0 h-full w-full text-dawn-200"
-        aria-hidden
-        preserveAspectRatio="none"
-      >
-        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="currentColor" strokeWidth="1" />
-        {[25, 50, 75].map((x) => (
-          <line
-            key={x}
-            x1={`${x}%`}
-            y1="0"
-            x2={`${x}%`}
-            y2="100%"
-            stroke="currentColor"
-            strokeWidth="1"
-            strokeOpacity="0.45"
-          />
-        ))}
-      </svg>
-
-      <svg className="relative mx-auto h-16 w-full text-mist-700" viewBox="0 0 320 64" fill="none" aria-hidden>
-        <path
-          d={ECG_PATH}
-          stroke="currentColor"
-          strokeOpacity="0.12"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        <path
-          className={animate ? "journey-ecg-trace" : undefined}
-          d={ECG_PATH}
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          pathLength={1}
-          strokeDasharray={animate ? "1" : undefined}
-          strokeDashoffset={animate ? 1 : undefined}
-        />
-        {animate ? (
-          <rect
-            className="journey-ecg-scan"
-            x="0"
-            y="4"
-            width="18"
-            height="56"
-            fill="url(#journey-scan-grad)"
-            opacity="0.55"
-          />
-        ) : null}
-        <defs>
-          <linearGradient id="journey-scan-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--mist-500)" stopOpacity="0" />
-            <stop offset="50%" stopColor="var(--mist-500)" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="var(--mist-500)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      <JourneyShimmerBar className="mx-auto mt-4 max-w-[12rem]" />
-    </div>
-  );
-}
-
-/** Quiet clinical pulse while the server recomputes the trajectory. */
+/** Shows each step Masar runs while the server recomputes the trajectory. */
 export function EcgPrepare({ locale }: { locale: string }) {
   const { t } = useI18n();
   const { animate, live, reduce } = useJourneyMotion();
@@ -110,8 +33,6 @@ export function EcgPrepare({ locale }: { locale: string }) {
     return () => window.clearInterval(id);
   }, [live, reduce]);
 
-  const stageKey = STAGE_KEYS[stage];
-
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center text-center"
@@ -122,54 +43,40 @@ export function EcgPrepare({ locale }: { locale: string }) {
     >
       <JourneyBreathingRing className="mb-6" />
 
-      <h1 className="max-w-md font-display text-[clamp(1.55rem,3.5vw,2rem)] tracking-tight text-ink-900">
+      <h1 className="max-w-md text-[clamp(2rem,3.8vw,2.6rem)] leading-[1.05] tracking-[-0.02em] text-ink-900">
         {t("journey.prepare.title")}
       </h1>
-      <p className="mt-2 max-w-md text-sm text-ink-600">{t("journey.prepare.body")}</p>
+      <p className="mt-3 max-w-md text-[15px] leading-relaxed text-ink-600">{t("journey.prepare.body")}</p>
 
-      <EcgPanel animate={animate} />
-
-      <ol className="mt-8 flex items-center justify-center gap-2" aria-hidden>
+      <ol className="card mt-8 w-full max-w-md divide-y divide-dawn-200/70 text-start">
         {STAGE_KEYS.map((key, idx) => {
           const done = idx < stage;
           const current = idx === stage;
           return (
-            <li key={key} className="flex items-center gap-2">
+            <li key={key} className="flex items-center gap-3 px-5 py-4">
               <span
-                className={`h-2 w-2 rounded-pill transition-transform ${
-                  done || current ? "bg-mist-700" : "bg-dawn-300"
-                } ${animate && current ? "scale-125" : ""}`}
-              />
-              {idx < STAGE_KEYS.length - 1 ? (
-                <span
-                  className={`h-px w-6 sm:w-10 ${idx < stage ? "bg-mist-500" : "bg-dawn-200"}`}
-                />
-              ) : null}
+                aria-hidden
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors ${
+                  done ? "bg-mist-700 text-white" : current ? "bg-mist-100 text-mist-700" : "bg-dawn-100 text-ink-300"
+                }`}
+              >
+                {done ? (
+                  <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none">
+                    <path d="m4 8.4 2.6 2.6L12 5.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : current ? (
+                  <span className={`h-2 w-2 rounded-full bg-mist-700 ${animate ? "animate-pulse" : ""}`} />
+                ) : (
+                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                )}
+              </span>
+              <span className={`text-[14.5px] ${done ? "text-ink-600" : current ? "font-medium text-ink-900" : "text-ink-400"}`}>
+                {t(`journey.prepare.stages.${key}`)}
+              </span>
             </li>
           );
         })}
       </ol>
-
-      <div className="mt-4 min-h-[1.5rem]">
-        {live && animate ? (
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={stageKey}
-              className="text-sm font-medium text-mist-700"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.35, ease: LUX }}
-            >
-              {t(`journey.prepare.stages.${stageKey}`)}
-            </motion.p>
-          </AnimatePresence>
-        ) : (
-          <p className="text-sm font-medium text-mist-700">
-            {t(`journey.prepare.stages.${stageKey}`)}
-          </p>
-        )}
-      </div>
       <p className="mt-2 text-xs text-ink-400">{t("journey.prepare.hint")}</p>
     </div>
   );

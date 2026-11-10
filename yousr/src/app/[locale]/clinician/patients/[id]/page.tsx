@@ -46,35 +46,68 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
   return (
     <Page wide>
         <Reveal>
-          <Link href={`/${locale}/clinician`} className="text-sm text-mist-700 underline-offset-4 hover:underline">
-            ← {t("clinician.queueTitle")}
+          <Link
+            href={`/${locale}/clinician`}
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-500 transition-colors hover:text-mist-700"
+          >
+            <span aria-hidden className="rtl:-scale-x-100">←</span> {t("clinician.queueTitle")}
           </Link>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <h1 className="text-ink-900">{t("clinician.oneTitle", { name, age: ageFromBirthYear(bundle.user.birthYear) })}</h1>
+          <div className="surface-pine mt-4 p-6 md:p-7">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/12 text-lg font-semibold text-white ring-1 ring-inset ring-white/20">
+                {bundle.user.name
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((p) => p[0])
+                  .join("")}
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-[clamp(1.75rem,3vw,2.4rem)] leading-tight text-white">
+                  {t("clinician.oneTitle", { name, age: ageFromBirthYear(bundle.user.birthYear) })}
+                </h1>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-[12.5px]">
+                  {[
+                    `${t("clinician.intention")}: ${t(`intentions.${bundle.user.intention}`)}`,
+                    t("clinician.consentedSources", { n: bundle.sources.length, total: DATA_SOURCES.length }),
+                  ].map((chip) => (
+                    <span key={chip} className="rounded-full bg-white/10 px-2.5 py-0.5 text-white/85 ring-1 ring-inset ring-white/15">
+                      {chip}
+                    </span>
+                  ))}
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 font-medium text-mist-700">
+                    <span aria-hidden className="dot bg-mist-500" />
+                    {t("access.consented")}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p className="mt-5 max-w-3xl border-t border-white/10 pt-4 text-sm leading-relaxed text-white/70">
+              {t("clinician.oneIntro", { name })}
+            </p>
           </div>
-          <p className="mt-1 text-sm text-ink-600">
-            {t("clinician.intention")}: {t(`intentions.${bundle.user.intention}`)} ·{" "}
-            {t("clinician.consentedSources", { n: bundle.sources.length, total: DATA_SOURCES.length })} · {t("access.consented")}
-          </p>
-          <p className="surface mt-4 max-w-2xl p-3 text-sm text-ink-600">{t("clinician.oneIntro", { name })}</p>
         </Reveal>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-6">
-            <Reveal delay={0.05} className="surface-paper p-5">
-              <div className="flex flex-wrap gap-2">
+            <Reveal delay={0.05}>
+              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {bundle.results.map((r) => (
-                  <div key={r.domain} className="flex items-center gap-2 rounded-md border border-dawn-200 bg-dawn-50 px-3 py-2 text-sm">
-                    <span className="text-ink-900">{t(`domains.${r.domain}`)}</span>
-                    <DirectionBadge direction={r.direction} confidence={r.confidence} />
-                  </div>
+                  <li key={r.domain} className="card flex flex-col gap-3 p-4">
+                    <p className="text-[13.5px] font-semibold text-ink-900">{t(`domains.${r.domain}`)}</p>
+                    <div>
+                      <DirectionBadge direction={r.direction} confidence={r.confidence} compact />
+                    </div>
+                    <p className="mt-auto border-t border-dawn-200/70 pt-2.5 text-[12px] text-ink-500">
+                      {t(`confidence.${r.confidence}`)}
+                    </p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </Reveal>
 
             {band ? (
-              <Reveal delay={0.1} className="surface-paper p-5">
-                <h2 className="text-ink-900">
+              <Reveal delay={0.1} className="card p-6">
+                <h2 className="text-[1.3rem] text-ink-900">
                   {t("clinician.trend")} · {t(`domains.${chartDomain}`)}
                 </h2>
                 <div className="mt-3">
@@ -83,14 +116,14 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
               </Reveal>
             ) : null}
 
-            <Reveal delay={0.15} className="surface-paper p-5">
-              <h2 className="text-ink-900">{t("clinician.discussion")}</h2>
+            <Reveal delay={0.15} className="card p-6">
+              <h2 className="text-[1.3rem] text-ink-900">{t("clinician.discussion")}</h2>
               <p className="mt-1 text-xs text-ink-400">{t("clinician.discussionHint")}</p>
               <ul className="mt-3 space-y-3">
                 {bundle.results
                   .filter((r) => r.direction !== "Unknown" || r.triggers.length)
                   .map((r) => (
-                    <li key={r.domain} className="rounded-md border border-dawn-200 bg-dawn-50 p-3 text-sm">
+                    <li key={r.domain} className="rounded-xl border border-dawn-200/80 bg-dawn-50/60 p-4 text-sm">
                       <p className="font-medium text-ink-900">
                         {t(`domains.${r.domain}`)} · {t(`observed.${r.observedKey}`)}
                       </p>
@@ -103,12 +136,12 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
               </ul>
             </Reveal>
 
-            <Reveal delay={0.2} className="surface-paper p-5">
-              <h2 className="text-ink-900">{t("clinician.provenance")}</h2>
+            <Reveal delay={0.2} className="card p-6">
+              <h2 className="text-[1.3rem] text-ink-900">{t("clinician.provenance")}</h2>
               <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                 {bundle.results.flatMap((r) =>
                   r.drivers.slice(0, 3).map((d, i) => (
-                    <li key={`${r.domain}-${d.factor}-${i}`} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dawn-200 bg-dawn-50 px-3 py-2 text-sm">
+                    <li key={`${r.domain}-${d.factor}-${i}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dawn-200/80 bg-dawn-50/60 px-3 py-2.5 text-sm">
                       <span className="text-ink-900">
                         {t(`factors.${d.factor}`)} {d.valueLabel ? <span className="text-ink-600">{d.valueLabel}</span> : null}
                       </span>
@@ -136,8 +169,8 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
             <Reveal delay={0.1}>
               <ReviewForm patientId={id} />
             </Reveal>
-            <Reveal delay={0.15} className="surface-paper p-5">
-              <h2 className="text-ink-900">{t("clinician.referral")}</h2>
+            <Reveal delay={0.15} className="card p-6">
+              <h2 className="text-[1.3rem] text-ink-900">{t("clinician.referral")}</h2>
               {steps.length ? (
                 <ul className="mt-3 space-y-3">
                   {steps.map((a) => (
@@ -151,8 +184,8 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
                 <p className="mt-2 text-sm text-ink-400">—</p>
               )}
             </Reveal>
-            <Reveal delay={0.2} className="surface-paper p-5">
-              <h2 className="text-ink-900">{t("timeline.title")}</h2>
+            <Reveal delay={0.2} className="card p-6">
+              <h2 className="text-[1.3rem] text-ink-900">{t("timeline.title")}</h2>
               <div className="mt-3">
                 <HistoryList
                   rows={history.slice(-8).reverse().map((h) => ({
@@ -165,12 +198,12 @@ export default async function OnePagerPage({ params }: PageProps<"/[locale]/clin
                 />
               </div>
             </Reveal>
-            <Reveal delay={0.25} className="surface-paper p-5">
-              <h2 className="text-ink-900">{t("clinician.reviews")}</h2>
+            <Reveal delay={0.25} className="card p-6">
+              <h2 className="text-[1.3rem] text-ink-900">{t("clinician.reviews")}</h2>
               {reviews.length ? (
                 <ul className="mt-3 space-y-2 text-sm">
                   {reviews.map((r) => (
-                    <li key={r.id} className="rounded-md border border-dawn-200 bg-dawn-50 px-3 py-2">
+                    <li key={r.id} className="rounded-xl border border-dawn-200/80 bg-dawn-50/60 px-3 py-2.5">
                       <p className="text-ink-900">
                         <span className="font-medium">{t(`clinician.${r.decision}`)}</span> · {locale === "ar" ? r.clinician.nameAr : r.clinician.name}
                       </p>

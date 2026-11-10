@@ -136,11 +136,11 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
   const oneReading = primary && !primary.cycleSets && primary.count === 1;
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-mist-100/40 shadow-[var(--shadow-soft)]">
+    <div className="card overflow-hidden">
       <div
         role="group"
         aria-label={t("dashboard.trajectory.areaPicker")}
-        className="grid grid-cols-2 gap-1.5 border-b border-dawn-200/80 bg-dawn-50/60 p-2.5 sm:grid-cols-[repeat(auto-fit,minmax(7.25rem,1fr))]"
+        className="m-3 grid grid-cols-2 gap-1 rounded-[14px] bg-dawn-100 p-1 sm:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))]"
       >
         {areas.map((a) => {
           const none = a.confidence === "InsufficientData";
@@ -155,15 +155,15 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
               onClick={() => setSelected(a.domain)}
               whileHover={animate && !on ? { y: -1 } : undefined}
               whileTap={animate ? { scale: 0.98 } : undefined}
-              className={`relative flex min-h-12 items-center justify-center gap-1.5 rounded-full px-2.5 py-2 text-center text-xs font-semibold leading-snug transition-colors sm:text-sm ${
+              className={`relative flex min-h-10 items-center justify-center gap-2 rounded-full px-3 py-1.5 text-center text-xs font-semibold leading-snug transition-colors sm:text-sm ${
                 on
-                  ? "bg-mist-700 text-white shadow-[var(--shadow-soft)]"
+                  ? "bg-white text-ink-900 shadow-[0_1px_2px_rgba(17,26,28,0.08),0_0_0_1px_rgba(17,26,28,0.04)]"
                   : none
-                    ? "border border-dashed border-dawn-300 bg-transparent text-ink-600 hover:bg-dawn-100"
-                    : "bg-white/80 text-ink-700 hover:bg-white hover:text-ink-900"
+                    ? "text-ink-400 hover:text-ink-700"
+                    : "text-ink-600 hover:text-ink-900"
               }`}
             >
-              <span className={`inline-flex ${on ? "opacity-90" : "opacity-70"}`} aria-hidden>
+              <span className="inline-flex" aria-hidden>
                 <DomainSphere
                   domain={a.domain}
                   direction={none ? "Unknown" : a.direction}
@@ -174,7 +174,7 @@ export function TrajectoryPanel({ areas, initialDomain, nowIso }: { areas: Traje
               {on ? (
                 <motion.span
                   layoutId="traj-tab-dot"
-                  className="absolute inset-x-4 -bottom-px h-0.5 rounded-full bg-peach-400"
+                  className="absolute inset-x-5 -bottom-px h-0.5 rounded-full bg-mist-700"
                   transition={animate ? { type: "spring", stiffness: 380, damping: 32 } : { duration: 0 }}
                 />
               ) : null}

@@ -74,7 +74,7 @@ export default async function ActionsPage({ params }: PageProps<"/[locale]/actio
           }
         />
 
-        <Reveal delay={0.05} className="mt-6 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-dawn-50/80 p-5 shadow-[var(--shadow-soft)] md:p-6">
+        <Reveal delay={0.05} className="mt-6 overflow-hidden card p-5 md:p-6">
           <p className="font-display text-xl tracking-tight text-ink-900">{t("actions.sequence.title")}</p>
           <p className="mt-1 text-sm text-ink-600">{t("actions.sequence.body")}</p>
           <ol className="relative mt-5 space-y-0 border-s-2 border-dawn-200 ms-3 ps-5 md:ms-4">
@@ -114,7 +114,7 @@ export default async function ActionsPage({ params }: PageProps<"/[locale]/actio
           </Stagger>
         ) : (
           <Reveal delay={0.1} className="mt-8">
-            <div className="flex flex-col items-center gap-4 overflow-hidden rounded-[1.75rem] border border-dashed border-dawn-300 bg-dawn-50/60 px-6 py-10 text-center">
+            <div className="flex flex-col items-center gap-4 overflow-hidden rounded-[18px] border border-dashed border-dawn-300 bg-dawn-50/60 px-6 py-10 text-center">
               <ChronoOrbit readingCount={0} />
               <div>
                 <p className="font-display text-lg text-ink-900">{t("actions.empty")}</p>

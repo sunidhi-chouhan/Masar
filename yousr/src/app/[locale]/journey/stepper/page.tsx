@@ -28,7 +28,7 @@ export default async function JourneyStepperPage({
   const progress = 0.2 + (idx / stepCount) * 0.45;
 
   return (
-    <JourneyShell progress={progress}>
+    <JourneyShell progress={progress} stage="profile">
       <JourneyStepper
         locale={locale}
         sex={sex}

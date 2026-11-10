@@ -42,7 +42,7 @@ export function LivingWellCard({ card }: { card: CardData }) {
   };
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white/95 p-5 shadow-[var(--shadow-soft)] ring-1 ring-dawn-200/60 transition-shadow hover:shadow-[var(--shadow-lift)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[18px] bg-white/95 p-5 shadow-[var(--shadow-soft)] ring-1 ring-dawn-200/60 transition-shadow hover:shadow-[var(--shadow-lift)]">
       <span
         aria-hidden
         className="pointer-events-none absolute -end-8 -top-8 h-24 w-24 rounded-full bg-mist-100/80 opacity-70 blur-xl"
@@ -90,7 +90,7 @@ export function QuestionList() {
     return () => window.removeEventListener("masar-questions", sync);
   }, []);
   return (
-    <aside className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-mist-100/40 p-5 shadow-[var(--shadow-soft)]">
+    <aside className="overflow-hidden card p-5">
       <h2 className="font-display text-xl tracking-tight text-ink-900">{t("livingWell.questionList")}</h2>
       <p className="mt-1 text-sm text-ink-600">{t("livingWell.questionListBody")}</p>
       {list.length ? (

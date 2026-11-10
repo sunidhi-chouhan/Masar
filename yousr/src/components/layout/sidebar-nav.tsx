@@ -46,7 +46,7 @@ export function SidebarNavLinks({
       {groups.map((g) => (
         <div key={g.id}>
           {g.id !== "other" || groups.length > 1 ? (
-            <p className="label-caps mb-2 px-2.5 text-ink-400">
+            <p className="mb-1.5 px-3 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-400">
               {g.id === "path"
                 ? t("nav.groups.path")
                 : g.id === "you"
@@ -54,7 +54,7 @@ export function SidebarNavLinks({
                   : t("nav.groups.workspace")}
             </p>
           ) : null}
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {g.items.map((item) => {
               const active = isActive(item.href);
               return (
@@ -63,24 +63,24 @@ export function SidebarNavLinks({
                     href={`/${locale}${item.href}`}
                     aria-current={active ? "page" : undefined}
                     onClick={onNavigate}
-                    className={`group flex min-h-11 items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium transition-colors ${
+                    className={`group relative flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
                       active
-                        ? "bg-mist-700 text-white shadow-[var(--shadow-soft)]"
-                        : "text-ink-600 hover:bg-dawn-100 hover:text-ink-900"
+                        ? "bg-mist-100/70 text-mist-700"
+                        : "text-ink-600 hover:bg-dawn-100/70 hover:text-ink-900"
                     }`}
                   >
+                    {active ? (
+                      <span aria-hidden className="absolute inset-y-2 start-0 w-[3px] rounded-full bg-mist-700" />
+                    ) : null}
                     <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                        active ? "bg-white/15 text-white" : "bg-dawn-100 text-mist-700"
+                      className={`flex h-5 w-5 items-center justify-center [&_svg]:h-[18px] [&_svg]:w-[18px] ${
+                        active ? "text-mist-700" : "text-ink-400 group-hover:text-ink-700"
                       }`}
                     >
                       {NAV_ICONS[item.key] ?? NAV_ICONS.about}
                     </span>
                     <span className="truncate">{t(`nav.${item.key}`)}</span>
-                    {active ? (
-                      <span aria-hidden className="ms-auto h-1.5 w-1.5 rounded-pill bg-peach-400" />
-                    ) : null}
-                  </Link>
+                                      </Link>
                 </li>
               );
             })}
@@ -106,10 +106,10 @@ export function JourneyCta({
       href={`/${locale}/journey`}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors ${
+      className={`flex min-h-10 items-center justify-center gap-2 rounded-full border px-3 text-[13px] font-semibold transition-colors [&_svg]:h-4 [&_svg]:w-4 ${
         active
-          ? "bg-mist-500 text-white"
-          : "bg-mist-700 text-white hover:bg-mist-500"
+          ? "border-mist-700 bg-mist-700 text-white"
+          : "border-dawn-300 bg-white text-ink-900 hover:border-mist-500 hover:text-mist-700"
       }`}
     >
       {hasActiveDemo ? <span aria-hidden className="h-1.5 w-1.5 rounded-pill bg-peach-300" /> : null}
@@ -134,15 +134,31 @@ export function MenuIcon({ open }: { open: boolean }) {
 export function SidebarBrand({ onNavigate }: { onNavigate?: () => void }) {
   const { t, locale } = useI18n();
   return (
-    <Link
-      href={`/${locale}`}
-      onClick={onNavigate}
-      className="flex items-baseline gap-1.5 font-display text-lg leading-none text-ink-900"
-    >
-      <span className="font-semibold">{t("common.appName")}</span>
-      <span className="text-ink-400">·</span>
-      <span className="text-mist-700">{t("common.appNameAr")}</span>
+    <Link href={`/${locale}`} onClick={onNavigate} className="flex items-center gap-2.5 leading-none text-ink-900">
+      <MasarMark className="h-8 w-8" />
+      <span className="flex flex-col">
+        <span className="font-display text-[1.3rem] leading-none tracking-tight">{t("common.appName")}</span>
+        <span className="mt-0.5 text-[12px] text-ink-400">{t("common.appNameAr")}</span>
+      </span>
     </Link>
+  );
+}
+
+/** Masar ("path"): a single line rising through three readings. */
+export function MasarMark({ className = "", inverted = false }: { className?: string; inverted?: boolean }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      <rect width="32" height="32" rx="9" fill={inverted ? "#ffffff" : "var(--mist-700)"} />
+      <path
+        d="M7 21.5c3.2 0 4.2-6 7.4-6s3.6 3.6 6.4 3.6S24.5 10 25 10"
+        fill="none"
+        stroke={inverted ? "var(--mist-700)" : "#ffffff"}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="7" cy="21.5" r="1.7" fill={inverted ? "var(--mist-700)" : "#ffffff"} />
+      <circle cx="25" cy="10" r="2.3" fill="var(--amber-400)" />
+    </svg>
   );
 }
 
@@ -155,7 +171,7 @@ export function SidebarPanel({
 }) {
   return (
     <aside
-      className={`flex h-full flex-col border-e border-dawn-200/80 bg-gradient-to-b from-dawn-50 via-white to-mist-100/30 ${className}`}
+      className={`flex h-full flex-col border-e border-dawn-200/80 bg-white ${className}`}
     >
       {children}
     </aside>

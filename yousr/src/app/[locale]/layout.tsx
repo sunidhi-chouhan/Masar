@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans, IBM_Plex_Sans_Arabic, Amiri } from "next/font/google";
+import { Newsreader, Inter, IBM_Plex_Sans_Arabic, Amiri } from "next/font/google";
 import { notFound } from "next/navigation";
 import { locale as rootLocale } from "next/root-params";
 import "../globals.css";
@@ -12,16 +12,17 @@ import { getSession } from "@/lib/auth/session";
 import { AppShell } from "@/components/layout/app-shell";
 import { isDemoMode } from "@/lib/demo/mode";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// Editorial serif for headlines, a neutral grotesk for everything clinical.
+const serif = Newsreader({
+  variable: "--font-serif",
   subsets: ["latin"],
-  axes: ["SOFT", "opsz"],
+  axes: ["opsz"],
+  style: ["normal", "italic"],
   display: "swap",
 });
-const jakarta = Plus_Jakarta_Sans({
+const sans = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 const arabicSans = IBM_Plex_Sans_Arabic({
@@ -52,7 +53,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
     <html
       lang={locale}
       dir={dirFor(locale)}
-      className={`${fraunces.variable} ${jakarta.variable} ${arabicSans.variable} ${amiri.variable} h-full`}
+      className={`${serif.variable} ${sans.variable} ${arabicSans.variable} ${amiri.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
         <I18nProvider locale={locale} dictionary={dict} fallback={en as unknown as Dictionary}>

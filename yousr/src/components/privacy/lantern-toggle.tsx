@@ -13,9 +13,10 @@ interface Props {
   simulated?: boolean;
 }
 
-/** A consent switch drawn as a lantern: lit when sharing, dim when not. */
+/** A consent row: the whole row explains, the switch on the end decides. */
 export function LanternToggle({ id, label, hint, on, onToggle, simulated }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const travel = locale === "ar" ? -20 : 20;
   const reduce = useReducedMotion();
   const [pending, start] = useTransition();
   const [optimistic, setOptimistic] = useOptimistic(on);
@@ -30,12 +31,42 @@ export function LanternToggle({ id, label, hint, on, onToggle, simulated }: Prop
 
   return (
     <div
-      className={`flex items-center gap-4 overflow-hidden rounded-[1.5rem] p-4 shadow-[var(--shadow-soft)] transition-colors ${
-        optimistic
-          ? "bg-gradient-to-br from-white to-amber-100/40 ring-1 ring-amber-300/40"
-          : "bg-dawn-50/80 ring-1 ring-dawn-200/60"
+      className={`flex items-center gap-4 rounded-[18px] border bg-white p-4 shadow-[var(--shadow-soft)] transition-colors md:px-5 ${
+        optimistic ? "border-mist-300/70" : "border-dawn-200"
       }`}
     >
+      <span
+        aria-hidden
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
+          optimistic ? "bg-mist-100 text-mist-700" : "bg-dawn-100 text-ink-400"
+        }`}
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <ellipse cx="12" cy="6" rx="7" ry="2.5" />
+          <path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6" />
+        </svg>
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p id={`${id}-label`} className="text-[15px] font-semibold text-ink-900">
+            {label}
+          </p>
+          {simulated ? (
+            <span className="rounded-full border border-dashed border-slate-400/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-600">
+              {t("common.simulated")}
+            </span>
+          ) : null}
+        </div>
+        <p id={`${id}-hint`} className="mt-0.5 text-[13px] text-ink-600">
+          {hint}
+        </p>
+      </div>
+      <span
+        className={`hidden shrink-0 text-xs font-medium sm:inline ${optimistic ? "text-mist-700" : "text-ink-400"}`}
+        aria-live="polite"
+      >
+        {optimistic ? t("privacy.on") : t("privacy.off")}
+      </span>
       <button
         type="button"
         role="switch"
@@ -44,39 +75,17 @@ export function LanternToggle({ id, label, hint, on, onToggle, simulated }: Prop
         aria-describedby={`${id}-hint`}
         disabled={pending}
         onClick={flip}
-        className="relative h-14 w-14 shrink-0 rounded-pill focus-visible:outline-mist-500"
+        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition-colors disabled:opacity-70 ${
+          optimistic ? "bg-mist-700" : "bg-dawn-300"
+        }`}
       >
         <motion.span
           aria-hidden
-          className="absolute inset-0 rounded-pill"
-          animate={{
-            background: optimistic
-              ? "radial-gradient(circle at 50% 45%, #fff3d6 0%, var(--amber-400) 45%, var(--peach-500) 100%)"
-              : "radial-gradient(circle at 50% 45%, var(--slate-200) 0%, var(--slate-400) 100%)",
-            boxShadow: optimistic ? "0 0 28px rgba(231,178,87,0.65), 0 0 6px rgba(231,178,87,0.9)" : "0 0 0 rgba(0,0,0,0)",
-          }}
-          transition={{ duration: reduce ? 0 : 0.5, ease: "easeOut" }}
+          className="h-6 w-6 rounded-full bg-white shadow-[0_1px_3px_rgba(17,26,28,0.25)]"
+          animate={{ x: optimistic ? travel : 0 }}
+          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 34 }}
         />
-        <span aria-hidden className="absolute inset-x-[42%] top-1 h-1.5 rounded-sm bg-ink-900/40" />
       </button>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p id={`${id}-label`} className="font-display text-lg text-ink-900">
-            {label}
-          </p>
-          {simulated ? (
-            <span className="rounded-sm border border-dashed border-slate-400 px-1.5 text-[11px] uppercase tracking-wide text-slate-600">
-              {t("common.simulated")}
-            </span>
-          ) : null}
-        </div>
-        <p id={`${id}-hint`} className="text-sm text-ink-600">
-          {hint}
-        </p>
-      </div>
-      <span className={`shrink-0 text-xs ${optimistic ? "text-amber-700" : "text-slate-600"}`} aria-live="polite">
-        {optimistic ? t("privacy.on") : t("privacy.off")}
-      </span>
     </div>
   );
 }

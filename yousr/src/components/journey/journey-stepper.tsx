@@ -68,7 +68,7 @@ export function JourneyStepper({
   intention: Intention;
 }) {
   const { t } = useI18n();
-  const { animate, live, dur } = useJourneyMotion();
+  const { animate, dur } = useJourneyMotion();
   const steps = stepsFor(sex);
   const [i, setI] = useState(Math.min(Math.max(0, initialIndex), steps.length - 1));
   const [pending, start] = useTransition();
@@ -114,15 +114,18 @@ export function JourneyStepper({
         <motion.div
           key={step}
           initial={{ opacity: 0, y: 10 }}
-          animate={live ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           exit={animate ? { opacity: 0, y: -8 } : undefined}
           transition={{ duration: dur(0.36), ease: LUX }}
         >
-          <h1 className="font-display text-[clamp(1.45rem,3vw,1.9rem)] tracking-tight text-ink-900">
+          <h1 className="mt-10 text-[clamp(2rem,3.8vw,2.6rem)] leading-[1.05] tracking-[-0.02em] text-ink-900">
             {t(`journey.stepper.titles.${step}`)}
           </h1>
-          <p className="mt-1.5 max-w-xl text-sm text-ink-600">{t(`journey.stepper.bodies.${step}`)}</p>
-          <p className="mt-2 text-xs text-ink-400">{t("journey.stepper.optional")}</p>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-600">{t(`journey.stepper.bodies.${step}`)}</p>
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-dawn-100 px-2.5 py-1 text-[12px] text-ink-500">
+            <span aria-hidden className="dot bg-dawn-400" />
+            {t("journey.stepper.optional")}
+          </p>
 
           <div className={`relative mt-6 ${pending ? "pointer-events-none" : ""}`}>
             <JourneySurface
@@ -137,7 +140,7 @@ export function JourneyStepper({
                     disabled={pending}
                     onClick={goNext}
                     aria-busy={chipLoading("skip")}
-                    className="inline-flex min-h-11 min-w-[7rem] items-center justify-center rounded-lg px-3 text-sm font-medium text-ink-600 transition-colors hover:bg-dawn-100/80 hover:text-ink-900 disabled:opacity-60"
+                    className="inline-flex min-h-10 min-w-[7rem] items-center justify-center rounded-full border border-dawn-300 bg-white px-4 text-sm font-medium text-ink-700 transition-colors hover:border-dawn-400 hover:text-ink-900 disabled:opacity-60"
                   >
                     {chipLoading("skip") ? (
                       <JourneyButtonLoader label={t("journey.loading")} withLabel={false} />
@@ -200,12 +203,12 @@ export function JourneyStepper({
 }
 
 function ChipRow({ children }: { children: ReactNode }) {
-  const { animate, live } = useJourneyMotion();
+  const { animate } = useJourneyMotion();
   return (
     <motion.div
-      className="mt-4 flex flex-wrap gap-2"
+      className="mt-1 grid gap-2.5 sm:grid-cols-2"
       initial="hidden"
-      animate={live ? "show" : "hidden"}
+      animate="show"
       variants={{
         hidden: {},
         show: { transition: { staggerChildren: animate ? 0.045 : 0 } },
@@ -221,11 +224,14 @@ function OptionChip({
   onClick,
   label,
   loading = false,
+  multi = false,
 }: {
   on?: boolean;
   onClick: () => void;
   label: string;
   loading?: boolean;
+  /** Checkbox marker for multi-select questions; radio marker otherwise */
+  multi?: boolean;
 }) {
   const { animate, dur } = useJourneyMotion();
   const { t } = useI18n();
@@ -242,15 +248,31 @@ function OptionChip({
       }}
       whileHover={animate && !loading ? { y: -2 } : undefined}
       whileTap={animate && !loading ? { scale: 0.97 } : undefined}
-      className={`inline-flex min-h-11 min-w-[4.5rem] items-center justify-center rounded-xl border px-3.5 py-2 text-sm shadow-[var(--shadow-soft)] transition-[background-color,border-color,box-shadow] ${
-        loading
-          ? "border-mist-500 bg-mist-100 text-mist-700"
-          : on
-            ? "border-mist-500 bg-mist-100 text-mist-700"
-            : "border-transparent bg-white/80 text-ink-900 hover:border-mist-300 hover:bg-white hover:shadow-[var(--shadow-lift)]"
+      className={`flex min-h-12 w-full items-center gap-3 rounded-xl border px-4 py-2.5 text-start text-[14.5px] transition-[background-color,border-color,box-shadow] ${
+        loading || on
+          ? "border-mist-500 bg-mist-100/60 font-medium text-mist-700 shadow-[0_0_0_3px_var(--mist-100)]"
+          : "border-dawn-200 bg-white text-ink-900 hover:border-mist-300 hover:bg-dawn-50"
       }`}
     >
-      {loading ? <JourneyButtonLoader label={t("journey.loading")} withLabel={false} /> : label}
+      <span
+        aria-hidden
+        className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center border-[1.5px] transition-colors ${multi ? "rounded-[5px]" : "rounded-full"} ${
+          loading || on ? "border-mist-700 bg-mist-700" : "border-dawn-400 bg-white"
+        }`}
+      >
+        {loading || on ? (
+          multi ? (
+            <svg viewBox="0 0 16 16" className="h-3 w-3 text-white" fill="none">
+              <path d="m4 8.4 2.6 2.6L12 5.4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+          )
+        ) : null}
+      </span>
+      <span className="min-w-0 flex-1">
+        {loading ? <JourneyButtonLoader label={t("journey.loading")} withLabel={false} /> : label}
+      </span>
     </motion.button>
   );
 }
@@ -295,7 +317,7 @@ function CycleBlock({
   ];
   return (
     <div>
-      <p className="text-sm text-ink-600">{t("profile.cycleQ")}</p>
+      <p className="mb-3 text-[14.5px] font-semibold text-ink-900">{t("profile.cycleQ")}</p>
       <ChipRow>
         {presets.map((p) => (
           <OptionChip
@@ -329,17 +351,17 @@ function ConditionsBlock({
     set((arr) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]));
   return (
     <div>
-      <p className="text-sm font-medium text-ink-900">{t("profile.conditionsQ")}</p>
+      <p className="mb-3 text-[14.5px] font-semibold text-ink-900">{t("profile.conditionsQ")}</p>
       <ChipRow>
         {CONDITION_CODES.map((v) => (
-          <OptionChip key={v} on={c.includes(v)} onClick={() => toggle(setC, v)} label={t(`factors.${v}`)} />
+          <OptionChip key={v} multi on={c.includes(v)} onClick={() => toggle(setC, v)} label={t(`factors.${v}`)} />
         ))}
         <OptionChip on={c.length === 0} onClick={() => setC([])} label={t("common.ratherNot")} />
       </ChipRow>
-      <p className="mt-5 text-sm font-medium text-ink-900">{t("profile.familyQ")}</p>
+      <p className="mb-3 mt-7 text-[14.5px] font-semibold text-ink-900">{t("profile.familyQ")}</p>
       <ChipRow>
         {FAMILY_HISTORY_CODES.map((v) => (
-          <OptionChip key={v} on={f.includes(v)} onClick={() => toggle(setF, v)} label={t(`factors.family_${v}`)} />
+          <OptionChip key={v} multi on={f.includes(v)} onClick={() => toggle(setF, v)} label={t(`factors.family_${v}`)} />
         ))}
       </ChipRow>
       <motion.button
@@ -349,7 +371,7 @@ function ConditionsBlock({
         onClick={() => onSave(c, f)}
         whileHover={animate && !saving ? { y: -1 } : undefined}
         whileTap={animate && !saving ? { scale: 0.98 } : undefined}
-        className="mt-5 inline-flex min-h-11 min-w-[10rem] items-center justify-center rounded-lg bg-mist-700 px-5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-mist-500 disabled:opacity-80"
+        className="mt-5 inline-flex min-h-11 min-w-[10rem] items-center justify-center rounded-full bg-mist-700 px-6 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_16px_-8px_rgba(11,74,68,0.6)] transition-colors hover:bg-mist-600 disabled:opacity-80"
       >
         {saving ? <JourneyButtonLoader label={t("journey.saving")} onDark /> : t("common.continue")}
       </motion.button>
@@ -384,7 +406,7 @@ function LifestyleBlock({
   ];
   return (
     <div>
-      <p className="text-sm text-ink-600">{t("profile.lifestyleQ")}</p>
+      <p className="mb-3 text-[14.5px] font-semibold text-ink-900">{t("profile.lifestyleQ")}</p>
       <ChipRow>
         {presets.map((p) => (
           <OptionChip
@@ -430,7 +452,7 @@ function LabsBlock({
   });
   return (
     <div>
-      <p className="text-sm text-ink-600">{t("profile.labsQ")}</p>
+      <p className="mb-3 text-[14.5px] font-semibold text-ink-900">{t("profile.labsQ")}</p>
       <p className="mt-1 text-xs text-ink-400">{t("journey.stepper.labsHint")}</p>
       <ChipRow>
         {presets.map((p) => (
@@ -461,7 +483,7 @@ function MedsBlock({
   ];
   return (
     <div>
-      <p className="text-sm text-ink-600">{t("profile.medsQ")}</p>
+      <p className="mb-3 text-[14.5px] font-semibold text-ink-900">{t("profile.medsQ")}</p>
       <ChipRow>
         {options.map((o) => (
           <OptionChip

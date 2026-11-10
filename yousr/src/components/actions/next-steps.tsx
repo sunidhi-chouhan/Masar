@@ -70,7 +70,7 @@ function StepCard({ step, primary = false }: { step: NextStep; primary?: boolean
   return (
     <motion.div
       whileHover={animate ? { y: -2 } : undefined}
-      className={`overflow-hidden rounded-2xl bg-gradient-to-br from-white to-dawn-50/80 p-4 shadow-[var(--shadow-soft)] ${
+      className={`overflow-hidden card p-4 ${
         primary ? "ring-1 ring-mist-300/70" : ""
       }`}
     >

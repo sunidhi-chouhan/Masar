@@ -58,9 +58,9 @@ export function PurposeFirewall() {
   return (
     <section
       aria-labelledby="firewall-h"
-      className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-slate-200/40 to-dawn-50 p-5 shadow-[var(--shadow-soft)] md:p-6"
+      className="overflow-hidden rounded-[18px] border border-dawn-200 bg-dawn-50 p-5 md:p-6"
     >
-      <h2 id="firewall-h" className="font-display text-xl tracking-tight text-ink-900">
+      <h2 id="firewall-h" className="text-[1.35rem] text-ink-900">
         {t("privacy.firewall.title")}
       </h2>
       <p className="mt-1 text-sm text-ink-600">{t("privacy.firewall.body")}</p>
@@ -68,16 +68,15 @@ export function PurposeFirewall() {
         {blocked.map((b) => (
           <li
             key={b}
-            className="flex items-center gap-3 rounded-[1.25rem] bg-white/80 p-3.5 ring-1 ring-slate-200/80"
+            className="flex items-center gap-3 rounded-xl border border-dawn-200 bg-white px-3.5 py-3"
           >
             <span
               aria-hidden
-              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-slate-200"
+              className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-peach-200 text-peach-700"
             >
-              <span className="absolute h-[2px] w-7 rotate-45 bg-slate-600" />
-              <span className="h-6 w-6 rounded-pill border-2 border-slate-400" />
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" /><path d="M4.2 11.8 11.8 4.2" stroke="currentColor" strokeWidth="1.5" /></svg>
             </span>
-            <span className="text-sm text-slate-600 line-through decoration-slate-400">
+            <span className="text-[13.5px] font-medium text-ink-700">
               {t(`privacy.firewall.${b}`)}
             </span>
           </li>

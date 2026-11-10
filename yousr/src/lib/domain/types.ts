@@ -80,7 +80,7 @@ export type RecipientRole = (typeof RECIPIENT_ROLES)[number];
 
 // There is deliberately no purpose for employment, insurance, marketing or
 // unrelated apps. The purpose firewall is the absence of these values.
-// AiExplanation is optional plain-language paraphrase (Gemini), not clinical advice.
+// AiExplanation is optional plain-language paraphrase (Claude), not clinical advice.
 export const PURPOSES = [
   "PersonalView",
   "ClinicianReview",

@@ -1,28 +1,49 @@
 @import "tailwindcss";
 
-/* ---------- Masar clinical-grade design tokens ---------- */
+/* ---------- Masar Clinical design system ----------
+ * Porcelain canvas, white instrument surfaces, one deep pine brand colour,
+ * and three meaning-only state hues (pine = improving, clay = changing,
+ * desert gold = worth discussing). Colour is never decoration here.
+ */
 :root {
-  --dawn-50: #fbf9f5;
-  --dawn-100: #f3efe7;
-  --dawn-200: #e5decb;
-  --dawn-300: #cfc4ac;
-  --peach-200: #f7deca;
-  --peach-300: #eebc96;
-  --peach-500: #c87245;
-  --peach-700: #994f28;
-  --mist-100: #e6f2f0;
-  --mist-300: #b8dad5;
-  --mist-500: #2b7a72;
-  --mist-700: #1d5751;
-  --amber-100: #faeed5;
-  --amber-400: #d89b35;
-  --amber-700: #7c510d;
-  --slate-200: #e5e8eb;
-  --slate-400: #919aa4;
-  --slate-600: #4c5661;
-  --ink-900: #1f1c19;
-  --ink-600: #554e48;
-  --ink-400: #7f766f;
+  /* neutrals — porcelain → stone */
+  --dawn-50: #f7f6f2;
+  --dawn-100: #f0eee8;
+  --dawn-200: #e3e0d7;
+  --dawn-300: #cdc8bb;
+  --dawn-400: #a9a395;
+
+  /* clay — "changing" */
+  --peach-200: #f6e4da;
+  --peach-300: #e9b9a0;
+  --peach-400: #d48a66;
+  --peach-500: #b25a38;
+  --peach-700: #87391c;
+
+  /* pine — brand + "improving" */
+  --mist-100: #e6f1ee;
+  --mist-300: #a6cfc6;
+  --mist-500: #17756b;
+  --mist-600: #0f5f57;
+  --mist-700: #0b4a44;
+  --mist-900: #062b28;
+
+  /* desert gold — "worth discussing" */
+  --amber-100: #f7eedb;
+  --amber-400: #c8973a;
+  --amber-700: #6f4d10;
+
+  --slate-200: #e6e8e9;
+  --slate-400: #949b9e;
+  --slate-600: #4f585c;
+
+  /* ink */
+  --ink-900: #111a1c;
+  --ink-700: #2c3638;
+  --ink-600: #4b5658;
+  --ink-500: #677174;
+  --ink-400: #889194;
+  --ink-300: #b4babc;
 
   --state-improving: var(--mist-500);
   --state-stable: var(--mist-300);
@@ -30,12 +51,17 @@
   --state-discuss: var(--amber-400);
   --state-unknown: var(--slate-400);
 
-  --shadow-lift: 0 4px 14px -6px rgba(31, 28, 25, 0.12);
-  --shadow-soft: 0 1px 2px rgba(31, 28, 25, 0.04), 0 8px 24px -12px rgba(31, 28, 25, 0.1);
+  --shadow-lift: 0 1px 1px rgba(17, 26, 28, 0.04), 0 12px 32px -14px rgba(17, 26, 28, 0.18);
+  --shadow-soft: 0 1px 0 rgba(17, 26, 28, 0.03), 0 1px 3px rgba(17, 26, 28, 0.05);
+  --shadow-float: 0 24px 60px -24px rgba(6, 43, 40, 0.35);
+
+  /* runtime copies of the theme fonts, so plain CSS rules (h1, h2) can use them */
+  --font-display: var(--font-serif), var(--font-amiri), Georgia, serif;
+  --font-body: var(--font-sans), var(--font-arabic-sans), system-ui, -apple-system, sans-serif;
 
   --r-pill: 999px;
-  --r-lg: 12px;
-  --r-md: 8px;
+  --r-lg: 14px;
+  --r-md: 10px;
   --r-sm: 6px;
 }
 
@@ -44,14 +70,18 @@
   --color-dawn-100: var(--dawn-100);
   --color-dawn-200: var(--dawn-200);
   --color-dawn-300: var(--dawn-300);
+  --color-dawn-400: var(--dawn-400);
   --color-peach-200: var(--peach-200);
   --color-peach-300: var(--peach-300);
+  --color-peach-400: var(--peach-400);
   --color-peach-500: var(--peach-500);
   --color-peach-700: var(--peach-700);
   --color-mist-100: var(--mist-100);
   --color-mist-300: var(--mist-300);
   --color-mist-500: var(--mist-500);
+  --color-mist-600: var(--mist-600);
   --color-mist-700: var(--mist-700);
+  --color-mist-900: var(--mist-900);
   --color-amber-100: var(--amber-100);
   --color-amber-400: var(--amber-400);
   --color-amber-700: var(--amber-700);
@@ -59,11 +89,15 @@
   --color-slate-400: var(--slate-400);
   --color-slate-600: var(--slate-600);
   --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
   --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
   --color-ink-400: var(--ink-400);
+  --color-ink-300: var(--ink-300);
 
-  --font-display: var(--font-fraunces), var(--font-amiri), Georgia, serif;
+  --font-display: var(--font-serif), var(--font-amiri), Georgia, serif;
   --font-body: var(--font-sans), var(--font-arabic-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-num), ui-monospace, monospace;
 
   --radius-pill: var(--r-pill);
   --radius-lg: var(--r-lg);
@@ -71,6 +105,8 @@
   --radius-sm: var(--r-sm);
 
   --shadow-lift: var(--shadow-lift);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-float: var(--shadow-float);
 }
 
 /* ---------- Base ---------- */
@@ -79,12 +115,19 @@ html {
   color: var(--ink-900);
   font-family: var(--font-body);
   font-size: 16px;
+  font-feature-settings: "cv11", "ss01", "ss03";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+.tabular,
+dd,
+td {
+  font-variant-numeric: tabular-nums;
+}
+
 html[dir="rtl"] {
-  --font-display: var(--font-amiri), var(--font-fraunces), serif;
+  --font-display: var(--font-amiri), var(--font-serif), serif;
   --font-body: var(--font-arabic-sans), var(--font-sans), system-ui, sans-serif;
 }
 
@@ -103,12 +146,14 @@ body {
   color: var(--ink-900);
 }
 
+/* Headings: family everywhere; default sizes only when no size utility is set
+ * (the CSS pipeline here emits these unlayered, so they would otherwise beat utilities). */
 h1,
 h2,
 .font-display {
   font-family: var(--font-display);
-  font-variation-settings: "SOFT" 40, "opsz" 48;
-  letter-spacing: -0.015em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 h3 {
@@ -117,23 +162,23 @@ h3 {
   letter-spacing: -0.01em;
 }
 
-h1 {
+h1:not([class*="text-["]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-3xl"]):not([class*="text-4xl"]):not([class*="text-5xl"]) {
   font-size: 1.875rem;
   line-height: 1.15;
 }
 
 @media (min-width: 768px) {
-  h1 {
+  h1:not([class*="text-["]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-3xl"]):not([class*="text-4xl"]):not([class*="text-5xl"]) {
     font-size: 2.25rem;
   }
 }
 
-h2 {
+h2:not([class*="text-["]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-3xl"]):not([class*="text-4xl"]):not([class*="text-5xl"]) {
   font-size: 1.375rem;
   line-height: 1.2;
 }
 
-h3 {
+h3:not([class*="text-["]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-3xl"]):not([class*="text-4xl"]):not([class*="text-5xl"]) {
   font-size: 1.0625rem;
   line-height: 1.3;
 }
@@ -149,9 +194,9 @@ h3 {
   font-family: var(--font-body);
   text-transform: uppercase;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  color: var(--ink-600);
+  letter-spacing: 0.09em;
+  font-size: 0.6875rem;
+  color: var(--ink-500);
 }
 
 html[dir="rtl"] .label-caps {
@@ -180,6 +225,52 @@ html[dir="rtl"] .label-caps {
   border: 1px solid var(--dawn-200);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-soft);
+}
+
+/* Instrument card: the default container for clinical content */
+.card {
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--dawn-200) 85%, transparent);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Pine "hero" surface — used once per screen for the single most important thing */
+.surface-pine {
+  position: relative;
+  isolation: isolate;
+  color: #fff;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--mist-500) 55%, transparent), transparent 60%),
+    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--amber-400) 16%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--mist-700), var(--mist-900));
+  border-radius: 22px;
+  box-shadow: var(--shadow-float);
+}
+
+.surface-pine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(90% 80% at 80% 10%, #000, transparent 75%);
+}
+
+.hairline {
+  border-color: color-mix(in srgb, var(--dawn-200) 80%, transparent);
+}
+
+/* Status dot used across tiles and lists */
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: none;
 }
 
 .lift {
@@ -404,4 +495,10 @@ details[open] > summary {
   .masar-float-dot {
     animation: none !important;
   }
+}
+
+/* Landing uses the sans family for headlines; the app keeps the serif. */
+.landing-sans h1,
+.landing-sans h2 {
+  font-family: var(--font-body);
 }

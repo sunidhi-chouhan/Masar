@@ -9,7 +9,6 @@ import {
   useDelayedFlag,
   useJourneyMotion,
 } from "@/components/journey/journey-loaders";
-import { JourneyPathMotif } from "@/components/journey/journey-path-motif";
 
 type RoleId = "female" | "male" | "clinician" | "admin";
 
@@ -61,7 +60,7 @@ export function JourneyRolePicker({
 }) {
   void _tone;
   const { t } = useI18n();
-  const { animate, live, dur } = useJourneyMotion();
+  const { animate, dur } = useJourneyMotion();
   const [pending, start] = useTransition();
   const [picked, setPicked] = useState<RoleId | null>(null);
   const [hover, setHover] = useState<RoleId | null>(null);
@@ -83,7 +82,7 @@ export function JourneyRolePicker({
         <motion.p
           className="label-caps mb-4"
           initial={{ opacity: 0 }}
-          animate={live ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: dur(0.35), delay: animate ? 0.05 : 0 }}
         >
           {t("journey.roles.personalPaths")}
@@ -92,7 +91,7 @@ export function JourneyRolePicker({
         <motion.ul
           className="grid gap-4 sm:grid-cols-2 sm:gap-5"
           initial="hidden"
-          animate={live ? "show" : "hidden"}
+          animate="show"
           variants={{
             hidden: {},
             show: { transition: { staggerChildren: animate ? 0.1 : 0 } },
@@ -101,11 +100,6 @@ export function JourneyRolePicker({
           {people.map((r) => {
             const busy = showLoader && picked === r.id;
             const active = hover === r.id || picked === r.id;
-            const wash =
-              r.id === "female"
-                ? "from-mist-100/90 via-white to-dawn-50"
-                : "from-dawn-100/95 via-white to-peach-200/25";
-            const motif = r.id === "female" ? "mist" : "dawn";
 
             return (
               <motion.li
@@ -127,37 +121,30 @@ export function JourneyRolePicker({
                     onHoverEnd={() => setHover(null)}
                     whileHover={animate && !pending ? { y: -4 } : undefined}
                     whileTap={animate && !pending ? { scale: 0.985 } : undefined}
-                    className={`group relative flex h-full min-h-[13.5rem] w-full flex-col overflow-hidden rounded-2xl bg-gradient-to-br ${wash} p-5 text-start shadow-[var(--shadow-soft)] outline-none transition-[box-shadow] duration-300 hover:shadow-[var(--shadow-lift)] focus-visible:ring-2 focus-visible:ring-mist-500 disabled:opacity-70 sm:p-6`}
+                    className={`card group relative flex h-full min-h-[15rem] w-full flex-col overflow-hidden p-6 text-start outline-none transition-[box-shadow,border-color] duration-300 hover:border-mist-300 hover:shadow-[var(--shadow-lift)] focus-visible:ring-2 focus-visible:ring-mist-500 disabled:opacity-70 ${active || busy ? "border-mist-300" : ""}`}
                   >
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute -end-8 -top-10 h-36 w-36 rounded-pill bg-[radial-gradient(circle,color-mix(in_srgb,var(--mist-300)_40%,transparent),transparent_70%)] opacity-70 transition-opacity duration-500 group-hover:opacity-100"
-                    />
                     <span className="relative flex items-center justify-between gap-3">
-                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/80 text-mist-700 shadow-[var(--shadow-soft)]">
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-mist-100 text-mist-700 ring-1 ring-inset ring-mist-300/60 transition-colors group-hover:bg-mist-700 group-hover:text-white">
                         <RoleGlyph id={r.id} />
                       </span>
-                      <span className="rounded-pill bg-white/70 px-2.5 py-1 text-[11px] font-medium tracking-wide text-mist-700">
+                      <span className="rounded-full border border-dawn-200 bg-dawn-50 px-2.5 py-1 text-[11px] font-medium text-ink-600">
                         {r.tag ?? t(`journey.roles.${r.id}.tag`)}
                       </span>
                     </span>
 
-                    <span className="relative mt-5 block">
-                      <JourneyPathMotif variant={motif} />
-                    </span>
 
-                    <span className="relative mt-4 flex min-w-0 flex-1 flex-col gap-1.5">
-                      <span className="font-display text-[1.35rem] leading-tight tracking-tight text-ink-900 sm:text-xl">
+                    <span className="relative mt-6 flex min-w-0 flex-1 flex-col gap-2">
+                      <span className="font-display text-[1.65rem] leading-tight tracking-tight text-ink-900">
                         {r.title}
                       </span>
-                      <span className="text-sm leading-relaxed text-ink-600">{r.body}</span>
+                      <span className="text-[14px] leading-relaxed text-ink-600">{r.body}</span>
                     </span>
 
                     <span
-                      className={`relative mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors ${
+                      className={`relative mt-6 inline-flex min-h-11 items-center justify-between gap-2 rounded-full border-t-0 px-5 text-sm font-semibold transition-colors ${
                         active || busy
                           ? "bg-mist-700 text-white"
-                          : "bg-mist-700/90 text-white group-hover:bg-mist-700"
+                          : "bg-dawn-100 text-ink-900 group-hover:bg-mist-700 group-hover:text-white"
                       }`}
                     >
                       {busy ? (
@@ -184,7 +171,7 @@ export function JourneyRolePicker({
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
-        animate={live ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{
           duration: dur(0.4),
           delay: animate ? 0.22 : 0,
@@ -206,7 +193,7 @@ export function JourneyRolePicker({
                     type="submit"
                     disabled={pending}
                     initial={{ opacity: 0, y: 8 }}
-                    animate={live ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{
                       duration: dur(0.35),
                       delay: animate ? 0.28 + idx * 0.06 : 0,
@@ -214,13 +201,13 @@ export function JourneyRolePicker({
                     }}
                     whileHover={animate && !pending ? { y: -2 } : undefined}
                     whileTap={animate && !pending ? { scale: 0.99 } : undefined}
-                    className="group flex h-full min-h-[7.5rem] w-full flex-col items-start gap-2 rounded-xl border border-dawn-200/80 bg-white/55 p-4 text-start backdrop-blur-sm transition-colors hover:border-mist-300 hover:bg-white disabled:opacity-70 sm:p-5"
+                    className="group flex h-full min-h-[7.5rem] w-full flex-col items-start gap-2 rounded-[18px] border border-dashed border-dawn-300 bg-transparent p-5 text-start transition-colors hover:border-solid hover:border-mist-300 hover:bg-white disabled:opacity-70"
                   >
                     <span className="flex w-full items-center gap-2.5 text-mist-700">
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-dawn-100 text-mist-700">
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-dawn-100 text-ink-700">
                         <RoleGlyph id={r.id} />
                       </span>
-                      <span className="font-display text-lg tracking-tight text-ink-900">{r.title}</span>
+                      <span className="text-[15px] font-semibold text-ink-900">{r.title}</span>
                       <span className="ms-auto hidden rounded-pill bg-dawn-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-ink-400 sm:inline">
                         {r.tag ?? t(`journey.roles.${r.id}.tag`)}
                       </span>

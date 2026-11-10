@@ -62,7 +62,7 @@ export default async function CouplePage({ params }: PageProps<"/[locale]/couple
               partnerHue={link.partner.hue}
             />
           ) : (
-            <div className="overflow-hidden rounded-[1.75rem] border border-dashed border-dawn-300 bg-dawn-50/70 p-8 text-center">
+            <div className="overflow-hidden rounded-[18px] border border-dashed border-dawn-300 bg-dawn-50/70 p-8 text-center">
               <InsightHalo direction="Unknown" className="mx-auto" />
               <p className="mt-4 text-ink-600">{t("couple.notLinked")}</p>
             </div>

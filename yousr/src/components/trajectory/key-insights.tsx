@@ -107,22 +107,10 @@ function InsightCard({
     <motion.article
       id={`insight-${r.domain}`}
       whileHover={animate && featured ? { y: -2 } : undefined}
-      className={`relative flex flex-col overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-soft)] ${
-        featured
-          ? "bg-gradient-to-br from-white via-white to-amber-100/35 ring-1 ring-amber-300/40"
-          : "bg-white"
+      className={`relative flex flex-col overflow-hidden rounded-[18px] border bg-white shadow-[var(--shadow-soft)] ${
+        featured ? "border-amber-400/40 shadow-[0_0_0_4px_var(--amber-100)]" : "border-dawn-200"
       }`}
     >
-      {featured ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -end-6 -top-8 h-32 w-32 rounded-full opacity-60 blur-2xl"
-          style={{
-            background:
-              "radial-gradient(circle, color-mix(in srgb, var(--color-amber-300, #f0d78c) 70%, transparent), transparent 70%)",
-          }}
-        />
-      ) : null}
       <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-dawn-200/80 px-4 py-3 md:px-5">
         <div className="flex min-w-0 items-center gap-3">
           {featured ? <InsightHalo direction={r.direction} /> : null}

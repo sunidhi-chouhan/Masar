@@ -1195,7 +1195,7 @@
       "matters": "Why it may matter",
       "explanationToggle": "View explanation",
       "moreToggle": "{n} other points from your records",
-      "assisted": "Plain-language wording (Gemini, with your permission)"
+      "assisted": "Plain-language wording (Claude, with your permission)"
     },
     "connections": {
       "title": "How your information connects",
@@ -1330,6 +1330,33 @@
           "body": "Weight, blood sugar, blood pressure, sleep and activity. These do not predict fertility on their own, but they can matter for a conversation about your health."
         }
       }
+    },
+    "summary": {
+      "eyebrow": "Care summary",
+      "updated": "Last reading {date}",
+      "greeting": "Good to see you, {name}.",
+      "read": "Masar's read",
+      "readWatch": "{n} areas are worth a closer look",
+      "readWatchOne": "One area is worth a closer look",
+      "readCalm": "Nothing in your records needs attention right now",
+      "readNone": "Masar needs a little more information first",
+      "readBody": "Based only on what you chose to share. Masar describes direction of change over time — never a fertility score or a diagnosis.",
+      "nextStep": "Your next step",
+      "noNextStep": "No clinical step is open. Keep adding readings so change can be seen early.",
+      "scheduled": "Scheduled {date}",
+      "reviewFindings": "Review findings",
+      "openPathway": "Open care pathway",
+      "completeness": "Record completeness",
+      "areasCovered": "{n} of {total} areas have information",
+      "readings": "readings",
+      "addMissing": "Most useful to add next",
+      "allAreas": "Areas at a glance",
+      "allAreasSub": "Direction of change, and how much information sits behind it.",
+      "readingsCount": "{n} readings",
+      "evidence": "Evidence",
+      "open": "Open",
+      "consented": "Shared only with your consent",
+      "readPartial": "Too little is recorded yet to call anything settled"
     }
   },
   "forbidden": {
@@ -1443,14 +1470,14 @@
     },
     "ai": {
       "eyebrow": "Optional explanation",
-      "title": "May we use Gemini for plain-language wording?",
-      "subtitle": "Direction of change still comes from readable rules. Gemini only helps phrase what those rules already found—if you allow it.",
-      "accept": "Allow Gemini wording",
-      "decline": "Continue without Gemini",
-      "noKey": "No Gemini key is configured on this server. You can still continue; wording will use Masar’s built-in text.",
+      "title": "May we use Claude for plain-language wording?",
+      "subtitle": "Direction of change still comes from readable rules. Claude, an AI model made by Anthropic, only helps phrase what those rules already found—if you allow it.",
+      "accept": "Allow Claude wording",
+      "decline": "Continue without Claude",
+      "noKey": "No Claude API key is configured on this server. You can still continue; wording will use Masar’s built-in text.",
       "points": {
         "rules": "Rules compute direction, confidence and what is still unknown.",
-        "gemini": "Gemini may rephrase approved text into shorter plain language. It does not invent numbers.",
+        "model": "Claude may rephrase approved text into shorter plain language. It does not invent numbers, and anything it writes is checked before you see it.",
         "noScore": "Masar never produces a fertility score or diagnosis.",
         "decline": "If you decline, you still see your dashboard with Masar’s standard explanations."
       }
@@ -1458,7 +1485,29 @@
     "loading": "Working…",
     "saving": "Saving…",
     "progressAria": "Journey progress",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "rail": {
+      "title": "Your first visit",
+      "subtitle": "About five minutes. Every question is optional, and you can change any answer later.",
+      "stages": {
+        "role": "Choose your path",
+        "consent": "Agree how data is used",
+        "profile": "Build your health profile",
+        "prepare": "Masar reads your records",
+        "ai": "Plain-language help",
+        "workspace": "Open your workspace"
+      },
+      "hints": {
+        "role": "Synthetic people only",
+        "consent": "Granular and revocable",
+        "profile": "Skip anything you like",
+        "prepare": "Rules, not guesses",
+        "ai": "Optional, off by default",
+        "workspace": "Clinician or system view"
+      },
+      "step": "Step {n} of {total}",
+      "privacy": "Nothing here is shared with employers or insurers. There is no setting that allows it."
+    }
   },
   "landing": {
     "bio": {
@@ -1547,6 +1596,136 @@
       "enterTitle": "Choose how you want to enter",
       "enterBody": "This demonstration uses synthetic people. Pick a path that matches the role you want to explore.",
       "photoCredit": "Photography is illustrative and does not depict real patients."
+    },
+    "v2": {
+      "nav": {
+        "product": "Product",
+        "journey": "Journey",
+        "privacy": "Privacy",
+        "clinicians": "Clinicians"
+      },
+      "pill": "Abu Dhabi reproductive-health prototype · synthetic data",
+      "h1a": "Know how your reproductive health is changing",
+      "h1b": "before it matters.",
+      "lede": "Masar turns scattered records — cycles, labs, history, lifestyle — into a clear view of change over time, explains what it can and cannot tell you, and routes you to the right conversation early. Never a fertility score.",
+      "ctaPrimary": "Start the guided demo",
+      "ctaSecondary": "See the clinician view",
+      "trust": [
+        "No fertility score, ever",
+        "Consent per source, revocable",
+        "Clinician keeps the decision"
+      ],
+      "facts": [
+        {
+          "v": "0",
+          "l": "fertility scores or predictions"
+        },
+        {
+          "v": "5",
+          "l": "data sources, each consented separately"
+        },
+        {
+          "v": "6",
+          "l": "health areas followed over time"
+        },
+        {
+          "v": "k≥10",
+          "l": "minimum group size in population views"
+        }
+      ],
+      "bentoEyebrow": "What Masar does",
+      "bentoTitle": "From scattered signals to a timely, informed choice",
+      "bento": {
+        "trajectory": {
+          "t": "A trajectory, not a verdict",
+          "b": "Every area shows its direction across dates. Masar separates real change from normal variation and says when there is too little to tell."
+        },
+        "evidence": {
+          "t": "Every insight explains itself",
+          "b": "What was recorded, why it may matter, the evidence behind it, and what it cannot tell you."
+        },
+        "action": {
+          "t": "Signal to action",
+          "b": "Learn, optimise, discuss testing, counselling, preservation or referral, tracked until it happens."
+        },
+        "consent": {
+          "t": "Consent you can see and revoke",
+          "b": "Switch each source and each recipient on or off. Every access is logged."
+        },
+        "clinician": {
+          "t": "A one-page clinician review",
+          "b": "Trends, gaps and the reasons behind each flag. The clinician accepts, modifies or overrides."
+        },
+        "population": {
+          "t": "Population insight, privately",
+          "b": "Uptake, time to counselling and equity of reach, with small groups suppressed."
+        }
+      },
+      "mock": {
+        "observed": "Recorded",
+        "matters": "Why it may matter",
+        "evidence": "Evidence",
+        "cannot": "Cannot tell you",
+        "observedV": "AMH 1.4 → 1.1 ng/mL over 6 months",
+        "mattersV": "A noticeable fall is worth discussing in context.",
+        "evidenceV": "ASRM 2020 · moderate",
+        "cannotV": "Egg quality or chance of conception.",
+        "steps": [
+          "Suggested",
+          "Requested",
+          "Confirmed",
+          "Attended"
+        ],
+        "employer": "Employer",
+        "insurer": "Insurer",
+        "queueA": "Mariam, 33",
+        "queueB": "Omar, 36",
+        "queueSig": "2 areas",
+        "accept": "Accept",
+        "modify": "Modify",
+        "override": "Override"
+      },
+      "journeyEyebrow": "One complete journey",
+      "journeyTitle": "Six steps from first visit to clinical follow-up",
+      "journey": [
+        {
+          "t": "Consent",
+          "b": "Choose what to share, source by source."
+        },
+        {
+          "t": "Profile",
+          "b": "History, lifestyle, labs. All optional."
+        },
+        {
+          "t": "Interpretation",
+          "b": "Factors, evidence and what is missing."
+        },
+        {
+          "t": "Change over time",
+          "b": "Meaningful change vs normal variation."
+        },
+        {
+          "t": "Next steps",
+          "b": "Questions to ask, consultation request."
+        },
+        {
+          "t": "Clinical follow-up",
+          "b": "Review, decision and recorded outcome."
+        }
+      ],
+      "privacyEyebrow": "Privacy by structure",
+      "privacyTitle": "Reproductive data is never for employers, insurers or marketing.",
+      "privacyBody": "Not a policy setting. There is no code path that grants those purposes, and every attempt to read your data is written to a log you can see.",
+      "privacyItems": [
+        "Granular consent per source and recipient",
+        "Revocation takes effect immediately on the server",
+        "Audit log of every view, share and block",
+        "Population views suppress groups under ten people"
+      ],
+      "enterEyebrow": "Try it",
+      "enterTitle": "Walk the journey as a person, a clinician or the health system",
+      "enterBody": "Every person here is synthetic. Nothing is connected to Malaffi, Health Age or any real record.",
+      "footerNote": "Masar is a hackathon prototype. Not clinically validated, not a medical device."
     }
   }
 }

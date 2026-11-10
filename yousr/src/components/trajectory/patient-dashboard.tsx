@@ -12,6 +12,7 @@ import {
   type Direction,
   type Domain,
   type DomainResult,
+  type Intention,
 } from "@/lib/domain/types";
 import { bandFor } from "@/lib/engine/bands";
 import { metabolicBreakdown, MISSING_ADD_PATH } from "@/lib/engine/breakdown";
@@ -29,9 +30,12 @@ import type { Translator } from "@/lib/i18n/translate";
 import { LinkButton, Page } from "@/components/ui/atoms";
 import { Reveal } from "@/components/ui/motion";
 import { DomainCard } from "@/components/trajectory/domain-card";
-import { DashboardHero } from "@/components/trajectory/dashboard-hero";
+import {
+  DashboardHero,
+  type AreaTile,
+  type HeroNextAction,
+} from "@/components/trajectory/dashboard-hero";
 import { DetailsGroup } from "@/components/trajectory/details-groups";
-import { IntentionPicker } from "@/components/trajectory/intention-picker";
 import { MetabolicBreakdown } from "@/components/trajectory/metabolic-breakdown";
 import {
   TrajectoryPanel,
@@ -44,7 +48,7 @@ import {
 import { NextSteps, type NextStep } from "@/components/actions/next-steps";
 import type { ActionRow } from "@/components/actions/action-card";
 import { hasAiExplanationConsent } from "@/server/consent";
-import { paraphraseWithGemini } from "@/server/ai/gemini";
+import { paraphraseWithClaude } from "@/server/ai/claude";
 
 const ACTION_TYPE_ORDER: ActionType[] = [
   "Refer",
@@ -68,6 +72,7 @@ const DIRECTION_PRIORITY: Direction[] = [
   "Unknown",
 ];
 const MIN_CHART_SPAN_DAYS = 7;
+const PATHWAY_STATES: ActionState[] = ["Suggested", "Requested", "Confirmed", "Attended", "OutcomeRecorded"];
 
 function nextStepFor(
   r: DomainResult,
@@ -245,7 +250,7 @@ export async function PatientDashboard({
 
   let assistedExplanation: string | null = null;
   if (featured && (await hasAiExplanationConsent(userId))) {
-    assistedExplanation = await paraphraseWithGemini({
+    assistedExplanation = await paraphraseWithClaude({
       locale: locale === "ar" ? "ar" : "en",
       domainLabel: t(`domains.${featured.result.domain}`),
       direction: t(`directions.${featured.result.direction}`),
@@ -343,15 +348,6 @@ export async function PatientDashboard({
   const factsByDomain = Object.fromEntries(
     results.map((r) => [r.domain, domainFacts(r.domain, bundle.observations, bundle.profile, now)]),
   ) as Record<Domain, ReturnType<typeof domainFacts>>;
-  const withInfo = results
-    .filter((r) => factsByDomain[r.domain].total > 0)
-    .map((r) => t(`domains.${r.domain}`));
-  const withoutInfo = results
-    .filter((r) => factsByDomain[r.domain].total === 0)
-    .map((r) => t(`domains.${r.domain}`));
-  const missingItems = completable
-    .slice(0, 3)
-    .map((u) => t(`missing.${u.missing}`));
 
   const resultOf = (d: Domain) => results.findIndex((r) => r.domain === d);
   const sparkFor = (d: Domain) => {
@@ -381,17 +377,33 @@ export async function PatientDashboard({
     { key: "context", domains: ["metabolic", "lifestyle"] },
   ];
 
-  const areasWatch = results.filter(
-    (r) =>
-      r.confidence !== "InsufficientData" &&
-      (r.direction === "Discuss" || r.direction === "Shifting"),
-  ).length;
   const areasKnown = results.filter((r) => factsByDomain[r.domain].total > 0).length;
-  const radarNodes = areas.map((a) => ({
-    domain: a.domain,
-    direction: a.direction,
-    confidence: a.confidence,
-    hasChart: Boolean(a.chart),
+  const tiles: AreaTile[] = results.map((r) => ({
+    domain: r.domain,
+    direction: r.direction,
+    confidence: r.confidence,
+    readings: factsByDomain[r.domain].total,
+    points: sparkFor(r.domain),
+  }));
+  const watch = flagged.map((r) => ({ domain: r.domain, direction: r.direction }));
+  const focusAction = clinicalActions.find((a) => a.state !== "OutcomeRecorded");
+  const stepIndex = focusAction ? PATHWAY_STATES.indexOf(focusAction.state) + 1 : 0;
+  const nextAction: HeroNextAction | null = focusAction
+    ? {
+        title: t(`actions.titles.${focusAction.titleKey}`),
+        typeLabel: t(`actions.types.${focusAction.type}`),
+        state: focusAction.state,
+        stateLabel: t(`actions.states.${focusAction.state}`),
+        stepIndex: Math.max(stepIndex, 1),
+        stepTotal: PATHWAY_STATES.length,
+        scheduledLabel: focusAction.scheduledFor
+          ? t("dashboard.summary.scheduled", { date: formatDate(focusAction.scheduledFor, locale) })
+          : null,
+      }
+    : null;
+  const missingLinks = completable.slice(0, 3).map((u) => ({
+    label: t(`missing.${u.missing}`),
+    href: `/${locale}${MISSING_ADD_PATH[u.missing]}`,
   }));
   const conditionsLabel =
     bundle.profile.conditions.length > 0
@@ -404,64 +416,20 @@ export async function PatientDashboard({
         <DashboardHero
           name={name}
           age={age}
+          intention={bundle.user.intention as Intention}
           intentionLabel={t(`intentions.${bundle.user.intention}`)}
           conditionsLabel={conditionsLabel}
+          latestLabel={latestObs ? formatDate(latestObs.effectiveAt, locale) : null}
           readings={bundle.observations.length}
           areasKnown={areasKnown}
-          areasWatch={areasWatch}
-          nodes={radarNodes}
+          watch={watch}
+          nextAction={nextAction}
+          missing={missingLinks}
+          tiles={tiles}
         />
       </Reveal>
 
-      <Reveal delay={0.06}>
-        <section id="overview" className="mt-8 scroll-mt-20" aria-labelledby="overview-heading">
-          <div className="grid gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-white to-dawn-50 shadow-[var(--shadow-soft)] lg:grid-cols-[1.2fr_1fr]">
-            <div className="p-5 md:p-6">
-              <h2 id="overview-heading" className="font-display text-xl tracking-tight text-ink-900">
-                {t("dashboard.overview.title")}
-              </h2>
-              <div className="mt-3 space-y-1.5 text-sm text-ink-600">
-                <p>
-                  {latestObs
-                    ? t("dashboard.overview.summary", {
-                        n: bundle.observations.length,
-                        sources: bundle.sources.length,
-                        date: formatDate(latestObs.effectiveAt, locale),
-                      })
-                    : t("dashboard.overview.summaryNone")}
-                </p>
-                {withInfo.length > 0 ? (
-                  <p>{t("dashboard.overview.withInfo", { areas: withInfo.join(", ") })}</p>
-                ) : null}
-                {withoutInfo.length > 0 ? (
-                  <p>{t("dashboard.overview.noInfo", { areas: withoutInfo.join(", ") })}</p>
-                ) : null}
-                {missingItems.length > 0 ? (
-                  <p className="rounded-xl border border-dashed border-dawn-300 bg-dawn-50/80 px-3 py-2 text-ink-600">
-                    {t("dashboard.overview.missing", { items: missingItems.join("; ") })}
-                  </p>
-                ) : null}
-              </div>
-              <p className="mt-3 text-xs text-ink-400">{t("dashboard.context.syntheticNotice")}</p>
-            </div>
-
-            <div className="border-t border-dawn-200/80 bg-mist-100/40 p-5 md:border-t-0 md:border-s md:p-6">
-              <p className="label-caps">{t("dashboard.overview.goal")}</p>
-              <div className="mt-1.5">
-                <IntentionPicker current={bundle.user.intention} />
-              </div>
-              <p className="mt-3 text-sm text-ink-600">
-                {t(`dashboard.overview.goalBody.${bundle.user.intention}`)}
-              </p>
-              <p className="mt-3 border-t border-dawn-200/80 pt-3 text-xs text-ink-600">
-                {t("dashboard.overview.relevanceNote")}
-              </p>
-            </div>
-          </div>
-        </section>
-      </Reveal>
-
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="mt-12 grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
         <Reveal delay={0.1} className="min-w-0">
           <section id="trajectory" className="scroll-mt-20" aria-labelledby="trajectory-heading">
             <div className="mb-4">

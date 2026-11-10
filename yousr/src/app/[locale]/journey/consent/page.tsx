@@ -24,7 +24,7 @@ export default async function JourneyConsentPage({
   ];
 
   return (
-    <JourneyShell stepLabel={t("journey.consent.eyebrow")} progress={isPatient ? 0.18 : 0.5}>
+    <JourneyShell stepLabel={t("journey.consent.eyebrow")} progress={isPatient ? 0.18 : 0.5} stage="consent" staff={!isPatient}>
       <JourneyIntro title={t("journey.consent.title")} body={t("journey.consent.subtitle")} />
 
       <div className="mt-7">

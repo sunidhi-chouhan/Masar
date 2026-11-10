@@ -22,7 +22,7 @@ export function TierRibbon({ tier }: { tier: Tier }) {
         : "border-dawn-200 bg-dawn-50 text-ink-600";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-xs font-medium ${tone}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${tone}`}
       title={t(`tiers.hint.${tier}`)}
     >
       <span aria-hidden className="h-1.5 w-1.5 rounded-pill bg-current" />
@@ -36,7 +36,7 @@ export function EvidenceChip({ strength, compact = false }: { strength: Evidence
   const { t } = useI18n();
   const dots = strength === "Strong" ? 3 : strength === "Moderate" ? 2 : 1;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-sm border border-dawn-200 bg-dawn-50 px-2 py-0.5 text-xs font-medium text-ink-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-dawn-200 bg-white px-2.5 py-0.5 text-xs font-medium text-ink-600">
       <span aria-hidden className="flex gap-0.5">
         {[0, 1, 2].map((i) => (
           <span key={i} className={`h-1.5 w-1.5 rounded-pill ${i < dots ? "bg-mist-700" : "bg-dawn-300"}`} />
@@ -49,11 +49,18 @@ export function EvidenceChip({ strength, compact = false }: { strength: Evidence
 
 /* ---------- direction badge ---------- */
 const DIRECTION_TONE: Record<Direction, string> = {
-  Improving: "bg-mist-100 text-mist-700 border-mist-300",
-  Stable: "bg-dawn-100 text-ink-900 border-dawn-300",
-  Shifting: "bg-peach-200/70 text-peach-700 border-peach-300",
-  Discuss: "bg-amber-100 text-amber-700 border-amber-400/70",
-  Unknown: "bg-slate-200/70 text-slate-600 border-slate-400/60",
+  Improving: "bg-mist-100 text-mist-700 ring-mist-300/70",
+  Stable: "bg-dawn-100 text-ink-700 ring-dawn-300/80",
+  Shifting: "bg-peach-200/70 text-peach-700 ring-peach-300/80",
+  Discuss: "bg-amber-100 text-amber-700 ring-amber-400/50",
+  Unknown: "bg-slate-200/60 text-slate-600 ring-slate-400/40",
+};
+export const DIRECTION_DOT: Record<Direction, string> = {
+  Improving: "bg-mist-500",
+  Stable: "bg-mist-300",
+  Shifting: "bg-peach-500",
+  Discuss: "bg-amber-400",
+  Unknown: "bg-slate-400",
 };
 export const DIRECTION_GLYPH: Record<Direction, string> = {
   Improving: "↗",
@@ -68,15 +75,15 @@ export function DirectionBadge({ direction, confidence, compact = false }: { dir
   const { t } = useI18n();
   if (confidence === "InsufficientData") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-slate-400 bg-slate-200/50 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-        <span aria-hidden>{DIRECTION_GLYPH.Unknown}</span>
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-dashed border-slate-400/70 bg-white px-2.5 py-1 text-xs font-medium text-slate-600">
+        <span aria-hidden className="dot border border-slate-400" />
         <span>{t("confidence.notEnough")}</span>
       </span>
     );
   }
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-xs font-medium ${DIRECTION_TONE[direction]}`}>
-      <span aria-hidden className="rtl:-scale-x-100">{DIRECTION_GLYPH[direction]}</span>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${DIRECTION_TONE[direction]}`}>
+      <span aria-hidden className={`dot ${DIRECTION_DOT[direction]}`} />
       <span>{t(`directions.${direction}`)}</span>
       {confidence && !compact ? <span className="opacity-75">· {t(`confidence.${confidence}`)}</span> : null}
     </span>
@@ -86,8 +93,9 @@ export function DirectionBadge({ direction, confidence, compact = false }: { dir
 /* ---------- buttons ---------- */
 type ButtonTone = "primary" | "secondary" | "ghost" | "amber";
 const TONE: Record<ButtonTone, string> = {
-  primary: "bg-mist-700 text-white hover:bg-mist-500 disabled:bg-mist-300",
-  secondary: "border border-dawn-300 bg-white text-ink-900 hover:bg-dawn-100",
+  primary:
+    "bg-mist-700 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_16px_-8px_rgba(11,74,68,0.6)] hover:bg-mist-600 disabled:bg-mist-300",
+  secondary: "border border-dawn-300 bg-white text-ink-900 shadow-[var(--shadow-soft)] hover:border-dawn-400 hover:bg-dawn-50",
   ghost: "text-mist-700 hover:bg-mist-100",
   amber: "bg-amber-400 text-ink-900 hover:bg-amber-700 hover:text-white",
 };
@@ -100,7 +108,7 @@ export function Button({
   return (
     <button
       {...rest}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-[color,background-color,border-color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:active:scale-100 ${TONE[tone]} ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-[color,background-color,border-color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:active:scale-100 ${TONE[tone]} ${className}`}
     />
   );
 }
@@ -119,7 +127,7 @@ export function LinkButton({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-[color,background-color,border-color,transform,box-shadow] duration-150 active:scale-[0.98] ${TONE[tone]} ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-[color,background-color,border-color,transform,box-shadow] duration-150 active:scale-[0.98] ${TONE[tone]} ${className}`}
     >
       {children}
     </Link>
@@ -131,7 +139,7 @@ export function SectionHeading({ title, body, action }: { title: string; body?: 
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="text-ink-900">{title}</h2>
+        <h2 className="text-[1.6rem] text-ink-900">{title}</h2>
         {body ? <p className="mt-1 max-w-2xl text-sm text-ink-600">{body}</p> : null}
       </div>
       {action}
@@ -143,7 +151,7 @@ export function SectionHeading({ title, body, action }: { title: string; body?: 
 export function SimulatedBadge() {
   const { t } = useI18n();
   return (
-    <span className="inline-flex items-center gap-1 rounded-sm border border-dashed border-slate-400 bg-slate-200/40 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-600">
+    <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-400/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-600">
       {t("common.simulated")}
     </span>
   );
@@ -153,7 +161,7 @@ export function SimulatedBadge() {
 export function Page({ children, wide = false, className = "" }: { children: ReactNode; wide?: boolean; className?: string }) {
   return (
     <div
-      className={`relative mx-auto w-full px-4 py-6 md:px-6 md:py-8 ${wide ? "max-w-7xl" : "max-w-3xl"} ${className}`}
+      className={`relative mx-auto w-full px-4 py-6 md:px-8 md:py-10 ${wide ? "max-w-[84rem]" : "max-w-3xl"} ${className}`}
     >
       {children}
     </div>

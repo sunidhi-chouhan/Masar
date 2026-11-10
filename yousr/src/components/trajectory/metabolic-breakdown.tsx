@@ -40,15 +40,7 @@ export function MetabolicBreakdown({
 
   return (
     <div>
-      <div className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white via-white to-mist-100/50 p-4 shadow-[var(--shadow-soft)] md:p-6">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -start-16 top-0 h-48 w-48 rounded-full opacity-40 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle, color-mix(in srgb, var(--color-mist-300, #9dd4c8) 75%, transparent), transparent 70%)",
-          }}
-        />
+      <div className="relative overflow-hidden card p-4 md:p-6">
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 max-w-xl">

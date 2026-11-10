@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { pageContext } from "@/lib/page-context";
 import { getJourneyState } from "@/lib/journey/state";
 import { decideAiExplanation } from "@/server/actions/journey";
+import { aiExplanationsConfigured } from "@/server/ai/claude";
 import { JourneyShell } from "@/components/journey/journey-shell";
 import { JourneySubmitButton } from "@/components/journey/journey-submit";
 import { JourneyIntro, JourneyStaggerList } from "@/components/journey/journey-intro";
@@ -11,17 +12,17 @@ export default async function JourneyAiPage({ params }: PageProps<"/[locale]/jou
   const { locale, t } = await pageContext(params);
   const journey = await getJourneyState();
   if (!journey || journey.path !== "patient") redirect(`/${locale}/journey`);
-  const hasKey = Boolean(process.env.GEMINI_API_KEY?.trim());
+  const hasKey = aiExplanationsConfigured();
 
   const points = [
     t("journey.ai.points.rules"),
-    t("journey.ai.points.gemini"),
+    t("journey.ai.points.model"),
     t("journey.ai.points.noScore"),
     t("journey.ai.points.decline"),
   ];
 
   return (
-    <JourneyShell stepLabel={t("journey.ai.eyebrow")} progress={0.9}>
+    <JourneyShell stepLabel={t("journey.ai.eyebrow")} progress={0.9} stage="ai">
       <JourneyIntro title={t("journey.ai.title")} body={t("journey.ai.subtitle")} />
 
       <div className="mt-7">

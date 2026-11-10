@@ -78,7 +78,7 @@ export function CouplePanel({
     <div>
       <DualOrbs partnerHue={partnerHue} partnerName={partnerName} />
       <div className="grid gap-5 md:grid-cols-2">
-        <section className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-dawn-50/70 p-5 shadow-[var(--shadow-soft)]">
+        <section className="overflow-hidden card p-5">
           <h2 className="font-display text-xl tracking-tight text-ink-900">
             {t("couple.iShare", { name: partnerName })}
           </h2>
@@ -137,7 +137,7 @@ export function CouplePanel({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white to-mist-100/40 p-5 shadow-[var(--shadow-soft)]">
+        <section className="overflow-hidden card p-5">
           <div className="flex items-center gap-3">
             <span
               aria-hidden

@@ -35,7 +35,7 @@ export default async function JourneyRolePage({ params }: PageProps<"/[locale]/j
   ];
 
   return (
-    <JourneyShell stepLabel={t("journey.roles.eyebrow")} progress={0.08} wide>
+    <JourneyShell stepLabel={t("journey.roles.eyebrow")} progress={0.08} stage="role" wide>
       <JourneyIntro
         hero
         badge={false}

@@ -47,22 +47,10 @@ export function DomainCard({
   return (
     <motion.article
       whileHover={animate ? { y: -4 } : undefined}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white/90 p-4 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-lift)] ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[18px] bg-white/90 p-4 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-lift)] ${
         insufficient ? "border border-dashed border-slate-400/50" : "ring-1 ring-dawn-200/60"
       }`}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -end-8 -top-10 h-28 w-28 rounded-full opacity-50 blur-2xl transition-opacity group-hover:opacity-80"
-        style={{
-          background:
-            r.direction === "Discuss"
-              ? "radial-gradient(circle, color-mix(in srgb, var(--color-amber-300, #f0d78c) 75%, transparent), transparent 70%)"
-              : r.direction === "Shifting"
-                ? "radial-gradient(circle, color-mix(in srgb, var(--color-peach-300, #efc4b0) 75%, transparent), transparent 70%)"
-                : "radial-gradient(circle, color-mix(in srgb, var(--color-mist-300, #9dd4c8) 75%, transparent), transparent 70%)",
-        }}
-      />
 
       <div className="relative flex items-start gap-3">
         <DomainSphere domain={r.domain} direction={insufficient ? "Unknown" : r.direction} size={64} />

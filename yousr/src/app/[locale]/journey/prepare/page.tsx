@@ -12,7 +12,7 @@ export default async function JourneyPreparePage({
   if (!journey || journey.path !== "patient") redirect(`/${locale}/journey`);
 
   return (
-    <JourneyShell stepLabel={t("journey.prepare.eyebrow")} progress={0.78}>
+    <JourneyShell stepLabel={t("journey.prepare.eyebrow")} progress={0.78} stage="prepare">
       <EcgPrepare locale={locale} />
     </JourneyShell>
   );

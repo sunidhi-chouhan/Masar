@@ -33,16 +33,11 @@ export default async function LivingWellPage({ params }: PageProps<"/[locale]/li
               <StaggerItem key={h.id} className="h-full">
                 <Link
                   href={`/${locale}/living-well/${h.id}`}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white/90 p-5 shadow-[var(--shadow-soft)] ring-1 ring-dawn-200/60 transition-shadow hover:shadow-[var(--shadow-lift)]"
+                  className="group relative flex h-full flex-col overflow-hidden card p-5 transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
                 >
                   <span
                     aria-hidden
-                    className="absolute -end-8 -top-8 h-28 w-28 rounded-full opacity-70 blur-2xl transition-opacity group-hover:opacity-100"
-                    style={{ background: HUB_HUE[h.id] ?? "var(--peach-300)" }}
-                  />
-                  <span
-                    aria-hidden
-                    className="relative mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+                    className="relative mb-4 flex h-11 w-11 items-center justify-center rounded-xl"
                     style={{ background: `color-mix(in srgb, ${HUB_HUE[h.id] ?? "var(--peach-300)"} 55%, white)` }}
                   >
                     <span className="h-3 w-3 rounded-full bg-mist-700/70" />

@@ -32,22 +32,10 @@ export function DetailsGroup({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: dur(0.45), ease: [0.16, 1, 0.3, 1] }}
-      className={`relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br ${GROUP_SHELL[groupKey]} p-4 shadow-[var(--shadow-soft)] md:p-6`}
+      className={`relative overflow-hidden rounded-[18px] bg-gradient-to-br ${GROUP_SHELL[groupKey]} p-4 shadow-[var(--shadow-soft)] md:p-6`}
       aria-labelledby={`details-group-${groupKey}`}
     >
       {/* soft sphere wash in corner */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -end-10 -top-12 h-40 w-40 rounded-full opacity-40 blur-2xl"
-        style={{
-          background:
-            groupKey === "history"
-              ? "radial-gradient(circle, color-mix(in srgb, var(--color-amber-300, #f0d78c) 70%, transparent), transparent 70%)"
-              : groupKey === "context"
-                ? "radial-gradient(circle, color-mix(in srgb, var(--color-peach-300, #efc4b0) 70%, transparent), transparent 70%)"
-                : "radial-gradient(circle, color-mix(in srgb, var(--color-mist-300, #9dd4c8) 70%, transparent), transparent 70%)",
-        }}
-      />
 
       <header className="relative mb-5 flex items-center justify-between gap-4">
         <div className="min-w-0">

@@ -108,7 +108,7 @@ export function ActionCard({ action, livingWellHref, quiet = false }: { action: 
 
   return (
     <article
-      className={`overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-mist-100/40 p-5 shadow-[var(--shadow-soft)] ${
+      className={`overflow-hidden card p-5 ${
         quiet ? "ring-1 ring-mist-300/60" : ""
       }`}
     >
