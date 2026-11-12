@@ -1,8 +1,14 @@
 import "server-only";
 import { CONDITION_LABEL, INTENTION_LABEL } from "@/lib/model";
 import { OPTION_LABEL, RULES } from "@/lib/signals";
-import type { PersonView } from "@/server/views";
-import { aiEnabled, generateJson, type Turn } from "./gemini";
+import { reportsForAssistant, type PersonView } from "@/server/views";
+import { aiAllowedFor, aiMode, consentAllows, generateJson, type Turn } from "./gemini";
+import { person } from "@/server/store";
+import { dashboardFor } from "@/server/dashboard";
+import { MEASURE_INFO } from "@/lib/measure-info";
+import type { SignalCode } from "@/lib/signals";
+import type { ReadingCode } from "@/lib/model";
+import { checkOutput, needsUrgentCare } from "./guard";
 import { t, type Lang } from "@/lib/i18n";
 
 // The assistant explains what Masar's rules already found. It never decides
@@ -19,9 +25,17 @@ export interface CompanionReply {
   reply: string;
   suggestions: string[];
   brief: Brief | null;
-  /** "ai" when Gemini wrote it, "masar" when it is Masar's own text */
-  from: "ai" | "masar";
+  /** "ai" when Gemini wrote it, "mock" for the labelled demo stand-in, "masar" when it is Masar's own text */
+  from: "ai" | "mock" | "masar";
 }
+
+/** What a question is about, when it came from a button on the page. */
+export type AskIntent =
+  | { kind: "insight"; code: string }
+  | { kind: "measure"; code: string }
+  | { kind: "unknown" }
+  | { kind: "questions" }
+  | { kind: "known" };
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -67,7 +81,8 @@ export function contextFor(v: PersonView): string {
   }
   if (v.missing.length) lines.push("", `Not on record yet: ${v.missing.join("; ")}.`);
   if (v.state.request) lines.push("", `The person has asked their doctor for a conversation (status: ${v.state.request.status}).`);
-  for (const rep of v.state.reports ?? []) {
+  // Reports only while "Lab results" is on.
+  for (const rep of reportsForAssistant(v.state)) {
     if (rep.status === "requested") lines.push(`Their doctor asked them to upload: ${rep.test}.`);
     if (rep.values?.length) lines.push(`Uploaded ${rep.test}: ${rep.values.map((x) => `${x.name} ${x.value} ${x.unit}`).join(", ")}${rep.status === "confirmed" ? "" : " (not yet confirmed by the person)"}.`);
   }
@@ -116,24 +131,74 @@ const SCHEMA = {
   required: ["reply", "suggestions"],
 };
 
-export async function companionReply(v: PersonView, history: ChatMessage[], lang: Lang = "en"): Promise<CompanionReply> {
+export async function companionReply(v: PersonView, history: ChatMessage[], lang: Lang = "en", intent?: AskIntent): Promise<CompanionReply> {
   const last = history[history.length - 1]?.text ?? "";
-  if (aiEnabled()) {
+  // Severe symptoms or distress get fixed words pointing to a person, never a model's reply.
+  if (needsUrgentCare(last)) return urgent(lang);
+  // Demo mock (no key): with the person's consent, Masar's own answer, labelled as the mock and logged like a real call.
+  if (aiMode() === "mock" && consentAllows(person(v.resident.id), "assistant")) {
+    try {
+      const own = fallback(v, last, lang, intent);
+      const out = await generateJson<Omit<CompanionReply, "from">>({
+        personId: v.resident.id,
+        purpose: "assistant",
+        activity: "Read your summary to answer your question",
+        system: "",
+        turns: [],
+        schema: SCHEMA,
+        mock: () => ({ reply: own.reply, suggestions: own.suggestions, brief: own.brief }),
+      });
+      return { ...out, brief: out.brief ?? null, from: "mock" };
+    } catch (e) {
+      console.error("[companion mock]", e instanceof Error ? e.message : e);
+    }
+  }
+  // Only with this person's assistant consent, checked again inside generateJson.
+  if (aiAllowedFor(v.resident.id, "assistant")) {
     try {
       const turns: Turn[] = history.slice(-12).map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] }));
+      const context = contextFor(v);
       const out = await generateJson<Omit<CompanionReply, "from">>({
+        personId: v.resident.id,
+        purpose: "assistant",
+        activity: "Read your summary to answer your question",
         system:
-          SYSTEM(contextFor(v)) +
+          SYSTEM(context) +
           (lang === "ar" ? "\n\nReply in clear, simple Modern Standard Arabic, gender-neutral where you can. Write the brief and suggestions in Arabic too." : ""),
         turns,
         schema: SCHEMA,
       });
-      return { reply: out.reply, suggestions: (out.suggestions ?? []).slice(0, 3), brief: out.brief ?? null, from: "ai" };
+      const reply: CompanionReply = {
+        reply: out.reply.trim().slice(0, 1500),
+        suggestions: (out.suggestions ?? []).map((x) => x.trim()).filter(Boolean).slice(0, 3).map((x) => x.slice(0, 80)),
+        brief: out.brief
+          ? { opening: out.brief.opening.slice(0, 400), points: out.brief.points.slice(0, 6), questions: out.brief.questions.slice(0, 5) }
+          : null,
+        from: "ai",
+      };
+      // Every word must pass the content rules, and every number must come from the record.
+      const texts = [reply.reply, ...reply.suggestions, ...(reply.brief ? [reply.brief.opening, ...reply.brief.points, ...reply.brief.questions] : [])];
+      const problem = !reply.reply ? "empty reply" : checkOutput(texts, [context]);
+      if (!problem) return reply;
+      console.warn("[companion] reply withheld:", problem);
     } catch (e) {
       console.error("[companion]", e instanceof Error ? e.message : e);
     }
   }
-  return fallback(v, last, lang);
+  return fallback(v, last, lang, intent);
+}
+
+/** Fixed words for severe symptoms or distress. */
+function urgent(lang: Lang): CompanionReply {
+  return {
+    from: "masar",
+    brief: null,
+    reply: t(
+      lang,
+      "This needs a person, not an assistant. If you have severe pain, very heavy bleeding, a possible problem with a pregnancy, or thoughts of harming yourself, please call 999 or go to the nearest emergency department now. You can also contact your doctor.",
+    ),
+    suggestions: [],
+  };
 }
 
 /** Turns "You are 34" into "I am 34", for a note the person reads out. */
@@ -147,15 +212,92 @@ const firstPerson = (s: string) =>
     .replace(/\byou\b/g, "me");
 
 /** Masar's own words, used when Gemini is not set up or does not answer. */
-function fallback(v: PersonView, said: string, lang: Lang): CompanionReply {
+function fallback(v: PersonView, said: string, lang: Lang, intent?: AskIntent): CompanionReply {
   const tr = (text: string, vars?: Record<string, string | number>) => t(lang, text, vars);
+  const say = (l: { text: string; vars?: Record<string, string | number> }) =>
+    tr(l.text, l.vars && Object.fromEntries(Object.entries(l.vars).map(([k, x]) => [k, typeof x === "string" ? tr(x) : x])));
   const first = v.resident.name.split(" ")[0];
   const text = said.toLowerCase();
   const has = (...words: string[]) => words.some((w) => text.includes(w));
   const questions = [...new Set(v.signals.flatMap((s) => RULES[s.code].questions))].slice(0, 3);
   const base = { from: "masar" as const, brief: null };
+  const d = dashboardFor(v);
+  const sep = lang === "ar" ? "، " : "; ";
 
-  if (has("doctor", "conversation", "prepare", "طبيب", "محادثة", "الحديث")) {
+  // Typed questions are matched to the same topics as the buttons.
+  const measureNamed = d.series.find((s) => has(tr(s.label).toLowerCase(), s.label.toLowerCase(), ...(s.label.match(/\(([^)]+)\)/)?.[1] ? [s.label.match(/\(([^)]+)\)/)![1].toLowerCase()] : [])));
+  const insightNamed = d.insights.find((i) => has(tr(i.title).toLowerCase(), i.title.toLowerCase()));
+  const kind: AskIntent | undefined =
+    intent ??
+    (insightNamed ? { kind: "insight", code: insightNamed.code } : undefined) ??
+    (measureNamed ? { kind: "measure", code: measureNamed.code } : undefined) ??
+    (has("unknown", "missing", "don't know", "doesn't know", "مجهول", "ناقص", "لا يعرف", "لا نعرف")
+      ? { kind: "unknown" }
+      : has("what do you know", "information do you have", "have about me", "ماذا تعرف", "معلومات")
+        ? { kind: "known" }
+        : undefined);
+
+  if (kind?.kind === "insight") {
+    const i = d.insights.find((x) => x.code === (kind.code as SignalCode));
+    if (i) {
+      return {
+        ...base,
+        reply: [
+          tr("{title}.", { title: tr(i.title) }),
+          tr("Why Masar raised it: {reasons}.", { reasons: i.because.map((b) => say(b.text)).join(sep) }),
+          tr("Why it matters: {why}", { why: tr(i.why) }),
+          tr("This comes from {citation} ({strength} evidence), about people in general, not a prediction about you.", { citation: tr(i.evidence.citation), strength: tr(i.evidence.strength) }),
+          tr("What it can't tell you: {cannot}", { cannot: tr(i.cannot) }),
+        ].join("\n\n"),
+        suggestions: [tr(i.questions[0]), tr("What's still unknown about me?"), tr("What should I ask my doctor?")],
+      };
+    }
+  }
+  if (kind?.kind === "measure") {
+    const s = d.series.find((x) => x.code === (kind.code as ReadingCode));
+    if (s) {
+      const info = MEASURE_INFO[s.code];
+      const last = s.points.at(-1);
+      return {
+        ...base,
+        reply: [
+          tr("{label}: {what}", { label: tr(s.label), what: tr(info.what) }),
+          last ? tr("Your latest result on record is {value} {unit}.", { value: Number.isInteger(last.value) ? last.value : last.value.toFixed(1), unit: tr(s.unit) }) : "",
+          say(s.sentence),
+          tr("Its limits: {limits}", { limits: tr(info.limits) }),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+        suggestions: [tr("What's still unknown about me?"), tr("What should I ask my doctor?")],
+      };
+    }
+  }
+  if (kind?.kind === "unknown") {
+    const gaps = d.unknown.map((f) => say(f.text));
+    const limits = [...new Set(d.insights.map((i) => tr(i.cannot)))];
+    return {
+      ...base,
+      reply: [
+        gaps.length ? tr("Still unknown: {list}", { list: gaps.join(" ") }) : tr("Nothing Masar looks at is missing from your record."),
+        limits.length ? tr("And what your findings can't tell: {list}", { list: limits.join(" ") }) : "",
+        tr("Masar can only see what you chose to share, and it never says whether you will or won't have children."),
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+      suggestions: [tr("What should I ask my doctor?"), tr("What information do you have about me?")],
+    };
+  }
+  if (kind?.kind === "known") {
+    return {
+      ...base,
+      reply: d.known.length
+        ? tr("From what you shared, Masar has: {list}", { list: d.known.map((f) => `${say(f.text)} (${tr(f.source)})`).join(" ") })
+        : tr("You haven't shared anything Masar can use yet. You can change that in My data."),
+      suggestions: [tr("What's still unknown about me?"), tr("What should I ask my doctor?")],
+    };
+  }
+
+  if (kind?.kind === "questions" || has("doctor", "conversation", "prepare", "طبيب", "محادثة", "الحديث")) {
     return {
       ...base,
       reply: tr("Here is a short note you can bring, {name}. Read the opening line out, then go through the questions.", { name: first }),

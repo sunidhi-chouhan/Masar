@@ -1,0 +1,38 @@
+# Render Blueprint for Masar (https://render.com/docs/blueprint-spec).
+# In Render: New → Blueprint → choose this repository. Render asks for the
+# values marked `sync: false` once, when the Blueprint is created.
+#
+# Masar keeps its state in files, so the service has a persistent disk at
+# /data and runs as one instance. Disks need a paid instance; with no `plan`
+# set, Render uses its smallest paid web instance (0.5 CPU, 512 MB).
+services:
+  - type: web
+    name: masar
+    runtime: docker
+    rootDir: app
+    # Both paths are relative to the repository root.
+    dockerfilePath: ./app/Dockerfile
+    dockerContext: ./app
+    region: frankfurt # the closest Render region to the UAE
+    numInstances: 1
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: masar-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: MASAR_DATA_DIR
+        value: /data
+      # Signs sessions and login links. Generated once by Render; never shown in the repo.
+      - key: SESSION_SECRET
+        generateValue: true
+      # Opens /access and /prototype. Choose a long, random value and share it only with the team.
+      - key: ACCESS_KEY
+        sync: false
+      # Optional. Leave empty to use Masar's own explanations (or the labelled mock below).
+      - key: GEMINI_API_KEY
+        sync: false
+      # Demo only: runs the journey's Gemini steps through a labelled mock when no key is set.
+      - key: GEMINI_MOCK
+        value: "1"

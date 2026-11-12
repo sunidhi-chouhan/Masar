@@ -1,0 +1,66 @@
+/* The Masar prototype (/prototype): Masar's tokens, a little more depth. */
+
+.pt-root { background: var(--color-paper); color: var(--color-ink); }
+.pt-card {
+  border-radius: 22px;
+  border: 1px solid var(--color-rule);
+  background: var(--color-surface);
+  padding: 1.25rem 1.375rem;
+  box-shadow: 0 1px 0 rgb(28 27 24 / 0.02), 0 14px 36px -26px rgb(28 27 24 / 0.22);
+}
+@media (min-width: 768px) { .pt-card { padding: 1.5rem 1.625rem; } }
+.pt-hero {
+  background:
+    radial-gradient(110% 130% at 100% 0%, color-mix(in oklab, var(--color-accent-soft) 85%, transparent) 0%, transparent 55%),
+    linear-gradient(160deg, #ffffff 0%, #fbf9f5 100%);
+}
+.pt-dark {
+  border-color: transparent;
+  color: #fff;
+  background:
+    radial-gradient(90% 120% at 100% 100%, rgb(200 150 46 / 0.22) 0%, transparent 55%),
+    radial-gradient(80% 100% at 0% 0%, rgb(30 91 86 / 0.55) 0%, transparent 60%),
+    #1c1b18;
+}
+.pt-lift { transition: transform 0.25s var(--ease-calm), border-color 0.2s; }
+.pt-lift:hover { border-color: var(--color-rule-strong); }
+.pt-input {
+  display: block; width: 100%; min-height: 44px; border-radius: 12px;
+  border: 1px solid var(--color-rule-strong); background: var(--color-surface);
+  padding: 0.5rem 0.875rem; font-size: 14.5px; color: var(--color-ink); outline: none;
+}
+.pt-input:focus-visible { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-soft); }
+.pt-landing {
+  background:
+    radial-gradient(60% 70% at 85% 30%, color-mix(in oklab, var(--color-accent-soft) 90%, transparent) 0%, transparent 70%),
+    radial-gradient(40% 50% at 10% 90%, color-mix(in oklab, var(--color-soon-soft) 80%, transparent) 0%, transparent 70%);
+}
+.pt-orb {
+  background: radial-gradient(circle at 40% 35%, #ffffff 0%, color-mix(in oklab, var(--color-accent-soft) 70%, transparent) 45%, transparent 70%);
+}
+.pt-controls { color-scheme: dark; }
+.pt-controls :focus-visible, .pt-controls-fab:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .pt-role { animation: page-enter 0.4s var(--ease-calm) both; }
+  .pt-enter { animation: jr-in 0.45s var(--ease-calm) both; }
+  .pt-lift:hover { transform: translateY(-2px); }
+  .pt-pop { animation: jr-in 0.25s var(--ease-calm) both; }
+  .pt-toast { animation: pt-slide 0.35s var(--ease-calm) both; }
+  .pt-float { animation: pt-float 7s ease-in-out var(--d, 0s) infinite; }
+  .pt-bar { transform-origin: bottom; animation: bar-grow 0.7s var(--ease-calm) calc(0.06s * var(--i, 0)) both; }
+  .pt-grow { transform-origin: left; animation: pt-grow 0.8s var(--ease-calm) both; }
+  [dir="rtl"] .pt-grow { transform-origin: right; }
+  .pt-pulse { animation: pt-pulse 1.8s ease-in-out infinite; }
+  .pt-spark { animation: jr-spin 3s linear infinite; }
+  .pt-orbit { transform-origin: 50% 50%; animation: jr-spin 1.8s linear infinite; }
+  .pt-controls { animation: jr-in 0.25s var(--ease-calm) both; }
+}
+@keyframes pt-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes pt-grow { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes pt-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(30 91 86 / 0.35); } 50% { box-shadow: 0 0 0 16px rgb(30 91 86 / 0); } }
+@keyframes pt-slide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+@media print {
+  .pt-controls, .pt-controls-fab { display: none !important; }
+}

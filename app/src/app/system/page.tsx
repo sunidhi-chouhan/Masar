@@ -2,6 +2,7 @@ import { DoctorDecisions, Journey, Monthly, Reach, TimeToConversation } from "@/
 import { Pill, Shell } from "@/components/ui";
 import { MIN_GROUP, report } from "@/lib/evidence";
 import { GROUP_LABEL, LANGUAGE_LABEL } from "@/lib/model";
+import { RULES } from "@/lib/signals";
 import { requireRole } from "@/server/session";
 
 // Per-user page: it reads the session on every request, so it is never prerendered.
@@ -40,6 +41,8 @@ export default async function EvidenceReport() {
   const averageAsked = Math.round((asked / Math.max(1, r.signalled)) * 100);
   const at90 = r.curve.find((c) => c.day === 90)!;
   const lowestAgreement = [...decidedRules].sort((a, b) => a.agreePct - b.agreePct)[0];
+  const ruleCount = Object.keys(RULES).length;
+  const disclosed = Object.values(RULES).filter((x) => x.cannotTell.trim().length > 0).length;
 
   const kpis = [
     { label: "People who said yes to Masar", value: r.optedIn.toLocaleString("en"), sub: `of ${r.population.toLocaleString("en")} residents` },
@@ -128,6 +131,48 @@ export default async function EvidenceReport() {
           <p className="mt-2 text-[12.5px] text-zinc-400">Reasons given to fewer than {MIN_GROUP} people are left out to protect privacy.</p>
         ) : null}
       </ChartCard>
+
+      <section aria-labelledby="calibration" className="reveal card mt-6 overflow-hidden">
+        <div className="p-6 pb-4">
+          <h2 id="calibration" className="text-[1.15rem] font-semibold tracking-[-0.015em] text-zinc-950">
+            Calibration: is each reason raised about as often as it should be?
+          </h2>
+          <p className="mt-1 max-w-2xl text-[14px] text-zinc-600">
+            Calibration compares how often Masar raises a reason with how often it turns out to matter. That needs real outcomes, such as what
+            the assessment found, so this practice run can&apos;t measure it. The table shows what a pilot would fill in, next to what we have
+            now.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-[13.5px]">
+            <thead>
+              <tr className="border-y border-zinc-200 bg-zinc-100/60 text-start text-[12px] uppercase tracking-[0.06em] text-zinc-500">
+                <th scope="col" className="px-6 py-2.5 text-start font-medium">Reason</th>
+                <th scope="col" className="px-4 py-2.5 text-end font-medium">Raised</th>
+                <th scope="col" className="px-4 py-2.5 text-end font-medium">Doctor agreed (assumed)</th>
+                <th scope="col" className="px-4 py-2.5 text-start font-medium">Confirmed by outcome</th>
+                <th scope="col" className="px-6 py-2.5 text-start font-medium">Limits stated to the person</th>
+              </tr>
+            </thead>
+            <tbody>
+              {decidedRules.map((x) => (
+                <tr key={x.code} className="border-b border-zinc-200 last:border-0">
+                  <th scope="row" className="px-6 py-2.5 text-start font-medium text-zinc-950">{x.title}</th>
+                  <td className="tabular px-4 py-2.5 text-end text-zinc-700">{x.n.toLocaleString("en")}</td>
+                  <td className="tabular px-4 py-2.5 text-end text-zinc-700">{x.agreePct}%</td>
+                  <td className="px-4 py-2.5 text-zinc-500">Not measurable yet</td>
+                  <td className="px-6 py-2.5 text-zinc-700">{RULES[x.code].cannotTell ? "Yes, every time" : "Missing"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="px-6 py-4 text-[13.5px] text-zinc-600">
+          <span className="font-semibold text-zinc-950">Uncertainty disclosed: </span>
+          {disclosed} of {ruleCount} reasons always show the person what they can&apos;t tell, next to the finding. Doctor agreement is an
+          assumption in this run, not a measurement. Reasons given to fewer than {MIN_GROUP} people are left out.
+        </p>
+      </section>
 
       <ChartCard
         className="mt-6"
@@ -237,7 +282,7 @@ export default async function EvidenceReport() {
           <li>· Without Masar, most people first get advice after a year of trying; a few (2–25%, more as plans get closer) ask earlier on their own.</li>
           <li>· With Masar, people take about a week to ask, then wait two to three weeks; urgent cases are seen within days.</li>
           <li>· Men, and people whose language Masar does not speak yet, are assumed to ask less and later.</li>
-          <li>· How often doctors agree is assumed for now, in place of real decisions.</li>
+          <li>· How often doctors agree is assumed for now, in place of real decisions. Calibration needs real outcomes and is not measured.</li>
           <li>· A real pilot replaces every one of these with what actually happens on the same screens.</li>
         </ul>
       </section>

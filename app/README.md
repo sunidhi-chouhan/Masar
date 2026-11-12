@@ -20,7 +20,7 @@ Until those identity providers are connected, each account signs in with a signe
 Two ways to get them, neither linked from the product:
 
 - **Script:** `npm run login-links` prints a link for every account. For a deployed server: `BASE_URL=https://your-host SESSION_SECRET=... npm run login-links`.
-- **Access page:** `/access` lists the same links with copy buttons, can load the demo story (Noura has asked her doctor to talk, Arjun has shared, Maryam starts fresh) and can reset all data. It is open in development; in production it needs `ACCESS_KEY` and is opened as `/access?key=YOUR_KEY`. It is hidden from search engines.
+- **Access page:** `/access` lists the same links with copy buttons, can load the demo story (Noura has asked her doctor to talk, Arjun has shared, Maryam starts fresh) and can reset all data. It is open in development; in production it needs `ACCESS_KEY` and is opened as `/access?key=YOUR_KEY` (opening it without the key asks for the key). Its demo story button opens the interactive prototype at `/prototype`. It is hidden from search engines.
 
 | Account | Role | Lands on |
 |---|---|---|
@@ -35,11 +35,30 @@ Two ways to get them, neither linked from the product:
 | Variable | Needed | Purpose |
 |---|---|---|
 | `SESSION_SECRET` | Production | Signs sessions and login links. The server refuses to start sign-ins without it in production. |
-| `ACCESS_KEY` | Production | Opens the `/access` page. Without it, the page returns 404 in production. |
+| `ACCESS_KEY` | Production | Opens the `/access` page and `/prototype`. Without it, production shows that demo access is switched off. |
 | `GEMINI_API_KEY` | Optional | Turns on the resident's assistant and automatic reading of uploaded reports. Without it, Masar uses its own written explanations. |
 | `GEMINI_MODEL` | Optional | Gemini model name. Defaults to `gemini-2.5-flash`. |
+| `GEMINI_MOCK` | Demo only | `1` with no key runs the journey's Gemini steps through a labelled mock. |
+| `MASAR_DATA_DIR` | Optional | Where state and uploads are kept. Defaults to `.data/`. |
 
 Copy `.env.example` to `.env.local` and fill it in.
+
+## Deploying
+
+Masar keeps its state in files (`.data/state.json` and `.data/uploads/`, or `MASAR_DATA_DIR`), so it needs a host with a **persistent disk** and **one running instance**. Set `SESSION_SECRET` and `ACCESS_KEY` (and `GEMINI_API_KEY` or `GEMINI_MOCK=1` if wanted) in the host's environment settings, never in the repository.
+
+| Host | Fits? | Notes |
+|---|---|---|
+| Render, Railway or Fly.io | Yes, for the demo | Deploy `app/` with the `Dockerfile`, attach a disk/volume at `/data`, keep it to one instance. |
+| A UAE-region VM or container service (Azure UAE North, AWS me-central-1, Oracle Abu Dhabi, Core42) | Yes, for a pilot | Same container. Needed once real health data is involved, because UAE health data must stay in the country. |
+| Vercel or Netlify | Only the prototype | `/prototype` keeps its state in the browser and works anywhere. The live app's writes (consent, answers, uploads) would be lost: these hosts have no lasting disk. Moving the store to a database first would fix this. |
+
+```bash
+docker build -t masar .
+docker run -p 3000:3000 -v masar-data:/data -e SESSION_SECRET=... -e ACCESS_KEY=... masar
+```
+
+Then open `/access?key=YOUR_KEY` (or `/access` and enter the key).
 
 ## AI
 

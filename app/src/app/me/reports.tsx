@@ -13,7 +13,9 @@ export function Reports({
   t,
   fmt,
   lang,
+  aiReads,
 }: {
+  aiReads: boolean;
   personId: string;
   reports: ReportRequest[];
   t: (text: string, vars?: Vars) => string;
@@ -41,14 +43,19 @@ export function Reports({
             </div>
             {r.note ? <p className="mt-3 rounded-xl bg-zinc-50 px-4 py-3 text-[14px] text-zinc-700">&ldquo;{r.note}&rdquo;</p> : null}
 
-            {r.status === "requested" ? <ReportUpload reportId={r.id} lang={lang} /> : null}
+            {r.status === "requested" ? <ReportUpload reportId={r.id} lang={lang} aiReads={aiReads} /> : null}
 
             {r.status !== "requested" && r.forPerson ? (
               <div className="mt-4 flex gap-3 rounded-2xl bg-indigo-50/70 p-4">
                 <span aria-hidden className="orb mt-0.5" style={{ width: 22, height: 22 }}>
                   <span className="orb__core" />
                 </span>
-                <p className="text-[14px] leading-relaxed text-indigo-950">{t(r.forPerson)}</p>
+                <div>
+                  <p className="text-[14px] leading-relaxed text-indigo-950">{t(r.forPerson)}</p>
+                  <p className="mt-1 text-[11.5px] text-indigo-900/70">
+                    {r.readBy === "ai" ? t("Read automatically by Masar's assistant (Google Gemini). Check it against your file.") : t("Masar's own words")}
+                  </p>
+                </div>
               </div>
             ) : null}
 

@@ -5,7 +5,8 @@ import { uploadReport, type UploadResult } from "@/server/actions";
 import { CellLoader } from "./loaders";
 import { t, type Lang, type Vars } from "@/lib/i18n";
 
-export function ReportUpload({ reportId, lang }: { reportId: string; lang: Lang }) {
+/** `aiReads`: whether Masar's assistant will read the file (report-reading consent and Lab results on). */
+export function ReportUpload({ reportId, lang, aiReads }: { reportId: string; lang: Lang; aiReads: boolean }) {
   const tr = (text: string, vars?: Vars) => t(lang, text, vars);
   const [state, action, pending] = useActionState<UploadResult | null, FormData>(uploadReport.bind(null, reportId), null);
   const [name, setName] = useState<string | null>(null);
@@ -15,8 +16,10 @@ export function ReportUpload({ reportId, lang }: { reportId: string; lang: Lang 
       <div className="mt-4 flex items-center gap-4 rounded-2xl bg-indigo-50/70 p-4">
         <CellLoader size={40} />
         <div>
-          <p className="text-[14px] font-semibold text-indigo-950">{tr("Reading your report…")}</p>
-          <p className="text-[13px] text-indigo-900/70">{tr("This takes a few seconds. You'll check what we found before it counts.")}</p>
+          <p className="text-[14px] font-semibold text-indigo-950">{aiReads ? tr("Reading your report…") : tr("Uploading your report…")}</p>
+          <p className="text-[13px] text-indigo-900/70">
+            {aiReads ? tr("This takes a few seconds. You'll check what we found before it counts.") : tr("Masar's assistant won't read it. You'll confirm before your doctor can open it.")}
+          </p>
         </div>
       </div>
     );
@@ -41,7 +44,7 @@ export function ReportUpload({ reportId, lang }: { reportId: string; lang: Lang 
       </label>
       {state && !state.ok ? <p className="mt-2 text-[13px] text-rose-700">{tr(state.error)}</p> : null}
       <button type="submit" disabled={!name} className="mt-3 w-full rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:bg-zinc-200 disabled:text-zinc-400">
-        {tr("Upload and read it")}
+        {aiReads ? tr("Upload and read it") : tr("Upload")}
       </button>
     </form>
   );

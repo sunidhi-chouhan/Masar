@@ -44,7 +44,7 @@ export function VisitBriefButton({ patientId }: { patientId: string }) {
   return (
     <div className="page-enter rounded-2xl bg-white/95 p-4 text-zinc-900 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-indigo-600">
-        Visit brief{brief.from === "ai" ? " · written by the assistant from this record" : ""}
+        Visit brief · {brief.from === "ai" ? "written by Masar's assistant (Google Gemini) from this record; check before relying on it" : "Masar's own summary of the record"}
       </p>
       <p className="mt-1.5 text-[14px] leading-relaxed">{brief.summary}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">

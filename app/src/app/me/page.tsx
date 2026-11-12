@@ -1,24 +1,25 @@
-import Image from "next/image";
-import Link from "next/link";
-import { PHOTOS } from "@/lib/media";
+import { Suspense } from "react";
 import { Onboarding } from "@/components/onboarding";
-import { TrajectoryChart } from "@/components/trajectory-chart";
-import { Pill, SectionTitle, Shell, URGENCY_PILL, VERDICT_PILL } from "@/components/ui";
+import { Shell } from "@/components/ui";
+import { DashSection, Explore, Insights, KnowledgeBoard, Overview, OverTime, Prepare, ReportTeaser, type Tx } from "@/components/dashboard/sections";
+import { SectionNav } from "@/components/dashboard/section-nav";
+import { dashboardFor } from "@/server/dashboard";
 import { SURE_ITEMS, WORRY_LABELS, beliefItems, beliefScore } from "@/lib/checks";
-import { answersFromRecords } from "@/lib/profile";
-import { INTENTION_LABEL, TOUCHPOINT_LABEL } from "@/lib/model";
-import { ALL_SOURCES, OPTION_LABEL, RULES, signalsFor, visibleRecord } from "@/lib/signals";
+import { SOURCES } from "@/lib/model";
+import { OPTION_LABEL, RULES } from "@/lib/signals";
 import { completeAfterCheck, requestConversation, setReminder } from "@/server/actions";
 import { requireRole } from "@/server/session";
 import { SubmitButton } from "@/components/submit-button";
 import { personView, type PersonView } from "@/server/views";
-import { aiEnabled } from "@/server/ai/gemini";
+import { aiAllowedFor, aiMode } from "@/server/ai/gemini";
+import { accessLog } from "@/server/store";
+import type { ConsentItem } from "@/components/journey/consent-step";
 import { translator } from "@/server/lang";
 import { formatDateIn, type Vars } from "@/lib/i18n";
+import { Companion, type AskIntent } from "@/components/companion";
+import { Reports } from "./reports";
 
 type Tr = (text: string, vars?: Vars) => string;
-import { AskButton, Companion } from "@/components/companion";
-import { Reports } from "./reports";
 
 // Per-user page: it reads the session on every request, so it is never prerendered.
 export const instant = false;
@@ -31,300 +32,147 @@ export default async function MyPath() {
   const first = v.resident.name.split(" ")[0];
 
   if (!v.state.onboarded) {
-    const hasSignal = signalsFor(visibleRecord(v.resident, ALL_SOURCES)).length > 0;
+    // Nothing is looked for or revealed before the person chooses what Masar may use.
     return (
       <Shell session={session} minimal>
-        <Onboarding
-          firstName={first}
-          touchpoint={v.resident.touchpoint}
-          hasSignal={hasSignal}
-          sex={v.resident.sex}
-          defaults={answersFromRecords(v.resident)}
-          lang={lang}
-        />
+        <Suspense fallback={<div className="flex-1" aria-busy="true" />}>
+          <Onboarding
+            personId={session.id}
+            firstName={first}
+            sex={v.resident.sex}
+            lang={lang}
+            initial={{
+              step: v.state.journey.step,
+              startedAt: v.state.journey.startedAt,
+              answers: v.state.sources.self ? v.state.journey.answers : {},
+              knowledge: v.state.sources.self ? [...(v.state.beliefsBefore ?? []), v.state.journey.knowledgeExtra] : [],
+              worry: v.state.sources.self ? v.state.worryBefore : null,
+            }}
+            consent={consentItems(session.id)}
+            aiMode={aiMode()}
+          />
+        </Suspense>
       </Shell>
     );
   }
 
-  const shared = Object.values(v.state.sources).filter(Boolean).length;
-  const photo = v.resident.sex === "female" ? PHOTOS.personFemale : PHOTOS.personMale;
+  // Translates a line and any words inside it.
+  const say = (line: { text: string; vars?: Record<string, string | number> }) =>
+    t(line.text, line.vars && Object.fromEntries(Object.entries(line.vars).map(([k, x]) => [k, typeof x === "string" ? t(x) : x])));
+  const x: Tx = { t, lang, date: fmt, say };
+  const d = dashboardFor(v);
+  const aiOn = aiAllowedFor(session.id, "assistant");
+  const mode = aiMode();
+
+  // The overview summary: the assistant's, only with consent and in this language; otherwise Masar's own.
+  // Shown only when the assistant (or its labelled demo mock) wrote it, with consent: otherwise the dashboard is the summary.
+  const stored = v.state.assistantConsent && v.state.journey.summary?.lang === lang ? v.state.journey.summary : null;
+  const summaryLines = stored
+    ? [...stored.data.reproductive_goals.slice(0, 1), ...stored.data.health_context.slice(0, 2), ...stored.data.areas_to_explore.slice(0, 2), ...stored.data.missing_information.slice(0, 1)].slice(0, 6)
+    : [];
+
+  const nav = [
+    { id: "overview", label: t("Overview") },
+    { id: "insights", label: t("Insights") },
+    { id: "over-time", label: t("Over time") },
+    { id: "explore", label: t("Explore next") },
+    { id: "prepare", label: t("Your doctor") },
+    { id: "report", label: t("Report") },
+  ];
+
+  // The assistant's starting points, from this person's own dashboard.
+  const starters: { label: string; intent: AskIntent }[] = [
+    ...(d.insights[0] ? [{ label: t("Why does “{title}” matter for me?", { title: t(d.insights[0].title) }), intent: { kind: "insight" as const, code: d.insights[0].code } }] : []),
+    { label: t("What's still unknown about me?"), intent: { kind: "unknown" } },
+    ...(d.series[0] ? [{ label: t("What does the {test} measure, and what can't it tell me?", { test: t(d.series[0].label) }), intent: { kind: "measure" as const, code: d.series[0].code } }] : []),
+    { label: t("What should I ask my doctor?"), intent: { kind: "questions" } },
+    { label: t("What information do you have about me?"), intent: { kind: "known" } },
+  ];
 
   return (
-    <Shell session={session}>
-      <header className="grid items-center gap-8 md:grid-cols-[1.4fr_1fr]">
-        <div>
-          <div className="relative mb-5 h-20 w-20 overflow-hidden rounded-[22px] ring-4 ring-indigo-50 md:hidden">
-            <Image src={photo.src} alt={photo.alt} fill sizes="80px" className="object-cover object-top" />
-          </div>
-          <p className="eyebrow">
-            {t("My path · after your {check} on {date}", { check: t(TOUCHPOINT_LABEL[v.resident.touchpoint.kind]), date: fmt(v.resident.touchpoint.at) })}
-          </p>
-          <h1 className="mt-3 text-[clamp(2.2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-zinc-950">
-            {t("{name}, here is your path.", { name: first })}
-          </h1>
-          <p className="mt-3 text-[15px] text-zinc-600">
-            {t("Built only from the {n} of 5 sources you chose to share.", { n: shared })}{" "}
-            <Link href="/me/privacy" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
-              {t("Change what you share")}
-            </Link>
-          </p>
-        </div>
-        <div className="relative hidden md:block">
-          <div aria-hidden className="absolute -inset-4 -z-10 rounded-[32px] bg-gradient-to-br from-indigo-100 via-violet-50 to-white" />
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[24px]">
-            <Image
-              src={photo.src}
-              alt={photo.alt}
-              fill
-              priority
-              sizes="(min-width: 768px) 35vw, 0px"
-              className="ken-burns object-cover object-top"
-            />
-          </div>
-          <div className="card absolute -bottom-4 -start-4 flex items-center gap-2.5 px-4 py-2.5 shadow-[var(--shadow-lift)]">
-            <span aria-hidden className="h-2 w-2 rounded-full bg-indigo-600" />
-            <span className="text-[13px] font-medium">
-              {v.signals.length
-                ? t(v.signals.length > 1 ? "{n} things worth talking about" : "1 thing worth talking about", { n: v.signals.length })
-                : t("Nothing to worry about on record")}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <SignalPanel v={v} t={t} />
+    <Shell session={session} wide>
+      <SectionNav items={nav} label={t("Sections of your path")} />
 
       {v.state.remindAt && !v.state.request && v.signals.length ? (
-        <div className="reveal mt-6 flex flex-wrap items-center gap-4 rounded-[20px] border border-amber-200 bg-amber-50 px-5 py-4">
-          <p className="flex-1 text-[14px] text-amber-950">
+        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-[14px] bg-soon-soft px-5 py-4">
+          <p className="flex-1 text-[15px] text-ink">
             {v.reminderDue
               ? t("You asked us to remind you. Is now a good time to ask your doctor for a conversation?")
               : t("We'll remind you on {date}. In the pilot this also comes as a text message.", { date: fmt(v.state.remindAt) })}
           </p>
           <form action={setReminder.bind(null, 0)}>
-            <SubmitButton pendingLabel={t("Saving")} className="text-[13.5px] font-medium text-amber-900 underline underline-offset-4">
+            <SubmitButton pendingLabel={t("Saving")} className="min-h-[44px] text-[14px] font-medium text-soon underline underline-offset-4">
               {v.reminderDue ? t("Dismiss") : t("Cancel reminder")}
             </SubmitButton>
           </form>
         </div>
       ) : null}
 
-      <Reports personId={session.id} reports={v.state.reports} t={t} fmt={fmt} lang={lang} />
-
-      <section className="reveal mt-14">
-        <SectionTitle n={1} title={t("What do we know?")} body={t("What is on record, and which parts you can and can't change.")} />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {v.factors.map((f) => (
-            <div key={f.label + f.value} className="card flex items-start gap-4 p-4">
-              <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-zinc-400">{t(f.label)}</p>
-                <p className="mt-1 text-[16px] font-semibold text-zinc-950">{t(f.value)}</p>
-                <p className="mt-1 text-[13px] text-zinc-600">{t(f.note)}</p>
-              </div>
-              <Pill tone={f.canChange ? "pine" : "stone"} dot={false}>
-                {f.canChange ? t("You can change this") : t("Can't change")}
-              </Pill>
-            </div>
-          ))}
-        </div>
-        {v.missing.length ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-zinc-300 p-5">
-            <p className="text-[14px] font-semibold text-zinc-950">{t("Not on record yet")}</p>
-            <ul className="mt-2 space-y-1 text-[14px] text-zinc-600">
-              {v.missing.map((m) => (
-                <li key={m}>· {t(m)}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </section>
-
-      <section className="reveal mt-14">
-        <SectionTitle
-          n={2}
-          title={t("What's changing, and how sure are we?")}
-          body={t("We only call something a real change when it is bigger than the normal ups and downs between tests.")}
+      <section id="overview" aria-label={t("Overview")} className="scroll-mt-32">
+        <Overview
+          d={d}
+          x={x}
+          shared={{ doctor: v.state.shareWithClinician, assistant: !v.state.assistantConsent ? "off" : aiOn ? "on" : mode === "mock" ? "mock" : "notConnected" }}
+          summary={{ lines: summaryLines, from: stored?.source ?? "masar" }}
         />
-        {v.measures.length ? (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {v.measures.map((m) => (
-              <article key={m.def.code} className="card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h3 className="text-[15px] font-semibold text-zinc-950">{t(m.def.label)}</h3>
-                  <Pill tone={VERDICT_PILL[m.verdict].tone}>{t(VERDICT_PILL[m.verdict].label)}</Pill>
-                </div>
-                <p className="mt-1 text-[13.5px] text-zinc-600">{t(m.sentence)}</p>
-                <div className="mt-3">
-                  <TrajectoryChart view={m} lang={lang} />
-                </div>
-                <p className="mt-2 border-t border-zinc-200/70 pt-2.5 text-[12px] text-zinc-500">{t("Rule: {rule}", { rule: t(m.def.rule) })}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="card p-5 text-[15px] text-zinc-600">{t("Nothing you shared has readings over time yet, so no change can be described.")}</p>
-        )}
-        {v.signals.length ? (
-          <div className="mt-4 rounded-2xl bg-zinc-100 p-5">
-            <p className="text-[14px] font-semibold text-zinc-950">{t("What this can't tell you")}</p>
-            <ul className="mt-2 space-y-1 text-[14px] text-zinc-600">
-              {[...new Set(v.signals.map((s) => RULES[s.code].cannotTell))].map((c) => (
-                <li key={c}>· {t(c)}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
       </section>
 
-      <section id="next-step" className="reveal mt-14 scroll-mt-24">
-        <SectionTitle n={3} title={t("What should I do next, and when?")} body={t("Options matched to what was found and your plans. You choose; your doctor advises.")} />
-        <NextStep v={v} t={t} fmt={fmt} />
-      </section>
-      <Companion firstName={first} aiOn={aiEnabled()} lang={lang} />
+      <DashSection
+        id="insights"
+        n={2}
+        icon="spark"
+        title={t("Your health insights")}
+        body={t("What Masar found in what you shared, why it matters, how strong the evidence is, and what it can't tell you.")}
+      >
+        <Insights d={d} x={x} />
+        <div id="known" className="scroll-mt-32 pt-8">
+          <h3 className="display mb-4 text-[1.45rem] text-ink">{t("Known, unknown and worth exploring")}</h3>
+          <KnowledgeBoard d={d} x={x} />
+        </div>
+      </DashSection>
+
+      <DashSection
+        id="over-time"
+        n={3}
+        icon="chart"
+        title={t("Your health over time")}
+        body={t("Real readings only, from the sources you shared. A change is called real only when it passes Masar's published rule.")}
+      >
+        <OverTime d={d} x={x}>
+          <Reports personId={session.id} reports={v.state.reports} t={t} fmt={fmt} lang={lang} aiReads={aiAllowedFor(session.id, "reportReading")} />
+        </OverTime>
+      </DashSection>
+
+      <DashSection id="explore" n={4} icon="compass" title={t("What you could explore next")} body={t("Each suggestion says why it's there. You stay in control.")}>
+        <Explore d={d} x={x} />
+      </DashSection>
+
+      <DashSection id="prepare" n={5} icon="clipboard" title={t("Prepare for your doctor")} body={t("Questions to ask, what to bring, and a short summary of your picture.")}>
+        <Prepare d={d} x={x} personId={session.id}>
+          <NextStep v={v} t={t} fmt={fmt} />
+        </Prepare>
+      </DashSection>
+
+      <DashSection id="report" n={6} icon="doc" title={t("Your personal health report")} body={t("Everything above in one readable document, with its sources.")}>
+        <ReportTeaser d={d} x={x} />
+      </DashSection>
+
+      <Companion firstName={first} aiOn={aiOn} mock={mode === "mock" && v.state.assistantConsent} lang={lang} starters={starters} />
     </Shell>
   );
 }
 
-const HEADLINE = {
-  urgent: "Talk to your care team about this before treatment starts.",
-  soon: "This is worth a conversation now rather than later.",
-  routine: "This is worth raising at your next routine visit.",
-} as const;
-
-// Colours follow the timing, so how soon to act is the first thing people see.
-const TONE = {
-  urgent: { strip: "bg-rose-500", soft: "bg-rose-50", ink: "text-rose-700", ring: "ring-rose-200", bar: "bg-rose-500" },
-  soon: { strip: "bg-amber-500", soft: "bg-amber-50", ink: "text-amber-700", ring: "ring-amber-200", bar: "bg-amber-500" },
-  routine: { strip: "bg-indigo-500", soft: "bg-indigo-50", ink: "text-indigo-700", ring: "ring-indigo-200", bar: "bg-indigo-500" },
-} as const;
-
-const STRENGTH = { strong: 3, moderate: 2 } as Record<string, number>;
-
-function SignalPanel({ v, t }: { v: PersonView; t: Tr }) {
-  if (!v.state.scanning) {
-    return (
-      <div className="card mt-8 p-6">
-        <p className="text-[16px] font-semibold text-zinc-950">{t("You have asked Masar not to keep an eye out.")}</p>
-        <p className="mt-1 text-[14px] text-zinc-600">{t("Masar is not looking for anything new. You can turn this back on in My data.")}</p>
-      </div>
-    );
-  }
-  if (!v.signals.length || !v.urgency) {
-    return (
-      <div className="card mt-8 border-indigo-200/70 p-6 md:p-8">
-        <Pill tone="pine">{t("Nothing needs a conversation right now")}</Pill>
-        <p className="mt-4 font-semibold tracking-[-0.025em] text-[1.7rem] leading-snug text-zinc-950">{t("Nothing recorded so far points to a concern.")}</p>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-600">
-          {t("That is not the same as a guarantee. Masar can only speak to what is on record, and some useful information isn't yet. If your records change, Masar looks again.")}
-        </p>
-      </div>
-    );
-  }
-
-  const tone = TONE[v.urgency];
-  return (
-    <section aria-labelledby="found-title" className="reveal relative mt-8 overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_24px_60px_-28px_rgb(24_24_27/0.35)]">
-      <span aria-hidden className={`absolute inset-y-0 start-0 w-1.5 ${tone.strip}`} />
-
-      <div className="flex flex-col gap-6 p-6 ps-8 md:flex-row md:items-start md:justify-between md:p-8 md:ps-10">
-        <div className="max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span aria-hidden className={`grid h-9 w-9 place-items-center rounded-full ${tone.soft} ${tone.ink}`}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7.5v5M12 16.2v.3" />
-              </svg>
-            </span>
-            <span className="text-[13px] font-semibold text-zinc-500">{t("What Masar found")}</span>
-            <span className={`rounded-full px-3 py-1 text-[12.5px] font-semibold ring-1 ring-inset ${tone.soft} ${tone.ink} ${tone.ring}`}>
-              {t("Suggested timing")}: {t(URGENCY_PILL[v.urgency].label)}
-            </span>
-          </div>
-          <h2 id="found-title" className="mt-4 text-[clamp(1.7rem,3.2vw,2.35rem)] font-semibold leading-[1.12] tracking-[-0.025em] text-zinc-950">
-            {t(HEADLINE[v.urgency])}
-          </h2>
-          <p className="mt-3 flex items-start gap-2 text-[15px] leading-relaxed text-zinc-600">
-            <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 shrink-0 text-indigo-500">
-              <path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z" strokeLinejoin="round" />
-            </svg>
-            {t("This is not a diagnosis. It is a reason to talk to a doctor while you have the most options.")}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row md:flex-col">
-          <a href="#next-step" className="rounded-full bg-indigo-600 px-5 py-3 text-center text-[14px] font-semibold text-white shadow-sm transition hover:bg-indigo-700">
-            {v.state.request ? t("See your request") : t("Ask for a conversation")}
-          </a>
-          <AskButton
-            text={t("Help me start the conversation with my doctor")}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-3 text-[14px] font-semibold text-zinc-900 transition hover:border-indigo-400"
-          >
-            <span aria-hidden className="orb" style={{ width: 18, height: 18 }}>
-              <span className="orb__core" />
-            </span>
-            {t("Help me start")}
-          </AskButton>
-        </div>
-      </div>
-
-      <ol className="grid gap-px border-t border-zinc-200 bg-zinc-200 md:grid-cols-2">
-        {v.signals.map((s, i) => {
-          const rule = RULES[s.code];
-          const strength = STRENGTH[rule.evidence.strength.toLowerCase()] ?? 1;
-          return (
-            <li key={s.code} className={`flex flex-col bg-white p-6 ps-8 md:ps-10 ${v.signals.length % 2 && i === v.signals.length - 1 ? "md:col-span-2" : ""}`}>
-              <div className="flex items-start gap-3">
-                <span className={`tabular grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[13px] font-bold ${tone.soft} ${tone.ink}`}>{i + 1}</span>
-                <h3 className="pt-0.5 text-[17px] font-semibold leading-snug text-zinc-950">{t(rule.title)}</h3>
-              </div>
-
-              <p className="mt-4 text-[12px] font-semibold text-zinc-500">{t("Why Masar raised this")}</p>
-              <ul className="mt-1.5 space-y-1.5">
-                {s.reasons.map((r) => (
-                  <li key={r} className="flex items-start gap-2 text-[14px] text-zinc-800">
-                    <svg aria-hidden width="16" height="16" viewBox="0 0 16 16" className="mt-[3px] shrink-0 text-indigo-500">
-                      <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {t(r)}
-                  </li>
-                ))}
-              </ul>
-
-              <p className="mt-4 text-[14px] leading-relaxed text-zinc-600">{t(rule.whyItMatters)}</p>
-
-              <div className="mt-auto pt-5">
-                <p className="rounded-xl bg-zinc-50 px-3.5 py-2.5 text-[13px] leading-relaxed text-zinc-600">
-                  <span className="font-semibold text-zinc-800">{t("What it can't tell you")}: </span>
-                  {t(rule.cannotTell)}
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-zinc-500">
-                  <span className="inline-flex items-center gap-1.5 font-medium text-zinc-700">
-                    <span aria-hidden className="flex gap-0.5">
-                      {[1, 2, 3].map((n) => (
-                        <span key={n} className={`h-2.5 w-1 rounded-full ${n <= strength ? tone.bar : "bg-zinc-200"}`} />
-                      ))}
-                    </span>
-                    {t("Evidence: {strength}", { strength: t(rule.evidence.strength.toLowerCase()) })}
-                  </span>
-                  <span>{rule.evidence.citation}</span>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      <p className="flex items-center gap-2 border-t border-zinc-200 bg-zinc-50/80 px-6 py-3 ps-8 text-[12.5px] text-zinc-500 md:ps-10">
-        <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="5" y="11" width="14" height="10" rx="2" />
-          <path d="M8 11V8a4 4 0 018 0v3" />
-        </svg>
-        {v.state.shareWithClinician
-          ? t("Only you and your family doctor can see this. Never employers or insurers.")
-          : t("Only you can see this. Your doctor sees it only if you allow it in My data.")}
-      </p>
-    </section>
-  );
+/** Each permission's state, from the stored choices and the person's own access log. */
+function consentItems(id: string): ConsentItem[] {
+  const p = personView(id).state;
+  const log = accessLog(id).map((a) => a.what);
+  const status = (on: boolean, stopped: string) => (on ? "granted" : log.includes(stopped) ? "revoked" : "none") as ConsentItem["status"];
+  return [
+    ...SOURCES.map((src) => ({ key: src.id, on: p.sources[src.id], status: status(p.sources[src.id], `Stopped sharing: ${src.label}`) })),
+    { key: "share" as const, on: p.shareWithClinician, status: status(p.shareWithClinician, "Stopped your doctor seeing your summary") },
+    { key: "assistant" as const, on: p.assistantConsent, status: status(p.assistantConsent, "Stopped Masar's assistant reading your summary") },
+    { key: "reading" as const, on: p.reportReadingConsent, status: status(p.reportReadingConsent, "Stopped Masar's assistant reading your uploaded reports") },
+  ];
 }
 
 const STATUS_STEPS = [
@@ -338,21 +186,15 @@ function NextStep({ v, t, fmt }: { v: PersonView; t: Tr; fmt: (iso: string) => s
   const req = v.state.request;
 
   if (!req) {
-    if (!v.options.length) {
-      return (
-        <div className="card p-6">
-          <p className="text-[15px] font-semibold text-zinc-950">{t("Nothing to arrange.")}</p>
-          <p className="mt-1 text-[14px] text-zinc-600">
-            {t("If you are planning children ({plans}), the items under “Not on record yet” are the most useful things to add.", {
-              plans: v.record.intention ? t(INTENTION_LABEL[v.record.intention]).toLowerCase() : t("plans not shared"),
-            })}
-          </p>
-        </div>
-      );
-    }
+    // Nothing to request: the sections above already cover what could help.
+    if (!v.options.length) return null;
     const questions = [...new Set(v.signals.flatMap((s) => RULES[s.code].questions))];
     return (
-      <form action={requestConversation} className="space-y-6">
+      <form action={requestConversation} className="dash-card space-y-6">
+        <div>
+          <h3 className="text-[16px] font-semibold text-ink">{t("Ask your doctor for a conversation")}</h3>
+          <p className="mt-1 text-[13.5px] text-ink-2">{t("Dr Layla Al Hashimi reviews your request. Nothing is sent until you press the button.")}</p>
+        </div>
         <fieldset className="grid gap-3 md:grid-cols-2">
           <legend className="mb-3 text-[14px] font-semibold text-zinc-950">{t("Choose what you would like")}</legend>
           {v.options.map((o, i) => (

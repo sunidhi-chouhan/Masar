@@ -1,0 +1,320 @@
+/*
+ * Landing page motion. One language throughout:
+ *   - one easing curve (--ease-calm), entrances of 0.7–1.1s, staggers of 80–140ms;
+ *   - fades, small rises and lines that draw themselves; no bounce, no scale-pop;
+ *   - a few slow loops (8–14s) that only move points of light, never the shapes;
+ *   - loops pause while their section is off-screen ([data-visible="false"]).
+ *
+ * Static by default. Every hidden starting state and every loop lives inside
+ * `prefers-reduced-motion: no-preference`, so with reduced motion (or no JS,
+ * see the <noscript> rule on the page) everything is simply shown, complete.
+ */
+
+/* ---------- static styling (all modes) ---------- */
+
+.hero-art .ha-tick { stroke: var(--color-rule-strong); stroke-width: 1; stroke-dasharray: 2 5; opacity: 0.7; }
+.hero-art .ha-strand { fill: none; stroke: var(--color-ink-3); stroke-width: 1.4; stroke-linecap: round; opacity: 0.75; }
+.hero-art .ha-merged { fill: none; stroke: var(--color-ink); stroke-width: 2.4; stroke-linecap: round; }
+.hero-art .ha-link line { stroke: var(--color-accent); stroke-width: 1; opacity: 0.35; }
+.hero-art .ha-node { fill: var(--color-paper); stroke: var(--color-accent); stroke-width: 1.4; }
+.hero-art .ha-start { fill: var(--color-accent); }
+.hero-art .ha-end { fill: var(--color-date); }
+.hero-art .ha-text { fill: var(--color-ink-2); font-size: 15px; font-family: var(--font-sans); }
+.hero-art .ha-text--end { fill: var(--color-ink); font-weight: 600; }
+.hero-art .ha-dot { fill: none; stroke: var(--color-date); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+.hero-art .ha-glow { opacity: 0.8; }
+
+.thread-line { fill: none; stroke: var(--color-rule-strong); stroke-width: 1.2; stroke-dasharray: 0.004 0.008; }
+.thread-dot { fill: none; stroke: var(--color-date); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+
+.lp-glint { stroke: var(--color-date); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+.lp-gap-fill { opacity: 0.09; }
+.lp-gap-sweep { opacity: 0; }
+
+.fp-ridge { fill: none; stroke: var(--color-accent); stroke-width: 1.9; stroke-linecap: round; opacity: 0.85; }
+.fp-core { fill: var(--color-date); }
+.branch-line { fill: none; stroke: var(--color-rule-strong); stroke-width: 1.4; }
+.branch-dot { fill: none; stroke: var(--color-date); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+
+
+/* ---------- How Masar works: the journey ---------- */
+.journey-line { fill: none; stroke: var(--color-rule-strong); stroke-width: 1.5; }
+.journey-dot { fill: none; stroke: var(--color-date); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+.js-sym { display: block; width: 100%; height: auto; overflow: visible; }
+.js-bar { fill: var(--color-zinc-100); stroke: var(--color-rule-strong); stroke-width: 1; }
+.js-switch { fill: var(--color-accent); }
+.js-knob { fill: #fff; }
+.js-src--off .js-switch { fill: none; stroke: var(--color-rule-strong); stroke-width: 1.4; stroke-dasharray: 3 2; }
+.js-src--off .js-knob { fill: var(--color-rule-strong); }
+.js-src--off .js-bar { opacity: 0.55; }
+.js-band { fill: var(--color-accent-soft); opacity: 0.7; }
+.js-line { fill: none; stroke: var(--color-ink-3); stroke-width: 1.6; stroke-linecap: round; }
+.js-line--change { stroke: var(--color-soon); stroke-width: 2.2; }
+.js-pt { fill: var(--color-paper); stroke: var(--color-accent); stroke-width: 1.4; }
+.js-pt--change { fill: var(--color-soon); stroke: var(--color-soon); }
+.js-text { fill: var(--color-rule-strong); }
+.js-tag--fact { fill: var(--color-ink); }
+.js-tag--trend { fill: none; stroke: var(--color-soon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.js-tag--evidence { fill: none; stroke: var(--color-accent); stroke-width: 1.3; }
+.js-tag--unknown { fill: none; stroke: var(--color-unknown); stroke-width: 1.5; stroke-dasharray: 2.5 2; }
+.js-branch { fill: none; stroke: var(--color-rule-strong); stroke-width: 1.6; stroke-linecap: round; }
+.js-branch--chosen { stroke: var(--color-accent); stroke-width: 2.2; }
+.js-opt { fill: var(--color-paper); stroke: var(--color-rule-strong); stroke-width: 1.5; }
+.js-opt--chosen { fill: var(--color-date); stroke: var(--color-date); }
+.js-origin { fill: var(--color-accent); }
+
+/* ---------- Certainty explorer ---------- */
+@media (min-width: 1024px) {
+  .cx-tab.is-on::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 2.5rem;
+    height: 1.5px;
+    background: var(--color-accent);
+  }
+  .cx-tab--start.is-on::after { inset-inline-start: 100%; }
+  .cx-tab--end.is-on::after { inset-inline-end: 100%; }
+}
+
+/* ---------- Privacy story (on the teal section) ---------- */
+.pv-path { fill: none; stroke: #fff; stroke-opacity: 0.3; stroke-width: 1.6; stroke-dasharray: 3 5; }
+.pv-path--ai { stroke: var(--color-date); stroke-opacity: 0.55; }
+.pv-path-open { fill: none; stroke: #fff; stroke-opacity: 0.8; stroke-width: 1.8; }
+.pv-path-open--ai { stroke: var(--color-date); stroke-opacity: 1; stroke-dasharray: 6 4; }
+.pv-flow { fill: none; stroke: var(--color-date); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.0001 1; opacity: 0; }
+.pv-flow--ai { stroke: var(--color-paper); }
+.pv-doc { fill: none; stroke: #fff; stroke-opacity: 0.9; stroke-width: 1.4; }
+.pv-doc-lines { fill: none; stroke: #fff; stroke-opacity: 0.6; stroke-width: 1.2; }
+.pv-ai { fill: var(--color-date); }
+.pv-pill { fill: none; stroke: #fff; stroke-opacity: 0.75; stroke-width: 1.4; }
+.pv-pill-on { fill: var(--color-date); opacity: 0; }
+.pv-knob { fill: var(--color-paper); transform-box: fill-box; }
+/* Static story: three sources open, one never opened, the assistant off. */
+.pv-gate--off, .pv-gate--ai { opacity: 0; }
+.pv-switch--on .pv-pill-on, .pv-switch--withdraw .pv-pill-on { opacity: 1; }
+.pv-switch--on .pv-knob, .pv-switch--withdraw .pv-knob { transform: translateX(var(--on)); }
+.pv-shield { fill: #fff; fill-opacity: 0.06; stroke: #fff; stroke-opacity: 0.85; stroke-width: 1.6; }
+.pv-ridge { fill: none; stroke: #fff; stroke-opacity: 0.18; stroke-width: 1.2; }
+.pv-core { fill: var(--color-date); }
+.pv-tap { fill: none; stroke: #fff; stroke-opacity: 0.5; stroke-dasharray: 2 3; }
+.pv-log-allowed { fill: var(--color-paper); }
+.pv-log-blocked { fill: none; stroke: var(--color-rose-200); stroke-width: 1.6; }
+.pv-log-line { fill: #fff; fill-opacity: 0.35; }
+.pv-person { fill: #fff; fill-opacity: 0.8; }
+.pv-veil { fill: var(--color-accent); fill-opacity: 0.92; stroke: #fff; stroke-opacity: 0.7; stroke-dasharray: 3 3; }
+.pv-arrow, .pv-tray, .pv-bin { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pv-marker circle { fill: var(--color-date); }
+.pv-marker text { fill: var(--color-ink); font: 600 12px var(--font-mono); }
+
+/* ---------- header and section navigation ---------- */
+.landing-header { transition: background-color 0.3s var(--ease-calm), box-shadow 0.3s var(--ease-calm); }
+.landing-header[data-scrolled="true"] {
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  backdrop-filter: saturate(1.2) blur(10px);
+  box-shadow: 0 1px 0 var(--color-rule);
+}
+/* Sections land below the sticky header, not under it. */
+.landing section[id] { scroll-margin-top: 84px; }
+.landing-nav-bar {
+  position: absolute;
+  top: 50%;
+  height: 34px;
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  opacity: 0;
+  pointer-events: none;
+}
+.landing-nav-bar.is-on { opacity: 1; }
+.landing-nav-link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: 5px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: var(--from, left);
+}
+[dir="rtl"] .landing-nav-link::after { --from: right; }
+.landing-nav-link:hover::after,
+.landing-nav-link:focus-visible::after { transform: scaleX(1); }
+.landing-nav-link[aria-current="location"]::after { transform: scaleX(0); }
+
+/* ---------- motion (only when the person hasn't asked for less) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Logo: the line draws, then its end point glows, gently, a few times. */
+  .mark-anim .mark-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.3s var(--ease-calm) 0.15s forwards; }
+  .mark-anim .mark-start { animation: fade-in 0.4s var(--ease-calm) both; }
+  .mark-anim .mark-end { transform-box: fill-box; transform-origin: center; animation: pop-in 0.5s var(--ease-calm) 1.25s both; }
+  .mark-anim .mark-glow { transform-box: fill-box; transform-origin: center; opacity: 0; animation: glow 3.2s ease-in-out 1.6s 3; }
+
+  /* Hero copy: staggered rise. */
+  .rise { animation: rise 0.9s var(--ease-calm) both; animation-delay: var(--d, 0ms); }
+
+  /* Hero illustration: ticks, strands draw in, links and nodes settle, then points travel. */
+  .hero-art .ha-tick { animation: fade-in 1s var(--ease-calm) calc(200ms + var(--i) * 120ms) both; }
+  .hero-art .ha-strand { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.2s var(--ease-calm) calc(300ms + var(--i) * 140ms) forwards; }
+  .hero-art .ha-merged { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.1s var(--ease-calm) 1.9s forwards; }
+  .hero-art .ha-label { animation: fade-in 0.8s var(--ease-calm) calc(400ms + var(--i) * 140ms) both; }
+  .hero-art .ha-link { animation: fade-in 0.9s var(--ease-calm) calc(1.4s + var(--i) * 160ms) both; }
+  .hero-art .ha-node { transform-box: fill-box; transform-origin: center; animation: node-breathe 6s ease-in-out calc(2.6s + var(--j) * 0.45s) infinite; }
+  .hero-art .ha-end { transform-box: fill-box; transform-origin: center; animation: pop-in 0.6s var(--ease-calm) 2.8s both; }
+  .hero-art .ha-glow { transform-box: fill-box; transform-origin: center; animation: glow 4s ease-in-out 3s infinite; }
+  .hero-art .ha-text--end { animation: fade-in 0.8s var(--ease-calm) 2.9s both; }
+  .hero-art .ha-dot { animation: travel 7.5s cubic-bezier(0.45, 0, 0.55, 1) calc(2.6s + var(--i) * 1.7s) infinite; }
+  .hero-art .ha-dot--merged { stroke-width: 7; animation: travel 3.8s cubic-bezier(0.45, 0, 0.55, 1) 4.4s infinite; }
+
+  /* The thread from hero to graph. */
+  .thread .thread-line { animation: fade-in 1.2s var(--ease-calm) 1.2s both; }
+  .thread .thread-dot { animation: travel 6s cubic-bezier(0.45, 0, 0.55, 1) 2.4s infinite; }
+
+  /* Life-course graph: drawn left to right once in view, then a point of light keeps travelling it. */
+  .lp[data-inview="false"] .lp-path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .lp[data-inview="false"] :is(.lp-axis, .lp-tick, .lp-gap, .lp-moment) { opacity: 0; }
+  .lp[data-inview="true"] .lp-path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.6s var(--ease-calm) 0.2s forwards; }
+  .lp[data-inview="true"] .lp-axis { animation: fade-in 0.8s var(--ease-calm) both; }
+  .lp[data-inview="true"] .lp-tick { animation: rise-sm 0.7s var(--ease-calm) calc(var(--i) * 70ms) both; }
+  .lp[data-inview="true"] .lp-gap { animation: fade-in 1.2s var(--ease-calm) 1.4s both; }
+  .lp[data-inview="true"] .lp-gap-fill { animation: breathe 7s ease-in-out 2.6s infinite; }
+  .lp[data-inview="true"] .lp-gap-sweep { animation: sweep 9s ease-in-out 3s infinite; }
+  .lp[data-inview="true"] .lp-gap-sweep--rtl { animation-name: sweep-rtl; }
+  .lp[data-inview="true"] .lp-moment { animation: fade-in 0.6s var(--ease-calm) calc(0.9s + var(--i) * 0.38s) both; }
+  .lp[data-inview="true"] .lp-guide { stroke-dashoffset: 0; animation: guide 0.9s var(--ease-calm) calc(0.9s + var(--i) * 0.38s) both; }
+  .lp[data-inview="true"] .lp-marker { transform-box: fill-box; transform-origin: center; animation: pop-in 0.55s var(--ease-calm) calc(1.1s + var(--i) * 0.38s) both; }
+  .lp[data-inview="true"] .lp-label { animation: rise-sm 0.7s var(--ease-calm) calc(1s + var(--i) * 0.38s) both; }
+  .lp[data-inview="true"] .lp-halo { transform-box: fill-box; transform-origin: center; animation: halo 3.6s ease-out 3s infinite; }
+  .lp[data-inview="true"] .lp-glint { animation: travel 11s cubic-bezier(0.45, 0, 0.55, 1) 3.2s infinite; }
+  .lp[data-inview="false"] ol li { opacity: 0; }
+  .lp[data-inview="true"] ol li { animation: rise-sm 0.7s var(--ease-calm) both; }
+  .lp[data-inview="true"] ol li:nth-child(2) { animation-delay: 120ms; }
+  .lp[data-inview="true"] ol li:nth-child(3) { animation-delay: 240ms; }
+  .lp[data-inview="true"] ol li:nth-child(4) { animation-delay: 360ms; }
+
+  /* Generic sequence: children rise in order. */
+  .seq[data-inview="false"] > * { opacity: 0; }
+  .seq[data-inview="true"] > * { animation: rise 0.9s var(--ease-calm) both; }
+  .seq[data-inview="true"] > *:nth-child(2) { animation-delay: 140ms; }
+  .seq[data-inview="true"] > *:nth-child(3) { animation-delay: 280ms; }
+  .seq[data-inview="true"] > *:nth-child(4) { animation-delay: 420ms; }
+  .seq[data-inview="true"] > *:nth-child(5) { animation-delay: 560ms; }
+  .seq[data-inview="true"] > *:nth-child(6) { animation-delay: 700ms; }
+
+  /* Animated certainty glyphs: each moves in its own small way. */
+  .tag-anim * { transform-box: fill-box; transform-origin: center; }
+  .tag-fact circle { animation: node-breathe 3.2s ease-in-out infinite; }
+  .tag-said path { animation: bob 2.8s ease-in-out infinite; }
+  .tag-trend path { stroke-dasharray: 20; stroke-dashoffset: 20; animation: trend-draw 3.4s var(--ease-calm) infinite; }
+  .tag-steady path { animation: drift 3.6s ease-in-out infinite; }
+  .tag-evidence path:last-child { animation: page 4s ease-in-out infinite; transform-origin: left center; }
+  .tag-unknown circle { animation: spin 9s linear infinite; }
+
+  /* Access: the print draws ridge by ridge, then softly illuminates; branches reach each reader. */
+  .access[data-inview="false"] .fp-ridge { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .access[data-inview="false"] :is(.branch-line, .access-col, .access-live, .fp-core) { opacity: 0; }
+  .access[data-inview="true"] .fp-ridge { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.2s var(--ease-calm) calc(var(--i) * 80ms) forwards, ridge-glow 6s ease-in-out calc(2.2s + var(--i) * 0.22s) infinite; }
+  .access[data-inview="true"] .fp-core { transform-box: fill-box; transform-origin: center; animation: pop-in 0.5s var(--ease-calm) 0.9s both; }
+  .access[data-inview="true"] .branch-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1s var(--ease-calm) calc(0.8s + var(--i) * 0.15s) forwards; }
+  .access[data-inview="true"] .branch-dot { animation: travel 4.5s cubic-bezier(0.45, 0, 0.55, 1) calc(2s + var(--i) * 0.9s) infinite; }
+  .access[data-inview="true"] .access-col { animation: rise 0.9s var(--ease-calm) calc(0.9s + var(--i) * 0.16s) both; }
+  .access[data-inview="true"] .access-live { animation: rise 0.9s var(--ease-calm) 1.5s both; }
+  .access[data-inview="true"] .live-dot { animation: glow-dot 2.4s ease-in-out 3s infinite; }
+
+  /* Navigation: links arrive in turn; the indicator glides between sections; hover draws an underline. */
+  .landing-nav-link { animation: rise-sm 0.7s var(--ease-calm) calc(0.35s + var(--i) * 0.08s) both; }
+  .landing-nav-link::after { transition: transform 0.35s var(--ease-calm); }
+  .landing-nav-bar { transition: left 0.45s var(--ease-calm), width 0.45s var(--ease-calm), opacity 0.3s var(--ease-calm); }
+
+  /* Journey: the path draws, then each stage rises as it scrolls into view and its symbol plays once. */
+  .journey[data-inview="false"] .journey-line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .journey[data-inview="true"] .journey-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.4s var(--ease-calm) forwards; }
+  .journey[data-inview="true"] .journey-dot { animation: travel 8s cubic-bezier(0.45, 0, 0.55, 1) 2.6s infinite; }
+  .journey-stage[data-inview="false"] { opacity: 0; }
+  .journey-stage[data-inview="true"] { animation: rise 0.9s var(--ease-calm) calc(var(--i) * 0.2s) both; }
+  .journey-stage[data-inview="false"] .js-sym * { animation-play-state: paused; }
+  .journey-stage .js-src:not(.js-src--off) .js-knob { animation: knob-in 0.6s var(--ease-calm) calc(0.6s + var(--i) * 0.3s) both; }
+  .journey-stage .js-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1s var(--ease-calm) 0.6s forwards; }
+  .journey-stage .js-line--change { animation-delay: 1.5s; }
+  .journey-stage .js-pt { transform-box: fill-box; transform-origin: center; animation: pop-in 0.4s var(--ease-calm) calc(0.6s + var(--i) * 0.2s) both; }
+  .journey-stage .js-pt--change { transform-box: fill-box; transform-origin: center; animation: pop-in 0.5s var(--ease-calm) 2.3s both, node-breathe 3s ease-in-out 3s infinite; }
+  .journey-stage .js-text { transform-box: fill-box; transform-origin: left center; animation: grow-x 0.6s var(--ease-calm) 0.6s both; }
+  .journey-stage .js-tag { transform-box: fill-box; transform-origin: center; animation: pop-in 0.45s var(--ease-calm) calc(1.2s + var(--i) * 0.22s) both; }
+  .journey-stage .js-branch { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.9s var(--ease-calm) calc(0.6s + var(--i) * 0.2s) forwards; }
+  .journey-stage .js-opt { transform-box: fill-box; transform-origin: center; animation: pop-in 0.4s var(--ease-calm) 1.5s both; }
+  .journey-stage .js-opt--chosen { animation: pop-in 0.4s var(--ease-calm) 1.5s both, node-breathe 3s ease-in-out 2.4s infinite; }
+
+  /* Certainty explorer: labels arrive in turn, the example settles, each change of label fades the example in. */
+  .cx-wrap[data-inview="false"] :is(.cx-tab, .cx-panel) { opacity: 0; }
+  .cx-wrap[data-inview="true"] .cx-tab { animation: rise-sm 0.6s var(--ease-calm) calc(0.15s + var(--i) * 0.09s) both; }
+  .cx-wrap[data-inview="true"] .cx-panel { animation: rise 0.9s var(--ease-calm) 0.2s both; }
+  .cx-swap { animation: rise-sm 0.45s var(--ease-calm) both; }
+  .cx-tab.is-on::after { transform-origin: var(--from, left); animation: grow-x 0.4s var(--ease-calm) both; }
+  .cx-tab--end.is-on::after { --from: right; }
+  [dir="rtl"] .cx-tab--start.is-on::after { --from: right; }
+  [dir="rtl"] .cx-tab--end.is-on::after { --from: left; }
+
+  /* Privacy: switches open and close their own pathways; the assistant's switch is separate and later;
+     every look is written to the log; small groups stay veiled. */
+  .pv[data-inview="false"] :is(.pv-svg, .pv-item, .pv-marker) { opacity: 0; }
+  .pv[data-inview="true"] .pv-svg { animation: fade-in 0.9s var(--ease-calm) both; }
+  .pv[data-inview="true"] .pv-item { animation: rise-sm 0.7s var(--ease-calm) calc(0.6s + var(--i) * 0.14s) both; }
+  .pv[data-inview="true"] .pv-marker { transform-box: fill-box; transform-origin: center; animation: pop-in 0.45s var(--ease-calm) calc(0.6s + var(--i) * 0.14s) both; }
+  .pv[data-inview="true"] .pv-switch--on .pv-knob { animation: pv-knob-on 14s var(--ease-calm) calc(var(--i) * 0.35s) infinite; }
+  .pv[data-inview="true"] .pv-switch--on .pv-pill-on,
+  .pv[data-inview="true"] .pv-gate--on { animation: pv-gate-on 14s var(--ease-calm) calc(var(--i) * 0.35s) infinite; }
+  .pv[data-inview="true"] .pv-switch--withdraw .pv-knob { animation: pv-knob-withdraw 14s var(--ease-calm) calc(var(--i) * 0.35s) infinite; }
+  .pv[data-inview="true"] .pv-switch--withdraw .pv-pill-on,
+  .pv[data-inview="true"] .pv-gate--withdraw { animation: pv-gate-withdraw 14s var(--ease-calm) calc(var(--i) * 0.35s) infinite; }
+  .pv[data-inview="true"] .pv-switch--ai .pv-knob { animation: pv-knob-ai 14s var(--ease-calm) infinite; }
+  .pv[data-inview="true"] .pv-switch--ai .pv-pill-on,
+  .pv[data-inview="true"] .pv-gate--ai { animation: pv-gate-ai 14s var(--ease-calm) infinite; }
+  .pv[data-inview="true"] .pv-flow { animation: travel 2.8s linear calc(var(--i, 0) * 0.45s) infinite; }
+  .pv[data-inview="true"] .pv-log { animation: pv-log 14s var(--ease-calm) calc(1.2s + var(--i) * 0.8s) infinite; }
+  .pv[data-inview="true"] .pv-veil { animation: pv-veil 6s ease-in-out infinite; }
+  .pv[data-inview="true"] .pv-arrow { animation: bob-down 3s ease-in-out infinite; }
+  .pv[data-inview="true"] .pv-ridge { animation: pv-ridge 6s ease-in-out calc(var(--i) * 0.4s) infinite; }
+
+  /* Pause every loop while its section is off-screen. */
+  [data-visible="false"] *,
+  [data-visible="false"] { animation-play-state: paused !important; }
+}
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes rise-sm { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes unfold { from { opacity: 0; clip-path: inset(0 0 100% 0 round 20px); transform: translateY(10px); } to { opacity: 1; clip-path: inset(0 0 0 0 round 20px); transform: none; } }
+@keyframes glow { 0%, 100% { opacity: 0; transform: scale(0.7); } 45% { opacity: 0.55; transform: scale(1.15); } }
+@keyframes node-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+@keyframes breathe { 0%, 100% { opacity: 0.08; } 50% { opacity: 0.15; } }
+@keyframes halo { 0% { transform: scale(0.75); opacity: 0.7; } 80%, 100% { transform: scale(1.6); opacity: 0; } }
+/* A dash of almost zero length with round caps is a dot; moving the offset moves it along the path. */
+@keyframes travel { 0% { stroke-dashoffset: 1; opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes sweep { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(200%); opacity: 0; } }
+@keyframes sweep-rtl { 0% { transform: translateX(200%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(0); opacity: 0; } }
+@keyframes guide { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.8px); } }
+@keyframes trend-draw { 0% { stroke-dashoffset: 20; } 45%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -20; } }
+@keyframes drift { 0%, 100% { transform: translateX(-0.6px); } 50% { transform: translateX(0.6px); } }
+@keyframes page { 0%, 70%, 100% { transform: scaleX(1); } 80% { transform: scaleX(0.55); } 90% { transform: scaleX(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ridge-glow { 0%, 100% { opacity: 0.85; stroke: var(--color-accent); } 50% { opacity: 1; stroke: var(--color-indigo-400); } }
+@keyframes glow-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+@keyframes knob-in { from { transform: translateX(-12px); } to { transform: none; } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bob-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+/* 14s consent story: everything starts off; sources open; one is withdrawn; the assistant opens later, separately. */
+@keyframes pv-knob-on { 0%, 8% { transform: none; } 12%, 94% { transform: translateX(var(--on)); } 98%, 100% { transform: none; } }
+@keyframes pv-gate-on { 0%, 8% { opacity: 0; } 12%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes pv-knob-withdraw { 0%, 8% { transform: none; } 12%, 55% { transform: translateX(var(--on)); } 59%, 100% { transform: none; } }
+@keyframes pv-gate-withdraw { 0%, 8% { opacity: 0; } 12%, 55% { opacity: 1; } 59%, 100% { opacity: 0; } }
+@keyframes pv-knob-ai { 0%, 40% { transform: none; } 44%, 94% { transform: translateX(var(--on)); } 98%, 100% { transform: none; } }
+@keyframes pv-gate-ai { 0%, 40% { opacity: 0; } 44%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes pv-log { 0% { opacity: 0; transform: translateY(4px); } 4%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; } }
+@keyframes pv-veil { 0%, 100% { fill-opacity: 0.92; } 50% { fill-opacity: 0.8; } }
+@keyframes pv-ridge { 0%, 100% { stroke-opacity: 0.14; } 50% { stroke-opacity: 0.32; } }

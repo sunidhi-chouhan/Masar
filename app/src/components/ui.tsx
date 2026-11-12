@@ -10,29 +10,32 @@ import { findAccount } from "@/lib/accounts";
 import { NavLinks } from "./nav-links";
 
 /** Masar ("path"): one line rising through readings to a gold point. */
-export function Mark({ className = "h-8 w-8", inverted = false }: { className?: string; inverted?: boolean }) {
+export function Mark({ className = "h-8 w-8", inverted = false, animated = false }: { className?: string; inverted?: boolean; animated?: boolean }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden>
-      <rect width="32" height="32" rx="9" fill={inverted ? "#fff" : "var(--color-indigo-600)"} />
+    <svg viewBox="0 0 32 32" className={`flip-rtl ${animated ? "mark-anim" : ""} ${className}`} aria-hidden>
+      <rect width="32" height="32" rx="9" fill={inverted ? "#fff" : "var(--color-accent)"} />
       <path
         d="M7 21.5c3.2 0 4.2-6 7.4-6s3.6 3.6 6.4 3.6S24.5 10 25 10"
         fill="none"
-        stroke={inverted ? "var(--color-indigo-600)" : "#fff"}
+        stroke={inverted ? "var(--color-accent)" : "#fff"}
         strokeWidth="2"
         strokeLinecap="round"
+        pathLength={1}
+        className="mark-line"
       />
-      <circle cx="7" cy="21.5" r="1.7" fill={inverted ? "var(--color-indigo-600)" : "#fff"} />
-      <circle cx="25" cy="10" r="2.3" fill="var(--color-amber-500)" />
+      <circle cx="7" cy="21.5" r="1.7" fill={inverted ? "var(--color-accent)" : "#fff"} className="mark-start" />
+      {animated ? <circle cx="25" cy="10" r="4.6" fill="var(--color-date)" className="mark-glow" /> : null}
+      <circle cx="25" cy="10" r="2.3" fill="var(--color-date)" className="mark-end" />
     </svg>
   );
 }
 
-export function Brand({ inverted = false }: { inverted?: boolean }) {
+export function Brand({ inverted = false, animated = false }: { inverted?: boolean; animated?: boolean }) {
   return (
-    <Link href="/" className={`flex items-center gap-2.5 ${inverted ? "text-white" : "text-zinc-950"}`}>
-      <Mark inverted={inverted} />
-      <span className="font-semibold tracking-[-0.025em] text-[1.35rem] leading-none">Masar</span>
-      <span className={`text-sm ${inverted ? "text-white/50" : "text-zinc-400"}`}>مسار</span>
+    <Link href="/" className={`flex items-center gap-2.5 ${inverted ? "text-white" : "text-ink"}`} aria-label="Masar · مسار">
+      <Mark inverted={inverted} animated={animated} />
+      <span aria-hidden className="display text-[1.45rem] leading-none">Masar</span>
+      <span aria-hidden className={`hidden font-[family-name:var(--font-naskh)] text-[1.05rem] min-[420px]:inline ${inverted ? "text-white/60" : "text-ink-3"}`}>مسار</span>
     </Link>
   );
 }
@@ -92,15 +95,6 @@ const WHO: Record<Session["role"], string> = {
   system: "Department of Health",
 };
 
-function initials(name: string): string {
-  return name
-    .replace(/^Dr /, "")
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join("");
-}
-
 export async function Shell({
   session,
   children,
@@ -117,59 +111,89 @@ export async function Shell({
   const lang: Lang = session.role === "person" ? await getLang() : "en";
   const nav = (minimal ? [] : NAV[session.role]).map((n) => ({ ...n, label: t(lang, n.label) }));
   const account = findAccount(session.role, session.id);
+  const width = wide ? "max-w-7xl" : "max-w-5xl";
+  const tabs = session.role === "person" && nav.length > 0;
   return (
-    <div className="min-h-dvh" dir={dirOf(lang)} lang={lang}>
-      <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl">
-        <div className={`mx-auto flex h-16 items-center gap-6 px-4 md:px-8 ${wide ? "max-w-7xl" : "max-w-5xl"}`}>
+    // Minimal (the first-visit journey): a full-height column, so the footer sits at the bottom on
+    // short steps and simply follows the content on long ones. Never fixed, never overlapping.
+    <div className={minimal ? "jr-shell flex min-h-svh flex-col" : "min-h-dvh"} dir={dirOf(lang)} lang={lang}>
+      <header className="sticky top-0 z-30 border-b border-rule bg-paper/90 backdrop-blur-md">
+        <div className={`mx-auto flex h-16 items-center gap-6 px-4 md:px-8 ${width}`}>
           <Brand />
-          <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
+          <nav className="hidden items-center gap-1 sm:flex" aria-label={t(lang, "Main")}>
             <NavLinks items={nav} />
           </nav>
-          <div className="ms-auto flex items-center gap-3">
-            <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-[12px] font-semibold text-indigo-700">
-              {initials(account?.name ?? "")}
-            </span>
-            <span className="hidden leading-tight md:block">
-              <span className="block text-[13px] font-medium text-zinc-900">{account?.name}</span>
-              <span className="block text-[12px] text-zinc-500">{t(lang, WHO[session.role])}</span>
+          <div className="ms-auto flex items-center gap-2 sm:gap-3">
+            <span className="hidden text-end leading-tight md:block">
+              <span className="block text-[13px] font-medium text-ink">{account?.name}</span>
+              <span className="block text-[12px] text-ink-3">{t(lang, WHO[session.role])}</span>
             </span>
             {session.role === "person" ? (
               <form action={setLanguage.bind(null, lang === "ar" ? "en" : "ar")}>
                 <button
                   lang={lang === "ar" ? "en" : "ar"}
                   aria-label={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}
-                  className="whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-semibold text-indigo-700 hover:bg-indigo-50"
+                  className="min-h-[40px] whitespace-nowrap rounded-full px-3 text-[14px] font-semibold text-accent hover:bg-accent-soft"
                 >
                   {lang === "ar" ? "English" : "العربية"}
                 </button>
               </form>
             ) : null}
             <form action={signOut}>
-              <button className="whitespace-nowrap rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-zinc-800 hover:border-zinc-400">
+              <button className="min-h-[40px] whitespace-nowrap rounded-full border border-rule-strong px-3.5 text-[13px] font-medium text-ink hover:border-ink-3">
                 {t(lang, "Sign out")}
               </button>
             </form>
           </div>
         </div>
-        {nav.length ? (
-          <nav className="flex gap-1 px-4 pb-2 sm:hidden" aria-label="Main">
+        {nav.length && !tabs ? (
+          <nav className="flex gap-1 px-4 pb-2 sm:hidden" aria-label={t(lang, "Main")}>
             <NavLinks items={nav} compact />
           </nav>
         ) : null}
       </header>
-      <main className={`mx-auto px-4 pb-24 pt-8 md:px-8 md:pt-12 ${wide ? "max-w-7xl" : "max-w-5xl"}`}>{children}</main>
-      <Footer lang={lang} />
+      <main
+        id="main"
+        tabIndex={-1}
+        className={
+          minimal
+            ? `jr-main mx-auto flex w-full flex-1 flex-col px-4 md:px-8 ${width}`
+            : `mx-auto px-4 pt-8 md:px-8 md:pt-12 ${tabs ? "pb-32 sm:pb-24" : "pb-24"} ${width}`
+        }
+      >
+        {children}
+      </main>
+      {/* Residents have the docked assistant (and on phones, tabs) at the bottom: keep the footer clear of them. */}
+      <div className={session.role === "person" && !minimal ? "pb-36 sm:pb-24" : ""}>
+        <Footer lang={lang} compact={minimal} />
+      </div>
+      {tabs ? (
+        <nav
+          aria-label={t(lang, "Main")}
+          className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-rule bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
+        >
+          <NavLinks items={nav} tabs />
+        </nav>
+      ) : null}
     </div>
   );
 }
 
 /** Intended use, stated wherever the product is used. */
-export function Footer({ lang = "en" }: { lang?: Lang }) {
+export function Footer({ lang = "en", compact = false }: { lang?: Lang; compact?: boolean }) {
   return (
-    <footer className="border-t border-zinc-200 px-4 py-6 text-center text-[12px] leading-relaxed text-zinc-400">
+    <footer className={`border-t border-rule px-4 text-center leading-relaxed text-ink-3 ${compact ? "py-3 text-[11.5px]" : "py-8 text-[12.5px]"}`}>
       {t(
         lang,
         "Masar provides educational information and decision support. It does not diagnose, predict fertility or recommend treatment; clinical decisions stay with qualified professionals. Pilot environment: records shown are synthetic.",
+      )}
+      {compact ? null : (
+        <>
+          {" "}
+          <Link href="/how-masar-decides" className="link whitespace-nowrap font-semibold">
+            {t(lang, "How Masar decides")}
+          </Link>
+        </>
       )}
     </footer>
   );
@@ -178,11 +202,11 @@ export function Footer({ lang = "en" }: { lang?: Lang }) {
 export function SectionTitle({ n, title, body }: { n?: number; title: string; body?: string }) {
   return (
     <div className="mb-5">
-      <h2 className="flex items-baseline gap-3 font-semibold tracking-[-0.025em] text-[1.7rem] leading-tight text-zinc-950">
-        {n ? <span className="font-sans text-sm font-semibold text-indigo-700">0{n}</span> : null}
+      <h2 className="display flex items-baseline gap-3 text-[1.85rem] leading-tight text-ink">
+        {n ? <span className="font-mono text-sm text-accent">0{n}</span> : null}
         {title}
       </h2>
-      {body ? <p className="mt-1.5 max-w-2xl text-[15px] text-zinc-600">{body}</p> : null}
+      {body ? <p className="mt-2 max-w-2xl text-[15.5px] leading-relaxed text-ink-2">{body}</p> : null}
     </div>
   );
 }

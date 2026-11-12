@@ -5,18 +5,27 @@ import { createPortal } from "react-dom";
 import { dirOf, t, type Lang } from "@/lib/i18n";
 
 type Brief = { opening: string; points: string[]; questions: string[] };
-type Message = { role: "user" | "assistant"; text: string; brief?: Brief | null; suggestions?: string[] };
+type From = "ai" | "mock" | "masar";
+type Message = { role: "user" | "assistant"; text: string; brief?: Brief | null; suggestions?: string[]; from?: From };
+
+/** What a question is about, when it comes from a button: lets Masar's own answers be precise. */
+export type AskIntent =
+  | { kind: "insight"; code: string }
+  | { kind: "measure"; code: string }
+  | { kind: "unknown" }
+  | { kind: "questions" }
+  | { kind: "known" };
 
 const STARTERS = ["Explain my results simply", "Help me start the conversation with my doctor", "Ask me a few questions", "What can't Masar tell me?"];
 
 /** Opens the assistant from anywhere on the page, optionally with a question. */
-export function askMasar(text?: string) {
-  window.dispatchEvent(new CustomEvent("masar:ask", { detail: text }));
+export function askMasar(text?: string, intent?: AskIntent) {
+  window.dispatchEvent(new CustomEvent("masar:ask", { detail: { text, intent } }));
 }
 
-export function AskButton({ text, children, className }: { text?: string; children: React.ReactNode; className?: string }) {
+export function AskButton({ text, intent, children, className }: { text?: string; intent?: AskIntent; children: React.ReactNode; className?: string }) {
   return (
-    <button type="button" onClick={() => askMasar(text)} className={className}>
+    <button type="button" onClick={() => askMasar(text, intent)} className={className}>
       {children}
     </button>
   );
@@ -63,13 +72,27 @@ function BriefCard({ brief, lang }: { brief: Brief; lang: Lang }) {
   );
 }
 
-export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string; aiOn: boolean; lang?: Lang }) {
+export function Companion({
+  firstName,
+  aiOn,
+  mock = false,
+  lang = "en",
+  starters,
+}: {
+  firstName: string;
+  aiOn: boolean;
+  /** the assistant is allowed, and runs as the labelled demo mock */
+  mock?: boolean;
+  lang?: Lang;
+  /** starting questions from this person's own dashboard (already translated) */
+  starters?: { label: string; intent: AskIntent }[];
+}) {
   const tr = (text: string, vars?: Record<string, string | number>) => t(lang, text, vars);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [from, setFrom] = useState<"ai" | "masar" | null>(null);
+  const [from, setFrom] = useState<From | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   // The latest messages, for send() when it is called from the window event listener.
@@ -78,7 +101,7 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
     history.current = messages;
   }, [messages]);
 
-  async function send(text: string) {
+  async function send(text: string, intent?: AskIntent) {
     const clean = text.trim();
     if (!clean || busy) return;
     const next = [...history.current, { role: "user" as const, text: clean }];
@@ -90,12 +113,12 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
       const res = await fetch("/api/companion", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: next.map(({ role, text }) => ({ role, text })) }),
+        body: JSON.stringify({ messages: next.map(({ role, text }) => ({ role, text })), intent }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const out = (await res.json()) as { reply: string; suggestions: string[]; brief: Brief | null; from: "ai" | "masar" };
+      const out = (await res.json()) as { reply: string; suggestions: string[]; brief: Brief | null; from: From };
       setFrom(out.from);
-      setMessages((m) => [...m, { role: "assistant", text: out.reply, brief: out.brief, suggestions: out.suggestions }]);
+      setMessages((m) => [...m, { role: "assistant", text: out.reply, brief: out.brief, suggestions: out.suggestions, from: out.from }]);
     } catch {
       setMessages((m) => [...m, { role: "assistant", text: tr("Sorry, I couldn't answer just now. Please try again in a moment.") }]);
     } finally {
@@ -106,8 +129,8 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
   useEffect(() => {
     const onAsk = (e: Event) => {
       setOpen(true);
-      const text = (e as CustomEvent<string | undefined>).detail;
-      if (text) void send(text);
+      const { text, intent } = (e as CustomEvent<{ text?: string; intent?: AskIntent }>).detail ?? {};
+      if (text) void send(text, intent);
       else setTimeout(() => field.current?.focus(), 50);
     };
     window.addEventListener("masar:ask", onAsk);
@@ -138,16 +161,23 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
 
   return createPortal(
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
+      {/* Docked: always one tap away, never covering the content's last line. */}
+      <div
         dir={dirOf(lang)}
-        className={`fixed bottom-5 end-5 z-40 flex items-center gap-2.5 rounded-full bg-zinc-950 py-2 ps-2 pe-4 text-[14px] font-medium text-white shadow-[0_12px_40px_-12px_rgb(79_70_229/0.7)] transition hover:-translate-y-0.5 ${open ? "pointer-events-none opacity-0" : ""}`}
+        className={`fixed inset-x-3 bottom-[72px] z-40 mx-auto max-w-xl transition-opacity sm:bottom-5 ${open ? "pointer-events-none opacity-0" : ""}`}
       >
-        <Orb size={30} />
-        {tr("Ask Masar")}
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          className="flex min-h-[52px] w-full items-center gap-3 rounded-full border border-rule-strong bg-surface py-2 ps-2 pe-5 text-start text-[15px] text-ink-3 shadow-[var(--shadow-lift)] hover:border-ink-3"
+        >
+          <Orb size={34} />
+          <span className="flex-1 truncate">{tr("Ask about your health picture")}</span>
+          <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3 sm:inline">{aiOn ? tr("Assistant on") : mock ? tr("Demo mock") : tr("Masar's own words")}</span>
+        </button>
+      </div>
 
       <div
         role="dialog"
@@ -155,14 +185,14 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
         dir={dirOf(lang)}
         lang={lang}
         aria-hidden={!open}
-        className={`companion fixed inset-x-3 bottom-3 z-50 flex max-h-[min(640px,calc(100dvh-1.5rem))] flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white/95 shadow-[0_30px_80px_-20px_rgb(24_24_27/0.35)] backdrop-blur-xl sm:inset-x-auto sm:end-5 sm:bottom-5 sm:w-[400px] ${open ? "companion--open" : ""}`}
+        className={`companion fixed inset-x-3 bottom-3 z-50 flex max-h-[min(660px,calc(100dvh-1.5rem))] flex-col overflow-hidden rounded-[22px] border border-rule bg-surface shadow-[var(--shadow-lift)] sm:inset-x-auto sm:end-5 sm:bottom-5 sm:w-[420px] ${open ? "companion--open" : ""}`}
       >
         <header className="flex items-center gap-3 border-b border-zinc-200/70 px-4 py-3">
           <Orb size={34} busy={busy} />
           <div className="min-w-0 flex-1">
             <p className="text-[14.5px] font-semibold text-zinc-950">{tr("Masar assistant")}</p>
             <p className="truncate text-[12px] text-zinc-500">
-              {from === "masar" || !aiOn ? tr("Answers from Masar's own explanations") : tr("Explains your record. Your doctor decides.")}
+              {from === "mock" || (!from && mock) ? tr("Gemini demo mock: Masar's own explanations, no live model call") : from === "masar" || !aiOn ? tr("Answers from Masar's own explanations") : tr("Explains your record. Your doctor decides.")}
             </p>
           </div>
           <button type="button" onClick={() => setOpen(false)} aria-label={tr("Close")} className="grid h-8 w-8 place-items-center rounded-full text-zinc-500 hover:bg-zinc-100">
@@ -177,17 +207,22 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
             <div className="page-enter">
               <p className="text-[15px] font-semibold text-zinc-950">{tr("Hi {name}.", { name: firstName })}</p>
               <p className="mt-1 text-[14px] leading-relaxed text-zinc-600">
-                {tr("I can explain what Masar found in plain words, help you get ready to talk to your doctor, or ask you a few questions to fill in the gaps. I only see what you chose to share.")}
+                {tr("I can explain what Masar found and why it matters, what is still unknown, what a test measures and its limits, and help you prepare questions for your doctor. I only see what you chose to share, and I never diagnose.")}
               </p>
+              {!aiOn && !mock ? (
+                <p className="mt-3 rounded-xl bg-zinc-100 px-3 py-2 text-[13px] leading-relaxed text-zinc-700">
+                  {tr("Masar's assistant is off, so answers use Masar's own written explanations and nothing is sent to Google Gemini. You can switch it on in My data.")}
+                </p>
+              ) : null}
               <div className="mt-4 grid gap-2">
-                {STARTERS.map((s) => (
+                {(starters ?? STARTERS.map((s) => ({ label: tr(s), intent: undefined }))).map((s) => (
                   <button
-                    key={s}
+                    key={s.label}
                     type="button"
-                    onClick={() => send(tr(s))}
+                    onClick={() => send(s.label, s.intent)}
                     className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-start text-[13.5px] font-medium text-zinc-800 transition hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800"
                   >
-                    {tr(s)}
+                    {s.label}
                   </button>
                 ))}
               </div>
@@ -197,12 +232,21 @@ export function Companion({ firstName, aiOn, lang = "en" }: { firstName: string;
           {messages.map((m, i) =>
             m.role === "user" ? (
               <div key={i} className="flex justify-end">
-                <p className="max-w-[85%] rounded-2xl rounded-br-md bg-indigo-600 px-3.5 py-2 text-[14px] text-white">{m.text}</p>
+                <p className="max-w-[85%] rounded-2xl rounded-ee-md bg-accent px-3.5 py-2 text-[14px] text-white">{m.text}</p>
               </div>
             ) : (
               <div key={i} className="page-enter max-w-[92%]">
-                <p className="whitespace-pre-line rounded-2xl rounded-bl-md bg-zinc-100 px-3.5 py-2.5 text-[14px] leading-relaxed text-zinc-900">{m.text}</p>
+                <p className="whitespace-pre-line rounded-2xl rounded-es-md bg-zinc-100 px-3.5 py-2.5 text-[14px] leading-relaxed text-zinc-900">{m.text}</p>
                 {m.brief ? <BriefCard brief={m.brief} lang={lang} /> : null}
+                {m.from ? (
+                  <p className="mt-1 px-1 text-[11.5px] text-zinc-500">
+                    {m.from === "ai"
+                      ? tr("Written by Masar's assistant (Google Gemini) from your record. Check with your doctor.")
+                      : m.from === "mock"
+                        ? tr("Gemini demo mock (no live model call): Masar's own explanation")
+                        : tr("Masar's own words")}
+                  </p>
+                ) : null}
               </div>
             ),
           )}
