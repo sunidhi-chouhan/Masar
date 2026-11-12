@@ -1,6 +1,6 @@
 # Stack
 
-The product is `app/`. `yousr/` is an earlier prototype kept for reference only; it is not built or deployed.
+The product is `app/`.
 
 ## `app/` (Masar)
 
