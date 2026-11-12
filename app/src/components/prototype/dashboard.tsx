@@ -11,6 +11,7 @@ import { HealthTimeline } from "@/components/dashboard/health-timeline";
 import { PrepareList } from "@/components/dashboard/prepare-list";
 import { Timing } from "@/components/editorial";
 import { Pill, Simulated, download, useProto } from "./core";
+import { downloadPdf, type PdfBlock } from "./report-pdf";
 import { withAudit, withNotice } from "./state";
 
 // The patient's dashboard in the prototype: the same model and components as
@@ -200,16 +201,28 @@ export function PatientDashboard() {
         <SectionTitle n={6} title={tr("Your personal health report")} body={tr("Everything above in one readable document, with where each statement came from.")} />
         <div className="pt-card flex flex-wrap items-center gap-4">
           <p className="min-w-0 flex-1 text-[14.5px] text-ink-2">{tr("Download it to bring to an appointment, or keep it for yourself. It contains only what you chose to share.")}</p>
-          <button
-            type="button"
-            onClick={() => {
-              download(`masar-health-report-${s.profileId}.html`, reportHtml(d, base.name, base.age, tr, say, date, s.lang), "text/html");
-              set((y) => withAudit(y, { role: "patient", who: name, what: "Downloaded their health report", allowed: true }));
-            }}
-            className="btn btn-primary"
-          >
-            {tr("Download my health report")}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void downloadPdf(`masar-health-report-${s.profileId}.pdf`, reportBlocks(d, base.name, base.age, tr, say, date, s.lang), s.lang);
+                set((y) => withAudit(y, { role: "patient", who: name, what: "Downloaded their health report", allowed: true }));
+              }}
+              className="btn btn-primary"
+            >
+              {tr("Download PDF")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                download(`masar-health-report-${s.profileId}.json`, reportJson(d, base.name, base.age, tr, say, date, s.lang), "application/json");
+                set((y) => withAudit(y, { role: "patient", who: name, what: "Downloaded their health report", allowed: true }));
+              }}
+              className="btn btn-secondary"
+            >
+              {tr("Download JSON")}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -527,22 +540,94 @@ function Assistant({ d }: { d: Dashboard }) {
 
 // ---------- the downloadable report ----------
 
-function esc(x: string) {
-  return x.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+type Tr = (t: string, v?: Record<string, string | number>) => string;
+type Say = (l: { text: string; vars?: Record<string, string | number> }) => string;
+
+/** The same report as the on-screen summary, as JSON the person can keep. */
+export function reportJson(d: Dashboard, name: string, age: number, tr: Tr, say: Say, date: (iso: string) => string, lang: "en" | "ar") {
+  const preparedAt = new Date().toISOString();
+  return JSON.stringify(
+    {
+      document: tr("Personal health report"),
+      product: "Masar",
+      name,
+      age,
+      language: lang,
+      preparedAt,
+      prepared: date(preparedAt),
+      data: tr("Synthetic prototype data"),
+      notice: tr("Masar provides educational information and decision support. It does not diagnose, predict fertility or recommend treatment; clinical decisions stay with qualified professionals. Pilot environment: records shown are synthetic."),
+      whatYouShared: d.known.map((f) => ({
+        statement: say(f.text),
+        source: tr(f.source),
+        date: f.date ? date(f.date) : null,
+      })),
+      whatMasarFound: d.insights.map((i) => ({
+        title: tr(i.title),
+        because: i.because.map((b) => say(b.text)),
+        whyItMatters: tr(i.why),
+        evidence: tr(i.evidence.citation),
+        whatThisCantTellYou: tr(i.cannot),
+      })),
+      whatMasarFoundNote: d.insights.length
+        ? null
+        : tr("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see."),
+      resultsOverTime: d.series.map((x) => ({
+        measurement: tr(x.label),
+        unit: tr(x.unit),
+        whatMasarCanSay: say(x.sentence),
+        results: x.points.map((p) => ({ date: date(p.at), value: p.value, source: tr(p.source) })),
+      })),
+      resultsOverTimeNote: d.series.length ? null : tr("Nothing you shared has readings over time yet, so no change can be described."),
+      whatRemainsUncertain: [...d.unknown.map((f) => say(f.text)), ...new Set(d.insights.map((i) => tr(i.cannot)))],
+      nextStepsYouCouldDiscuss: d.actions.map((a) => ({ step: say(a.title), why: say(a.why) })),
+      questionsToDiscuss: d.prepare.questions.map((q) => tr(q)),
+      howToReadThis: [
+        tr("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it."),
+        tr("A change over time is called real only when it passes Masar's published rule; one reading is never a trend."),
+      ],
+    },
+    null,
+    2,
+  );
 }
 
-export function reportHtml(d: Dashboard, name: string, age: number, tr: (t: string, v?: Record<string, string | number>) => string, say: (l: { text: string; vars?: Record<string, string | number> }) => string, date: (iso: string) => string, lang: "en" | "ar") {
-  const li = (xs: string[]) => `<ul>${xs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
-  return `<!doctype html><html lang="${lang}" dir="${lang === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(tr("Personal health report"))} · ${esc(name)}</title>
-<style>body{font:15px/1.6 system-ui,sans-serif;color:#1c1b18;background:#fff;max-width:760px;margin:40px auto;padding:0 20px}h1{font:600 28px Georgia,serif;margin:0}h2{font:600 19px Georgia,serif;border-bottom:2px solid #1c1b18;padding-bottom:6px;margin-top:32px}small,.m{color:#625e55}li{margin:4px 0}.tag{font:600 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#1e5b56}table{border-collapse:collapse;width:100%}td,th{border-top:1px solid #e2ddd3;padding:6px 8px 6px 0;text-align:start;vertical-align:top}</style></head><body>
-<p class="tag">${esc(tr("Personal health report"))} · Masar</p><h1>${esc(name)}</h1><p class="m">${esc(tr("Age {age}", { age }))} · ${esc(tr("Prepared {date}", { date: date(new Date().toISOString()) }))} · ${esc(tr("Synthetic prototype data"))}</p>
-<p class="m">${esc(tr("Masar provides educational information and decision support. It does not diagnose, predict fertility or recommend treatment; clinical decisions stay with qualified professionals. Pilot environment: records shown are synthetic."))}</p>
-<h2>${esc(tr("What you shared"))}</h2>${li(d.known.map((f) => `${say(f.text)} (${tr(f.source)}${f.date ? ` · ${date(f.date)}` : ""})`))}
-<h2>${esc(tr("What Masar found"))}</h2>${d.insights.length ? d.insights.map((i) => `<h3>${esc(tr(i.title))}</h3>${li([...i.because.map((b) => say(b.text)), `${tr("Why it matters")}: ${tr(i.why)} (${tr(i.evidence.citation)})`, `${tr("What this can't tell you")}: ${tr(i.cannot)}`])}`).join("") : `<p>${esc(tr("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see."))}</p>`}
-<h2>${esc(tr("Results over time"))}</h2>${d.series.length ? `<table><tr><th>${esc(tr("Measurement"))}</th><th>${esc(tr("Results"))}</th><th>${esc(tr("What Masar can say"))}</th></tr>${d.series.map((x) => `<tr><td>${esc(tr(x.label))}</td><td>${x.points.map((p) => `${esc(date(p.at))}: ${p.value} ${esc(tr(x.unit))}`).join("<br>")}</td><td>${esc(say(x.sentence))}</td></tr>`).join("")}</table>` : `<p>${esc(tr("Nothing you shared has readings over time yet, so no change can be described."))}</p>`}
-<h2>${esc(tr("What remains uncertain"))}</h2>${li([...d.unknown.map((f) => say(f.text)), ...new Set(d.insights.map((i) => tr(i.cannot)))])}
-<h2>${esc(tr("Next steps you could discuss"))}</h2>${li(d.actions.map((a) => `${say(a.title)}: ${say(a.why)}`))}
-<h2>${esc(tr("Questions to discuss with a healthcare professional"))}</h2><ol>${d.prepare.questions.map((q) => `<li>${esc(tr(q))}</li>`).join("")}</ol>
-<h2>${esc(tr("Sources and how to read this"))}</h2>${li([tr("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it."), tr("A change over time is called real only when it passes Masar's published rule; one reading is never a trend.")])}
-</body></html>`;
+/** The same report, laid out for the PDF file. */
+export function reportBlocks(d: Dashboard, name: string, age: number, tr: Tr, say: Say, date: (iso: string) => string, lang: "en" | "ar"): PdfBlock[] {
+  const preparedAt = new Date().toISOString();
+  const blocks: PdfBlock[] = [
+    { kind: "kicker", text: lang === "ar" ? `${tr("Personal health report")} · Masar` : `${tr("Personal health report").toUpperCase()} · MASAR` },
+    { kind: "title", text: name },
+    { kind: "meta", text: `${tr("Age {age}", { age })} · ${tr("Prepared {date}", { date: date(preparedAt) })} · ${tr("Synthetic prototype data")}` },
+    { kind: "notice", text: tr("Masar provides educational information and decision support. It does not diagnose, predict fertility or recommend treatment; clinical decisions stay with qualified professionals. Pilot environment: records shown are synthetic.") },
+    { kind: "h2", text: tr("What you shared") },
+    ...d.known.map((f) => ({ kind: "li" as const, text: `${say(f.text)} (${tr(f.source)}${f.date ? ` · ${date(f.date)}` : ""})` })),
+    { kind: "h2", text: tr("What Masar found") },
+  ];
+  if (!d.insights.length) {
+    blocks.push({ kind: "p", text: tr("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see.") });
+  }
+  for (const i of d.insights) {
+    blocks.push({ kind: "h3", text: tr(i.title) });
+    for (const b of i.because) blocks.push({ kind: "li", text: say(b.text) });
+    blocks.push({ kind: "p", text: `${tr("Why it matters")}: ${tr(i.why)} (${tr(i.evidence.citation)})` });
+    blocks.push({ kind: "p", text: `${tr("What this can't tell you")}: ${tr(i.cannot)}` });
+  }
+  blocks.push({ kind: "h2", text: tr("Results over time") });
+  if (!d.series.length) blocks.push({ kind: "p", text: tr("Nothing you shared has readings over time yet, so no change can be described.") });
+  for (const x of d.series) {
+    blocks.push({ kind: "h3", text: tr(x.label) });
+    blocks.push({ kind: "p", text: say(x.sentence) });
+    for (const p of x.points) blocks.push({ kind: "li", text: `${date(p.at)}: ${p.value} ${tr(x.unit)} · ${tr(p.source)}` });
+  }
+  blocks.push({ kind: "h2", text: tr("What remains uncertain") });
+  for (const line of [...d.unknown.map((f) => say(f.text)), ...new Set(d.insights.map((i) => tr(i.cannot)))]) blocks.push({ kind: "li", text: line });
+  blocks.push({ kind: "h2", text: tr("Next steps you could discuss") });
+  for (const a of d.actions) blocks.push({ kind: "li", text: `${say(a.title)}: ${say(a.why)}` });
+  blocks.push({ kind: "h2", text: tr("Questions to discuss with a healthcare professional") });
+  for (const q of d.prepare.questions) blocks.push({ kind: "li", text: tr(q) });
+  blocks.push({ kind: "h2", text: tr("Sources and how to read this") });
+  blocks.push({ kind: "li", text: tr("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it.") });
+  blocks.push({ kind: "li", text: tr("A change over time is called real only when it passes Masar's published rule; one reading is never a trend.") });
+  return blocks;
 }

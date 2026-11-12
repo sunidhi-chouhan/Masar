@@ -8,9 +8,10 @@ import { ALL_CONSENT, protoView, type ProtoView } from "@/lib/prototype";
 import { PERMISSION_TEXT } from "@/lib/permissions";
 import { SeriesChart } from "@/components/dashboard/series-chart";
 import { Timing } from "@/components/editorial";
-import { Brand, Pill, Simulated, Tabs, download, useProto } from "./core";
+import { Brand, Pill, Simulated, Tabs, useProto } from "./core";
 import { Bell, LangToggle } from "./patient";
-import { reportHtml } from "./dashboard";
+import { reportBlocks } from "./dashboard";
+import { downloadPdf } from "./report-pdf";
 import { uid, withAudit, withNotice } from "./state";
 
 // Dr Layla's practice view. The prototype patient appears only as far as they
@@ -362,7 +363,7 @@ function Patient({ r, v, live }: { r: Resident; v: ProtoView; live: boolean }) {
             <button
               type="button"
               onClick={() => {
-                download(`masar-report-${r.id}.html`, reportHtml(d, r.name, r.age, tr, say, date, s.lang), "text/html");
+                void downloadPdf(`masar-report-${r.id}.pdf`, reportBlocks(d, r.name, r.age, tr, say, date, s.lang), s.lang);
                 set((x) => withAudit(x, { role: "clinician", who: "Dr Layla Al Hashimi", what: "Downloaded a patient report", allowed: true }));
               }}
               className="btn btn-primary mt-4"

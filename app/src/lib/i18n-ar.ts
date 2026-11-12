@@ -947,6 +947,8 @@ export const AR: Record<string, string> = {
   "Everything above in one readable document, with where each statement came from.": "كل ما سبق في مستند واحد سهل القراءة، مع مصدر كل عبارة.",
   "Download it to bring to an appointment, or keep it for yourself. It contains only what you chose to share.": "نزّلوه لتحضروه إلى موعد، أو احتفظوا به لأنفسكم. لا يحتوي إلا على ما اخترتم مشاركته.",
   "Download my health report": "نزّلوا تقريري الصحي",
+  "Download PDF": "نزّلوا بصيغة PDF",
+  "Download JSON": "نزّلوا بصيغة JSON",
   "The lab system has no results for you right now, so none are shown.": "لا يحتوي نظام المختبر على نتائج لكم حاليًا، لذا لا يُعرض شيء.",
   "Test": "الفحص",
   "Ask Dr Layla for a conversation": "اطلبوا محادثة مع د. ليلى",
