@@ -3,6 +3,47 @@ import fs from "node:fs";
 import path from "node:path";
 import type { OptionKind, ReadingCode, SourceId } from "@/lib/model";
 import type { Answers } from "@/lib/profile";
+import type { FollowUp, FollowUpSource, JAnswers, JourneySummary } from "@/lib/journey";
+
+/**
+ * The onboarding journey: where the person is, what they answered, and what
+ * was generated for them. Kept apart from consent (sources, sharing and the
+ * assistant switches above), which is never stored here.
+ */
+export interface JourneyState {
+  /** the stage reached: 0 welcome, 1 about you, 2 quick check, 3 permissions, 4 your path. Never which question, which could reveal an answer. */
+  step: number;
+  /** when the person began this journey; names the browser-only draft, so a reset journey never picks up an old draft */
+  startedAt: string | null;
+  /** the journey's own answers, stored only once "Your answers" is switched on; the rule inputs are derived from them into `answers` */
+  answers: JAnswers;
+  /** the two final questions, with where they came from */
+  followUps: { source: FollowUpSource; model: string | null; at: string; basis: string; questions: FollowUp[] } | null;
+  followUpAnswers: Record<string, string>;
+  /** answer to the fourth quick-check statement (educational only) */
+  knowledgeExtra: string | null;
+  /** the assistant's summary, only ever stored with assistant consent; deleted when it is withdrawn */
+  summary: { source: "ai" | "mock"; model: string; at: string; lang: "en" | "ar"; data: JourneySummary } | null;
+}
+
+/** A stored journey, keeping only today's fields (older records carried question positions and drafts). */
+function journeyFrom(j: Partial<JourneyState> | undefined): JourneyState {
+  const f = freshJourney();
+  if (!j) return f;
+  return {
+    step: typeof j.step === "number" ? j.step : f.step,
+    startedAt: j.startedAt ?? null,
+    answers: j.answers ?? {},
+    followUps: j.followUps ?? null,
+    followUpAnswers: j.followUpAnswers ?? {},
+    knowledgeExtra: j.knowledgeExtra ?? null,
+    summary: j.summary ?? null,
+  };
+}
+
+export function freshJourney(): JourneyState {
+  return { step: 0, startedAt: null, answers: {}, followUps: null, followUpAnswers: {}, knowledgeExtra: null, summary: null };
+}
 
 // Demo state for the three named characters, kept in one JSON file so it
 // survives restarts. The generated population never changes and lives in code.
@@ -34,6 +75,9 @@ export interface ReportValue {
   date: string | null;
   /** the Masar measure this maps to, if any */
   code: ReadingCode | null;
+  /** the reference range exactly as the lab printed it, when it printed one */
+  refLow?: number | null;
+  refHigh?: number | null;
 }
 
 /** A test result the doctor asked for, uploaded by the person. */
@@ -61,6 +105,10 @@ export interface PersonState {
   shareWithClinician: boolean;
   /** may Masar keep looking for signals */
   scanning: boolean;
+  /** may Masar's assistant (Google Gemini) read this person's summary to explain it. Off unless switched on. */
+  assistantConsent: boolean;
+  /** may Masar's assistant (Google Gemini) read uploaded reports. Off unless switched on; also needs Lab results on. */
+  reportReadingConsent: boolean;
   /** the person's own answers to the health questions */
   answers: Answers | null;
   beliefsBefore: Belief[] | null;
@@ -75,6 +123,7 @@ export interface PersonState {
   reports: ReportRequest[];
   /** when to nudge someone who read what Masar found but hasn't asked yet */
   remindAt: string | null;
+  journey: JourneyState;
 }
 
 export interface AccessEntry {
@@ -90,8 +139,10 @@ interface State {
   access: AccessEntry[];
 }
 
-const FILE = path.join(process.cwd(), ".data", "state.json");
-const UPLOADS = path.join(process.cwd(), ".data", "uploads");
+// MASAR_DATA_DIR lets the checks run against a throwaway folder instead of the dev data.
+const ROOT = process.env.MASAR_DATA_DIR || path.join(process.cwd(), ".data");
+const FILE = path.join(ROOT, "state.json");
+const UPLOADS = path.join(ROOT, "uploads");
 
 /** Uploaded files live outside the web root and are only served after a session check. */
 export function saveUpload(personId: string, name: string, bytes: Buffer): string {
@@ -119,6 +170,8 @@ export function freshPerson(): PersonState {
     sources: { ...NO_SOURCES },
     shareWithClinician: false,
     scanning: true,
+    assistantConsent: false,
+    reportReadingConsent: false,
     answers: null,
     beliefsBefore: null,
     beliefsAfter: null,
@@ -128,6 +181,7 @@ export function freshPerson(): PersonState {
     request: null,
     reports: [],
     remindAt: null,
+    journey: freshJourney(),
   };
 }
 
@@ -141,17 +195,37 @@ function read(): State {
 
 function write(state: State) {
   fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(state, null, 2));
+  // Write to a temporary file, then rename: a crash or restart mid-write
+  // (for example during a deploy) never leaves a half-written state file.
+  const tmp = `${FILE}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  fs.renameSync(tmp, FILE);
+}
+
+/**
+ * Fills fields a saved record from an older version doesn't have. The AI
+ * consents only count when they are literally true: anything missing or
+ * malformed reads as off.
+ */
+function normalise(p: Partial<PersonState> | undefined): PersonState {
+  const merged = { ...freshPerson(), ...p };
+  return {
+    ...merged,
+    sources: { ...NO_SOURCES, ...merged.sources },
+    assistantConsent: p?.assistantConsent === true,
+    reportReadingConsent: p?.reportReadingConsent === true,
+    reports: Array.isArray(merged.reports) ? merged.reports : [],
+    journey: journeyFrom(p?.journey),
+  };
 }
 
 export function person(id: string): PersonState {
-  const p = read().persons[id];
-  return p ? { ...freshPerson(), ...p } : freshPerson();
+  return normalise(read().persons[id]);
 }
 
 export function updatePerson(id: string, change: (p: PersonState) => PersonState) {
   const state = read();
-  state.persons[id] = change({ ...freshPerson(), ...state.persons[id] });
+  state.persons[id] = change(normalise(state.persons[id]));
   write(state);
 }
 

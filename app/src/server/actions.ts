@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { SOURCES, type OptionKind, type SourceId } from "@/lib/model";
 import { OPTION_LABEL, RULES } from "@/lib/signals";
 import { HEROES } from "@/lib/population";
+import { clinicianLabel } from "@/lib/accounts";
 import { answersFromRecords, questionsFor, type Answers } from "@/lib/profile";
 import { clearCookieName, getSession, isPerson, requireRole, sessionCookie } from "./session";
 import { accessAllowed } from "./access";
@@ -51,11 +52,15 @@ export async function completeOnboarding(form: FormData) {
   });
   const worry = Math.min(4, Math.max(1, Number(form.get("worry") ?? 2)));
   const answers = readAnswers(s.id, form);
+  const assistantConsent = form.get("consent_assistant") === "on";
+  const reportReadingConsent = form.get("consent_reportReading") === "on";
   updatePerson(s.id, (p) => ({
     ...p,
     onboarded: true,
     sources,
     shareWithClinician: form.get("share_clinician") === "on",
+    assistantConsent,
+    reportReadingConsent,
     answers,
     beliefsBefore: beliefs,
     worryBefore: worry,
@@ -68,8 +73,38 @@ export async function completeOnboarding(form: FormData) {
     what: form.get("share_clinician") === "on" ? "Allowed your doctor to see your summary" : "Kept your summary private from your doctor",
     allowed: true,
   });
+  logAccess({ personId: s.id, who: "You", what: ASSISTANT_LOG[String(assistantConsent) as "true" | "false"], allowed: true });
+  logAccess({ personId: s.id, who: "You", what: READING_LOG[String(reportReadingConsent) as "true" | "false"], allowed: true });
   revalidatePath("/", "layout");
   redirect("/me");
+}
+
+const ASSISTANT_LOG = {
+  true: "Allowed Masar's assistant to read your summary",
+  false: "Kept your summary from Masar's assistant",
+} as const;
+const READING_LOG = {
+  true: "Allowed Masar's assistant to read your uploaded reports",
+  false: "Kept your uploaded reports from Masar's assistant",
+} as const;
+
+/** Lets Masar's assistant (Google Gemini) read the person's summary, or stops it at once. */
+export async function setAssistantConsent(on: boolean) {
+  const s = await requireRole("person");
+  const had = Boolean(person(s.id).journey.summary);
+  // Withdrawing consent also deletes what the assistant wrote from your data.
+  updatePerson(s.id, (p) => ({ ...p, assistantConsent: on === true, journey: on === true ? p.journey : { ...p.journey, summary: null } }));
+  logAccess({ personId: s.id, who: "You", what: on ? ASSISTANT_LOG.true : "Stopped Masar's assistant reading your summary", allowed: true });
+  if (!on && had) logAccess({ personId: s.id, who: "Masar", what: "Deleted the summary Masar's assistant wrote", allowed: true });
+  revalidatePath("/", "layout");
+}
+
+/** Lets Masar's assistant read uploaded reports, or stops it at once. */
+export async function setReportReadingConsent(on: boolean) {
+  const s = await requireRole("person");
+  updatePerson(s.id, (p) => ({ ...p, reportReadingConsent: on === true }));
+  logAccess({ personId: s.id, who: "You", what: on ? READING_LOG.true : "Stopped Masar's assistant reading your uploaded reports", allowed: true });
+  revalidatePath("/", "layout");
 }
 
 /** Only accept answers that are real options for this person's questions. */
@@ -156,13 +191,14 @@ async function clinicianTarget(personId: string) {
   if (!s || s.role !== "clinician") throw new Error("FORBIDDEN");
   if (!isPerson(personId)) throw new Error("UNKNOWN_PERSON");
   if (!person(personId).shareWithClinician) {
-    logAccess({ personId, who: "Dr Layla Al Hashimi (family physician)", what: "Tried to record a decision", allowed: false });
+    logAccess({ personId, who: clinicianLabel(s.id), what: "Tried to record a decision", allowed: false });
     throw new Error("NOT_SHARED");
   }
+  return s;
 }
 
 export async function clinicianDecide(personId: string, form: FormData) {
-  await clinicianTarget(personId);
+  const s = await clinicianTarget(personId);
   const decision = String(form.get("decision")) as Decision;
   if (!["Accept", "Modify", "Override"].includes(decision)) return;
   const reason = String(form.get("reason") ?? "").trim().slice(0, 300);
@@ -179,7 +215,7 @@ export async function clinicianDecide(personId: string, form: FormData) {
       decidedAt: new Date().toISOString(),
     },
   }));
-  logAccess({ personId, who: "Dr Layla Al Hashimi (family physician)", what: `Reviewed your request (${{ Accept: "agreed", Modify: "agreed and added a test", Override: "suggested something different" }[decision]})`, allowed: true });
+  logAccess({ personId, who: clinicianLabel(s.id), what: `Reviewed your request (${{ Accept: "agreed", Modify: "agreed and added a test", Override: "suggested something different" }[decision]})`, allowed: true });
   revalidatePath("/", "layout");
 }
 
@@ -198,7 +234,7 @@ export async function clinicianAttended(personId: string) {
 
 /** The doctor asks the person to upload a test result. */
 export async function clinicianRequestReport(personId: string, form: FormData) {
-  await clinicianTarget(personId);
+  const s = await clinicianTarget(personId);
   const test = String(form.get("test") ?? "");
   if (!(TESTS as readonly string[]).includes(test)) return;
   const note = String(form.get("note") ?? "").trim().slice(0, 300);
@@ -206,7 +242,7 @@ export async function clinicianRequestReport(personId: string, form: FormData) {
     ...p,
     reports: [{ id: randomUUID(), test, note, requestedAt: new Date().toISOString(), status: "requested" }, ...p.reports],
   }));
-  logAccess({ personId, who: "Dr Layla Al Hashimi (family physician)", what: `Asked you to upload: ${test}`, allowed: true });
+  logAccess({ personId, who: clinicianLabel(s.id), what: `Asked you to upload: ${test}`, allowed: true });
   revalidatePath("/", "layout");
 }
 
@@ -232,7 +268,8 @@ export async function uploadReport(reportId: string, _prev: UploadResult | null,
   if (!ACCEPTED.includes(mime) || !MAGIC[mime](bytes)) return { ok: false, error: "Please upload a PDF or a photo (PNG, JPG or WebP)." };
 
   const stored = saveUpload(session.id, file.name || "report", bytes);
-  const reading = await readReport({ mime, bytes }, req.test, await getLang());
+  // Read by the assistant only with report-reading consent and Lab results on; checked inside readReport and again in generateJson.
+  const reading = await readReport(session.id, { mime, bytes }, req.test, await getLang());
   updatePerson(session.id, (p) => ({
     ...p,
     reports: p.reports.map((r) =>

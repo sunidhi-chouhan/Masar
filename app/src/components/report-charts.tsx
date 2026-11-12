@@ -18,17 +18,17 @@ import {
   YAxis,
 } from "recharts";
 
-const INDIGO = "#4f46e5";
-const VIOLET = "#8b5cf6";
-const ZINC = "#a1a1aa";
-const AMBER = "#f59e0b";
-const ROSE = "#f43f5e";
-const GRID = "#e4e4e7";
-const TICK = { fill: "#71717a", fontSize: 12 };
+const INDIGO = "#1e5b56";
+const VIOLET = "#5e988d";
+const ZINC = "#a59d8f";
+const AMBER = "#b07a1f";
+const ROSE = "#b5523f";
+const GRID = "#e2ddd3";
+const TICK = { fill: "#625e55", fontSize: 12 };
 
 const tooltipStyle = {
-  contentStyle: { borderRadius: 12, border: "1px solid #e4e4e7", boxShadow: "0 8px 24px -12px rgb(0 0 0 / 0.2)", fontSize: 13 },
-  labelStyle: { color: "#09090b", fontWeight: 600 },
+  contentStyle: { borderRadius: 12, border: "1px solid #e2ddd3", boxShadow: "0 8px 24px -12px rgb(0 0 0 / 0.2)", fontSize: 13 },
+  labelStyle: { color: "#1c1b18", fontWeight: 600 },
 };
 
 const dayLabel = (d: number) =>
@@ -65,13 +65,13 @@ export function Journey({ data }: { data: { label: string; n: number }[] }) {
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 48, left: 8, bottom: 4 }}>
         <XAxis type="number" hide domain={[0, top]} />
-        <YAxis type="category" dataKey="label" width={170} tick={{ ...TICK, fill: "#27272a" }} tickLine={false} axisLine={false} />
-        <Tooltip {...tooltipStyle} cursor={{ fill: "#f4f4f5" }} formatter={(v) => [Number(v).toLocaleString("en"), "People"]} />
+        <YAxis type="category" dataKey="label" width={170} tick={{ ...TICK, fill: "#2c2a25" }} tickLine={false} axisLine={false} />
+        <Tooltip {...tooltipStyle} cursor={{ fill: "#f2eee7" }} formatter={(v) => [Number(v).toLocaleString("en"), "People"]} />
         <Bar dataKey="n" radius={[0, 8, 8, 0]} barSize={26}>
           {rows.map((r, i) => (
             <Cell key={r.label} fill={i === rows.length - 1 ? VIOLET : INDIGO} fillOpacity={1 - i * 0.15} />
           ))}
-          <LabelList dataKey="pct" position="right" formatter={(v) => `${v}%`} style={{ fill: "#3f3f46", fontSize: 12, fontWeight: 600 }} />
+          <LabelList dataKey="pct" position="right" formatter={(v) => `${v}%`} style={{ fill: "#403d36", fontSize: 12, fontWeight: 600 }} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -102,8 +102,8 @@ export function DoctorDecisions({ data }: { data: { title: string; acceptPct: nu
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 46)}>
       <BarChart data={data} layout="vertical" stackOffset="expand" margin={{ top: 4, right: 12, left: 8, bottom: 4 }}>
         <XAxis type="number" hide />
-        <YAxis type="category" dataKey="title" width={230} tick={{ ...TICK, fill: "#27272a" }} tickLine={false} axisLine={false} />
-        <Tooltip {...tooltipStyle} cursor={{ fill: "#f4f4f5" }} formatter={(v, n) => [`${v}%`, n]} />
+        <YAxis type="category" dataKey="title" width={230} tick={{ ...TICK, fill: "#2c2a25" }} tickLine={false} axisLine={false} />
+        <Tooltip {...tooltipStyle} cursor={{ fill: "#f2eee7" }} formatter={(v, n) => [`${v}%`, n]} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
         <Bar name="Agreed" dataKey="acceptPct" stackId="a" fill={INDIGO} barSize={22} />
         <Bar name="Agreed and added a test" dataKey="modifyPct" stackId="a" fill={VIOLET} />
@@ -119,14 +119,14 @@ export function Reach({ data, average }: { data: { label: string; pct: number }[
     <ResponsiveContainer width="100%" height={Math.max(180, data.length * 40)}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 44, left: 8, bottom: 4 }}>
         <XAxis type="number" hide domain={[0, 100]} />
-        <YAxis type="category" dataKey="label" width={110} tick={{ ...TICK, fill: "#27272a" }} tickLine={false} axisLine={false} />
-        <Tooltip {...tooltipStyle} cursor={{ fill: "#f4f4f5" }} formatter={(v) => [`${v}%`, "Asked to talk"]} />
-        <ReferenceLine x={average} stroke="#52525b" strokeDasharray="4 4" label={{ value: `Average ${average}%`, position: "top", fill: "#52525b", fontSize: 11 }} />
+        <YAxis type="category" dataKey="label" width={110} tick={{ ...TICK, fill: "#2c2a25" }} tickLine={false} axisLine={false} />
+        <Tooltip {...tooltipStyle} cursor={{ fill: "#f2eee7" }} formatter={(v) => [`${v}%`, "Asked to talk"]} />
+        <ReferenceLine x={average} stroke="#545047" strokeDasharray="4 4" label={{ value: `Average ${average}%`, position: "top", fill: "#545047", fontSize: 11 }} />
         <Bar dataKey="pct" radius={[0, 8, 8, 0]} barSize={20}>
           {data.map((d) => (
             <Cell key={d.label} fill={d.pct < average - 10 ? ROSE : INDIGO} />
           ))}
-          <LabelList dataKey="pct" position="right" formatter={(v) => `${v}%`} style={{ fill: "#3f3f46", fontSize: 12, fontWeight: 600 }} />
+          <LabelList dataKey="pct" position="right" formatter={(v) => `${v}%`} style={{ fill: "#403d36", fontSize: 12, fontWeight: 600 }} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>

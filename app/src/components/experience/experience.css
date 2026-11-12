@@ -1,0 +1,130 @@
+.xm {
+  color: var(--color-ink);
+  background: var(--color-paper);
+}
+
+.xm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-rule-strong);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.xm-btn:hover { border-color: var(--color-ink-3); }
+.xm-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.xm-btn:disabled { opacity: 0.45; }
+.xm-btn--accent { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.xm-btn--accent:hover { background: var(--color-accent-strong); }
+.xm-btn--quiet { background: transparent; font-weight: 500; }
+
+.xm-switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.xm-switch input {
+  width: 3.25rem;
+  height: 2rem;
+  appearance: none;
+  border-radius: 999px;
+  background: var(--color-rule-strong);
+  cursor: pointer;
+  transition: background-color 0.18s var(--ease-calm);
+}
+.xm-switch input:checked { background: var(--color-accent); }
+.xm-switch input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.xm-switch span {
+  position: absolute;
+  top: 0.25rem;
+  inset-inline-start: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: #fff;
+  pointer-events: none;
+  transition: transform 0.18s var(--ease-calm);
+}
+.xm-switch input:checked + span { transform: translateX(1.25rem); }
+[dir="rtl"] .xm-switch input:checked + span { transform: translateX(-1.25rem); }
+
+.xm-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--color-rule);
+  text-align: start;
+  color: var(--color-ink);
+  font-size: 16.5px;
+}
+.xm-choice:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.xm-choice[aria-checked="true"] { color: var(--color-accent); font-weight: 600; }
+.xm-dot {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-ink-3);
+}
+.xm-choice[aria-checked="true"] .xm-dot { border-color: var(--color-accent); background: var(--color-accent); box-shadow: inset 0 0 0 3px var(--color-paper); }
+
+.xm-dock {
+  flex-shrink: 0;
+  z-index: 20;
+  border-top: 1px solid var(--color-rule-strong);
+  background: color-mix(in srgb, var(--color-paper) 94%, white);
+}
+.xm-progress {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+.xm-progress button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  min-width: 36px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--color-ink-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.xm-progress button[aria-current="step"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.xm-progress button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.xm-ink { fill: none; stroke: var(--color-ink-3); stroke-width: 1.6; stroke-linecap: round; }
+.xm-join { fill: none; stroke: var(--color-accent); stroke-width: 2.2; stroke-linecap: round; }
+.xm-base { stroke: var(--color-ink-3); stroke-width: 1.4; }
+.xm-mark { fill: var(--color-accent); }
+.xm-late { fill: var(--color-soon); }
+.xm-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: xm-draw 1.5s var(--ease-calm) forwards; }
+@keyframes xm-draw { to { stroke-dashoffset: 0; } }
+.xm-rise { animation: xm-rise 0.55s var(--ease-calm) both; }
+@keyframes xm-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.xm-dot-in { transform-box: fill-box; transform-origin: center; animation: xm-pop 0.45s var(--ease-calm) both; }
+@keyframes xm-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xm-draw, .xm-rise, .xm-dot-in { animation: none; stroke-dashoffset: 0; opacity: 1; transform: none; }
+  .xm-switch span, .xm-switch input { transition: none; }
+}

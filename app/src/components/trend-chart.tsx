@@ -9,9 +9,9 @@ export interface TrendPoint {
   latest: boolean;
 }
 
-const INDIGO = "#4f46e5";
-const AMBER = "#d97706";
-const TICK = { fill: "#71717a", fontSize: 11 };
+const INDIGO = "#1e5b56"; // accent: steady
+const AMBER = "#8a5a12"; // ochre: a real change
+const TICK = { fill: "#625e55", fontSize: 11 };
 const locale = (lang: "en" | "ar") => (lang === "ar" ? "ar-AE-u-nu-latn" : "en-GB");
 const tidy = (v: number) => String(Math.round(v * 10) / 10);
 
@@ -42,18 +42,18 @@ export function TrendChart({
   const stroke = meaningful ? AMBER : INDIGO;
 
   return (
-    <div role="img" aria-label={label} className="mt-2" dir="ltr">
+    <div aria-hidden className="mt-2" dir="ltr">
       <ResponsiveContainer width="100%" height={190}>
         <LineChart data={points} margin={{ top: 12, right: 12, left: -18, bottom: 0 }}>
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 5" vertical={false} />
+          <CartesianGrid stroke="#e2ddd3" strokeDasharray="3 5" vertical={false} />
           {band ? (
             <ReferenceArea
               y1={band[0]}
               y2={band[1]}
-              fill="#eef2ff"
-              fillOpacity={0.9}
+              fill="#dceae6"
+              fillOpacity={0.55}
               ifOverflow="extendDomain"
-              label={{ value: bandLabel ?? `Usual range ${band[0]}–${band[1]}`, position: "insideTopLeft", fill: "#4338ca", fontSize: 10.5, fontWeight: 600 }}
+              label={{ value: bandLabel ?? `Usual range ${band[0]}–${band[1]}`, position: "insideTopLeft", fill: "#1e5b56", fontSize: 10.5, fontWeight: 600 }}
             />
           ) : null}
           <XAxis
@@ -64,13 +64,13 @@ export function TrendChart({
             tickFormatter={month}
             tick={TICK}
             tickLine={false}
-            axisLine={{ stroke: "#e4e4e7" }}
+            axisLine={{ stroke: "#cfc8bb" }}
             minTickGap={24}
             padding={{ left: 12, right: 12 }}
           />
           <YAxis domain={domain} tickFormatter={tidy} tick={TICK} tickLine={false} axisLine={false} width={44} />
           <Tooltip
-            contentStyle={{ borderRadius: 12, border: "1px solid #e4e4e7", fontSize: 13 }}
+            contentStyle={{ borderRadius: 12, border: "1px solid #e2ddd3", fontSize: 13 }}
             labelFormatter={(t) => new Date(Number(t)).toLocaleDateString(locale(lang), { day: "numeric", month: "short", year: "numeric" })}
             formatter={(v) => [`${v} ${unit}`, label]}
           />

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { companionReply, type ChatMessage } from "@/server/ai/companion";
+import { companionReply, type AskIntent, type ChatMessage } from "@/server/ai/companion";
 import { getSession } from "@/server/session";
 import { personView } from "@/server/views";
 import { getLang } from "@/server/lang";
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session || session.role !== "person") return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  const body = (await req.json().catch(() => null)) as { messages?: unknown } | null;
+  const body = (await req.json().catch(() => null)) as { messages?: unknown; intent?: unknown } | null;
   const messages = Array.isArray(body?.messages) ? body.messages : [];
   const history: ChatMessage[] = messages
     .filter((m): m is ChatMessage => typeof m?.text === "string" && (m.role === "user" || m.role === "assistant"))
@@ -18,5 +18,14 @@ export async function POST(req: Request) {
     .slice(-16);
   if (!history.length || history[history.length - 1].role !== "user") return NextResponse.json({ error: "Nothing to answer." }, { status: 400 });
 
-  return NextResponse.json(await companionReply(personView(session.id), history, await getLang()));
+  return NextResponse.json(await companionReply(personView(session.id), history, await getLang(), parseIntent(body?.intent)));
+}
+
+/** Only known shapes; anything else is ignored. */
+function parseIntent(x: unknown): AskIntent | undefined {
+  if (!x || typeof x !== "object") return undefined;
+  const o = x as { kind?: unknown; code?: unknown };
+  if (o.kind === "unknown" || o.kind === "questions" || o.kind === "known") return { kind: o.kind };
+  if ((o.kind === "insight" || o.kind === "measure") && typeof o.code === "string" && /^[a-z_A-Z0-9]{1,40}$/.test(o.code)) return { kind: o.kind, code: o.code };
+  return undefined;
 }

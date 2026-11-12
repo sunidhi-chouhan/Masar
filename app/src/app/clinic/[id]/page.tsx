@@ -223,14 +223,18 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
           {live ? (
             <section className="card p-6">
               <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Test results</h2>
-              {v.state.reports.length ? (
+              {!v.state.sources.lab ? (
+                <p className="mt-2 rounded-xl bg-zinc-100 px-3.5 py-2.5 text-[13.5px] text-zinc-700">
+                  The patient has switched off Lab results, so uploaded reports, their values and files are not shared with you.
+                </p>
+              ) : v.state.reports.length ? (
                 <ul className="mt-4 space-y-4">
                   {v.state.reports.map((rep) => (
                     <li key={rep.id} className="rounded-2xl border border-zinc-200 p-4">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-[14px] font-semibold text-zinc-950">{rep.test}</p>
                         <Pill tone={rep.status === "requested" ? "gold" : rep.status === "uploaded" ? "slate" : "pine"} dot={false}>
-                          {rep.status === "requested" ? "Waiting" : rep.status === "uploaded" ? "Patient checking" : "Ready"}
+                          {rep.status === "requested" ? "Waiting" : rep.status === "uploaded" ? "Patient checking" : "Confirmed"}
                         </Pill>
                       </div>
                       <p className="text-[12.5px] text-zinc-500">

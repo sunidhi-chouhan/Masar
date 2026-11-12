@@ -11,8 +11,20 @@ export async function GET() {
   const body = {
     exportedAt: new Date().toISOString(),
     about: { name: v.resident.name, age: v.resident.age, sex: v.resident.sex },
-    choices: { sources: state.sources, shareWithDoctor: state.shareWithClinician, keepAnEyeOut: state.scanning },
+    choices: {
+      sources: state.sources,
+      shareWithDoctor: state.shareWithClinician,
+      keepAnEyeOut: state.scanning,
+      assistantMayReadSummary: state.assistantConsent,
+      assistantMayReadReports: state.reportReadingConsent,
+    },
     yourAnswers: state.answers,
+    yourJourney: {
+      answers: state.journey.answers,
+      finalQuestions: state.journey.followUps,
+      finalAnswers: state.journey.followUpAnswers,
+      assistantSummary: state.journey.summary,
+    },
     recordsMasarUsed: v.record,
     whatMasarFound: v.signals,
     requestToYourDoctor: state.request,

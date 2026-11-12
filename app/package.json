@@ -7,9 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "tsx scripts/check-story.ts",
+    "check": "tsx scripts/check-story.ts && tsx scripts/check-path.ts && tsx --conditions=react-server scripts/check-privacy.ts && tsx --conditions=react-server scripts/check-ai.ts && tsx --conditions=react-server scripts/check-journey.ts && tsx --conditions=react-server scripts/check-dashboard.ts && tsx scripts/check-experience.ts",
     "login-links": "tsx scripts/login-links.ts",
-    "samples": "tsx scripts/make-sample-reports.ts"
+    "samples": "tsx scripts/make-sample-reports.ts",
+    "check:privacy": "tsx --conditions=react-server scripts/check-privacy.ts",
+    "check:ai": "tsx --conditions=react-server scripts/check-ai.ts",
+    "check:path": "tsx scripts/check-path.ts",
+    "check:journey": "tsx --conditions=react-server scripts/check-journey.ts",
+    "check:dashboard": "tsx --conditions=react-server scripts/check-dashboard.ts"
   },
   "dependencies": {
     "next": "16.4.3",
@@ -28,5 +33,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

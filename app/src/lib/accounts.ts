@@ -59,6 +59,12 @@ export function verifyLoginToken(token: string): Account | null {
   return findAccount(role, id) ?? null;
 }
 
+/** How a clinician appears in a person's access log, taken from their account. */
+export function clinicianLabel(id: string): string {
+  const a = findAccount("clinician", id);
+  return a ? `${a.name} (family physician)` : "A clinician";
+}
+
 export function homeFor(role: Role): string {
   return role === "person" ? "/me" : role === "clinician" ? "/clinic" : "/system";
 }

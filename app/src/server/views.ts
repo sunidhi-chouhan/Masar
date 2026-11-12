@@ -2,6 +2,7 @@ import "server-only";
 import { applyAnswers } from "@/lib/profile";
 import { HEROES, TODAY, population, resident } from "@/lib/population";
 import type { Resident } from "@/lib/model";
+import { clinicianLabel } from "@/lib/accounts";
 import {
   ALL_SOURCES,
   RULES,
@@ -13,7 +14,7 @@ import {
   type VisibleRecord,
 } from "@/lib/signals";
 import { factorsFor, measureViews, missingFor, type Factor, type MeasureView } from "@/lib/trajectory";
-import { logAccess, person, type PersonState } from "./store";
+import { logAccess, person, type PersonState, type ReportRequest } from "./store";
 import type { Session } from "./session";
 
 // Everything a screen needs about one person, built only from what that
@@ -31,6 +32,42 @@ export interface PersonView {
   options: ReturnType<typeof optionsFor>;
   /** the person asked to be reminded, and that day has come */
   reminderDue: boolean;
+}
+
+/**
+ * The reports anyone other than the person may see: their doctor, the
+ * assistant and the pre-visit brief. Nothing at all while "Lab results" is
+ * off. While a report is waiting for the person to check it, only the fact
+ * that it was requested (or is being checked) shows: no file, no values, no
+ * summaries. Read values and summaries appear only once the person confirms.
+ */
+export function reportsForOthers(state: PersonState): ReportRequest[] {
+  if (!state.sources.lab) return [];
+  return state.reports.map((r) =>
+    r.status === "confirmed"
+      ? r
+      : { id: r.id, test: r.test, note: r.note, requestedAt: r.requestedAt, status: r.status, uploadedAt: r.uploadedAt },
+  );
+}
+
+/**
+ * The reports the person's own assistant may read: none while "Lab results" is
+ * off; otherwise the person's own reports, with values the person hasn't
+ * checked yet marked as such by their status.
+ */
+export function reportsForAssistant(state: PersonState): ReportRequest[] {
+  return state.sources.lab ? state.reports : [];
+}
+
+/** May this session open the original file of this report? */
+export function reportFileAccess(
+  session: Session | null,
+  personId: string,
+): { kind: "own" } | { kind: "doctor"; state: PersonState } | { kind: "none" } {
+  if (!session) return { kind: "none" };
+  if (session.role === "person" && session.id === personId) return { kind: "own" };
+  if (session.role === "clinician") return { kind: "doctor", state: person(personId) };
+  return { kind: "none" };
 }
 
 /** Results the person uploaded and confirmed count as lab results. */
@@ -157,11 +194,28 @@ export function clinicianView(id: string, session: Session): PersonView | null {
   if (hero) {
     const v = personView(id);
     const allowed = v.state.shareWithClinician;
-    logAccess({ personId: id, who: "Dr Layla Al Hashimi (family physician)", what: "Opened your summary", allowed });
-    return allowed ? v : null;
+    logAccess({ personId: id, who: clinicianLabel(session.id), what: "Opened your summary", allowed });
+    return allowed ? forDoctor(v) : null;
   }
   const r = resident(id);
-  return r ? syntheticView(r) : null;
+  return r ? forDoctor(syntheticView(r)) : null;
+}
+
+/**
+ * What a doctor's screen and the pre-visit brief receive. The record itself is
+ * already limited to shared sources; this also removes the person's raw
+ * answers when "What you tell us" is off, and filters reports through
+ * reportsForOthers().
+ */
+function forDoctor(v: PersonView): PersonView {
+  return {
+    ...v,
+    state: {
+      ...v.state,
+      answers: v.state.sources.self ? v.state.answers : null,
+      reports: reportsForOthers(v.state),
+    },
+  };
 }
 
 export const DEMO_TODAY = TODAY;
