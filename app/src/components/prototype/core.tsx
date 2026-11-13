@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import type { Resident } from "@/lib/model";
 import type { Report } from "@/lib/evidence";
 import type { ProtoView } from "@/lib/prototype";
@@ -93,9 +93,17 @@ export function Pill({ tone = "stone", children }: { tone?: "accent" | "soon" | 
   return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${c}`}>{children}</span>;
 }
 
-export function Tabs<T extends string>({ items, value, onChange, label, dark = false }: { items: { id: T; label: string; count?: number }[]; value: T; onChange: (v: T) => void; label: string; dark?: boolean }) {
+export function Tabs<T extends string>({ items, value, onChange, label, dark = false }: { items: { id: T; label: string; count?: number; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; label: string; dark?: boolean }) {
+  const list = useRef<HTMLDivElement>(null);
+  // Keep the chosen tab in view when the row scrolls sideways (phones, long tab sets).
+  useEffect(() => {
+    const el = list.current?.querySelector<HTMLElement>('[aria-selected="true"]');
+    const box = list.current;
+    if (!el || !box || box.scrollWidth <= box.clientWidth) return;
+    box.scrollTo({ left: el.offsetLeft - box.clientWidth / 2 + el.offsetWidth / 2, behavior: "smooth" });
+  }, [value]);
   return (
-    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
+    <div ref={list} role="tablist" aria-label={label} className="pt-tabs flex gap-1 overflow-x-auto [scrollbar-width:none]">
       {items.map((i) => (
         <button
           key={i.id}
@@ -103,15 +111,31 @@ export function Tabs<T extends string>({ items, value, onChange, label, dark = f
           type="button"
           aria-selected={value === i.id}
           onClick={() => onChange(i.id)}
-          className={`flex min-h-[38px] shrink-0 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium transition-colors ${
+          className={`flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium transition-colors ${
             value === i.id ? (dark ? "bg-white text-ink" : "bg-ink text-paper") : dark ? "text-white/75 hover:bg-white/10" : "text-ink-2 hover:bg-surface"
           }`}
         >
+          {i.icon ? <span aria-hidden className="grid place-items-center">{i.icon}</span> : null}
           {i.label}
           {i.count !== undefined ? <span className={`tabular rounded-full px-1.5 text-[11px] ${value === i.id ? "bg-black/10" : "bg-black/5"}`}>{i.count}</span> : null}
         </button>
       ))}
     </div>
+  );
+}
+
+/** Two initials in a circle, toned by how soon a conversation is suggested. */
+export function Initials({ name, tone = "stone", size = "md" }: { name: string; tone?: "urgent" | "soon" | "routine" | "stone" | "dark"; size?: "md" | "lg" }) {
+  const c = { urgent: "bg-urgent-soft text-urgent", soon: "bg-soon-soft text-soon", routine: "bg-accent-soft text-accent", stone: "bg-zinc-100 text-ink-2", dark: "bg-ink text-paper" }[tone];
+  const sz = size === "lg" ? "h-14 w-14 text-[1.2rem]" : "h-10 w-10 text-[13px]";
+  return (
+    <span aria-hidden className={`grid shrink-0 place-items-center rounded-full font-semibold ${sz} ${c}`}>
+      {name
+        .split(" ")
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join("")}
+    </span>
   );
 }
 

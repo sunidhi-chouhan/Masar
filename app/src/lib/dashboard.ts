@@ -135,7 +135,7 @@ export function buildDashboard(input: DashboardInput): Dashboard {
         return {
           text: { text: r },
           kind,
-          source: kind === "said" ? "What you told Masar" : kind === "trend" ? "Masar's rule for a real change" : recorded ? SOURCE_LABEL[recorded] : "Your record",
+          source: kind === "said" ? "What you told Masar" : kind === "trend" ? "Compared with your earlier results" : recorded ? SOURCE_LABEL[recorded] : "Your record",
           date: kind === "said" ? undefined : date,
         };
       }),
@@ -163,7 +163,7 @@ export function buildDashboard(input: DashboardInput): Dashboard {
           { text: { text: "{condition} is on record.", vars: { condition: CONDITION_LABEL[c] } }, kind: fromRecords ? "fact" : "said", source: fromRecords ? SOURCE_LABEL.malaffi : "What you told Masar" },
           { text: { text: RULES.CONDITION_PLANS.whyItMatters }, kind: "evidence", source: RULES.CONDITION_PLANS.evidence.citation },
           {
-            text: { text: "Masar hasn't raised this as something to discuss now, because a pregnancy isn't planned within the next few years. If your plans change, it will." },
+            text: { text: "We haven't raised this as something to discuss now, because you're not planning a pregnancy in the next few years. If your plans change, we will." },
             kind: "unknown",
             source: "Masar's rule",
           },
@@ -196,8 +196,8 @@ export function buildDashboard(input: DashboardInput): Dashboard {
       label: "Thyroid (TSH)",
       unit: tsh[0].unit,
       verdict: "noRule",
-      sentence: tsh.length === 1 ? { text: "One result, from your uploaded report." } : { text: "{n} results, from your uploaded reports.", vars: { n: tsh.length } },
-      rule: "Masar has no rule for thyroid results.",
+      sentence: tsh.length === 1 ? { text: "One result, from the report you uploaded." } : { text: "{n} results, from your uploaded reports.", vars: { n: tsh.length } },
+      rule: "Masar doesn't judge thyroid results. Your doctor can explain what yours mean.",
       points: tsh.map((x) => ({ at: x.date ?? x.uploadedAt?.slice(0, 10) ?? "", value: x.value, source: "Your uploaded report" })).filter((p) => p.at),
       refRange: withRange ? [withRange.refLow!, withRange.refHigh!] : undefined,
       info: MEASURE_INFO.tsh,
@@ -228,16 +228,16 @@ export function buildDashboard(input: DashboardInput): Dashboard {
 
   const pic = coverage(input);
   const unknown: Fact[] = [];
-  if (!input.scanning) unknown.push({ text: { text: "Masar is paused, so it isn't looking for anything new." }, kind: "unknown", source: "Your choice in My data" });
+  if (!input.scanning) unknown.push({ text: { text: "You've paused Masar, so it isn't looking for anything new." }, kind: "unknown", source: "Your choice in My data" });
   for (const c of pic.filter((x) => x.status !== "on")) {
     unknown.push({
-      text: { text: c.status === "off" ? "{label}: not shared." : "{label}: not on record yet.", vars: { label: c.label } },
+      text: { text: c.status === "off" ? "{label}: you haven't shared this." : "{label}: we don't have this yet.", vars: { label: c.label } },
       kind: "unknown",
       source: c.why,
     });
   }
   for (const s of series.filter((x) => x.verdict === "single" || x.verdict === "too_close")) {
-    unknown.push({ text: { text: "{label}: no change can be described yet.", vars: { label: s.label } }, kind: "unknown", source: "Masar's rule for a real change" });
+    unknown.push({ text: { text: "{label}: we need more results before we can see a change.", vars: { label: s.label } }, kind: "unknown", source: "How Masar compares results" });
   }
 
   const explore: Fact[] = insights.map((i) => ({ text: { text: i.title }, kind: "evidence" as Certainty, source: i.evidence.citation }));
@@ -300,7 +300,7 @@ export function buildDashboard(input: DashboardInput): Dashboard {
     id: "discuss",
     group: "discuss",
     title: { text: "{n} questions you could bring to a doctor", vars: { n: prepareQuestions.length } },
-    why: { text: generic ? "Nothing needs a conversation now, but these help at any routine visit." : "They come from the rules behind what Masar found." },
+    why: { text: generic ? "Nothing needs a conversation now, but these are good to ask at any check-up." : "They're based on what we noticed in your record." },
     href: "#prepare",
   });
   // Learning, matched to the quick check: what the evidence says where the person answered differently or wasn't sure.
@@ -361,15 +361,15 @@ function sentenceFor(m: PathInput["measures"][number]): Line {
   const w = m.def.windowSize;
   if (m.verdict === "single") {
     return w > 1
-      ? { text: "{n} recorded. Masar needs {need} to compare recent ones with earlier ones.", vars: { n: s.length, need: w * 2 } }
-      : { text: "One reading so far. A trend needs at least two, six months apart." };
+      ? { text: "{n} recorded so far. We need {need} to compare your recent ones with earlier ones.", vars: { n: s.length, need: w * 2 } }
+      : { text: "Only one result so far. We need at least two, about six months apart, to see a trend." };
   }
-  if (m.verdict === "too_close") return { text: "The last two readings are too close together to compare." };
+  if (m.verdict === "too_close") return { text: "Your last two results were taken too close together to compare." };
   const prev = s.slice(-2 * w, -w).map((x) => x.value);
   const next = s.slice(-w).map((x) => x.value);
-  if (w > 1) return { text: "Latest {w}: {latest} {unit}. Before that: {before}.", vars: { w, latest: next.join(", "), unit: m.def.unit, before: prev.join(", ") } };
+  if (w > 1) return { text: "Your last {w}: {latest} {unit}. The {w} before: {before}.", vars: { w, latest: next.join(", "), unit: m.def.unit, before: prev.join(", ") } };
   const months = Math.max(1, Math.round((Date.parse(s.at(-1)!.at) - Date.parse(s.at(-2)!.at)) / DAY / 30));
-  return { text: "{from} → {to} {unit} over {months} months.", vars: { from: fmt(prev[0]), to: fmt(next[0]), unit: m.def.unit, months } };
+  return { text: "Went from {from} to {to} {unit} over {months} months.", vars: { from: fmt(prev[0]), to: fmt(next[0]), unit: m.def.unit, months } };
 }
 
 function sourceOfFactor(label: string, readings: PathInput["record"]["readings"]): string {

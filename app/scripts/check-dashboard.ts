@@ -122,7 +122,7 @@ async function main() {
   await check("declined permissions: only the shared source appears, and the rest are named as not shared", () => {
     const { d } = profiles.declined();
     assert.ok(d.series.every((s) => s.code === "cycle_length" || s.code === "sleep_hours"), d.series.map((s) => s.code).join(","));
-    assert.ok(d.unknown.some((f) => /not shared/.test(f.text.text)));
+    assert.ok(d.unknown.some((f) => /haven't shared/.test(f.text.text)), "sources switched off are named as not shared");
     assert.ok(d.known.every((f) => f.kind !== "said"));
   });
 

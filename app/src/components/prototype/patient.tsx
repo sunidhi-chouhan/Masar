@@ -56,7 +56,7 @@ export function LangToggle({ dark = false }: { dark?: boolean }) {
       type="button"
       lang={s.lang === "ar" ? "en" : "ar"}
       onClick={() => set((x) => ({ ...x, lang: x.lang === "ar" ? "en" : "ar" }))}
-      className={`min-h-[38px] rounded-full px-3 text-[13.5px] font-semibold ${dark ? "text-white hover:bg-white/10" : "text-accent hover:bg-accent-soft"}`}
+      className={`min-h-[44px] rounded-full px-3 text-[13.5px] font-semibold ${dark ? "text-white hover:bg-white/10" : "text-accent hover:bg-accent-soft"}`}
     >
       {s.lang === "ar" ? "English" : "العربية"}
     </button>
@@ -85,7 +85,7 @@ export function Bell({ dark = false }: { dark?: boolean }) {
           if (!open) set((x) => ({ ...x, notices: x.notices.map((n) => (n.to === x.role ? { ...n, read: true } : n)) }));
         }}
         aria-label={tr("Notifications ({n} unread)", { n: unread })}
-        className={`relative grid h-10 w-10 place-items-center rounded-full ${dark ? "text-white hover:bg-white/10" : "text-ink hover:bg-surface"}`}
+        className={`relative grid h-11 w-11 place-items-center rounded-full ${dark ? "text-white hover:bg-white/10" : "text-ink hover:bg-surface"}`}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
           <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0" />
@@ -135,7 +135,7 @@ function PatientBar() {
           <LangToggle />
           {signedIn ? <Bell /> : null}
           {signedIn ? (
-            <button type="button" onClick={() => set((x) => withAudit({ ...x, auth: { status: "out", method: null }, stage: "landing" }, { role: "patient", who: "Patient", what: "Signed out", allowed: true }))} className="btn btn-secondary !min-h-[38px] !px-3.5 text-[13px]">
+            <button type="button" onClick={() => set((x) => withAudit({ ...x, auth: { status: "out", method: null }, stage: "landing" }, { role: "patient", who: "Patient", what: "Signed out", allowed: true }))} className="btn btn-secondary !min-h-[44px] !px-3.5 text-[13px]">
               {tr("Sign out")}
             </button>
           ) : null}

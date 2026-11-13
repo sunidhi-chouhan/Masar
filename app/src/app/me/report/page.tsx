@@ -115,7 +115,7 @@ export default async function HealthReport() {
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-[14.5px] text-ink-2">{t("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see.")}</p>
+          <p className="mt-3 text-[14.5px] text-ink-2">{t("Nothing you've shared needs a conversation right now. That isn't a guarantee: it only covers what we can see.")}</p>
         )}
         {d.context.map((c) => (
           <p key={c.id} className="mt-3 text-[14px] text-ink-2">
@@ -153,10 +153,10 @@ export default async function HealthReport() {
             </tbody>
           </table>
         ) : (
-          <p className="mt-3 text-[14.5px] text-ink-2">{t("Nothing you shared has readings over time yet, so no change can be described.")}</p>
+          <p className="mt-3 text-[14.5px] text-ink-2">{t("Nothing you've shared has been measured more than once yet, so we can't see any changes.")}</p>
         )}
 
-        <H n={4}>{t("What remains uncertain")}</H>
+        <H n={4}>{t("What we still can't say")}</H>
         <ul className="mt-3 space-y-1.5 text-[14px] text-ink-2">
           {d.unknown.map((f, i) => (
             <li key={i}>
@@ -166,11 +166,11 @@ export default async function HealthReport() {
           {[...new Set(d.insights.map((i) => i.cannot))].map((c) => (
             <li key={c}>· {t(c)}</li>
           ))}
-          {!d.unknown.length && !d.insights.length ? <li>{t("Nothing missing from what Masar looks at.")}</li> : null}
+          {!d.unknown.length && !d.insights.length ? <li>{t("Nothing we look at is missing.")}</li> : null}
         </ul>
 
         <H n={5}>{t("Next steps you could discuss")}</H>
-        <p className="mt-2 text-[13px] text-ink-3">{t("Suggestions to explore, not medical instructions. You decide what to do; a doctor advises.")}</p>
+        <p className="mt-2 text-[13px] text-ink-3">{t("These are ideas, not medical instructions. You decide, and a doctor can advise.")}</p>
         <ul className="mt-3 space-y-2 text-[14px]">
           {d.actions
             .filter((a) => a.group !== "discuss")
@@ -192,11 +192,11 @@ export default async function HealthReport() {
           ))}
         </ol>
 
-        <H n={6}>{t("Sources and how to read this")}</H>
+        <H n={6}>{t("Where this comes from, and how to read it")}</H>
         <ul className="mt-3 space-y-1.5 text-[13.5px] text-ink-2">
-          <li>{t("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it.")}</li>
-          <li>{t("“You said” marks what you told Masar; “Fact” marks a value on record, with its source and date.")}</li>
-          <li>{t("A change over time is called real only when it passes Masar's published rule; one reading is never a trend.")}</li>
+          <li>{t("Everything we noticed comes from Masar's published rules, used only on what you chose to share. Each one names the medical guideline behind it.")}</li>
+          <li>{t("“You said” is something you told us. “Fact” is a result in your record, shown with where it came from and when.")}</li>
+          <li>{t("We only call something a real change when it's bigger than the usual ups and downs. One result on its own can't show a trend.")}</li>
           <li>
             {v.state.assistantConsent
               ? t("You allowed Masar's assistant (Google Gemini) to read your summary. Any text it wrote is labelled where it appears; nothing in this report was written by it.")

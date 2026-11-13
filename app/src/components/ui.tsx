@@ -7,7 +7,7 @@ import { setLanguage, signOut } from "@/server/actions";
 import { dirOf, t, type Lang } from "@/lib/i18n";
 import { getLang } from "@/server/lang";
 import { findAccount } from "@/lib/accounts";
-import { NavLinks } from "./nav-links";
+import { NavLinks, type NavIcon } from "./nav-links";
 
 /** Masar ("path"): one line rising through readings to a gold point. */
 export function Mark({ className = "h-8 w-8", inverted = false, animated = false }: { className?: string; inverted?: boolean; animated?: boolean }) {
@@ -32,7 +32,7 @@ export function Mark({ className = "h-8 w-8", inverted = false, animated = false
 
 export function Brand({ inverted = false, animated = false }: { inverted?: boolean; animated?: boolean }) {
   return (
-    <Link href="/" className={`flex items-center gap-2.5 ${inverted ? "text-white" : "text-ink"}`} aria-label="Masar · مسار">
+    <Link href="/" className={`flex min-h-[44px] shrink-0 items-center gap-2.5 ${inverted ? "text-white" : "text-ink"}`} aria-label="Masar · مسار">
       <Mark inverted={inverted} animated={animated} />
       <span aria-hidden className="display text-[1.45rem] leading-none">Masar</span>
       <span aria-hidden className={`hidden font-[family-name:var(--font-naskh)] text-[1.05rem] min-[420px]:inline ${inverted ? "text-white/60" : "text-ink-3"}`}>مسار</span>
@@ -79,14 +79,20 @@ export function Simulated() {
   );
 }
 
-const NAV: Record<Session["role"], { href: string; label: string }[]> = {
+const NAV: Record<Session["role"], { href: string; label: string; icon: NavIcon }[]> = {
   person: [
-    { href: "/me", label: "My path" },
-    { href: "/me/about", label: "About me" },
-    { href: "/me/privacy", label: "My data" },
+    { href: "/me", label: "My path", icon: "path" },
+    { href: "/me/about", label: "About me", icon: "user" },
+    { href: "/me/privacy", label: "My data", icon: "shield" },
   ],
-  clinician: [{ href: "/clinic", label: "Patients to talk to" }],
-  system: [{ href: "/system", label: "How Masar is doing" }],
+  clinician: [
+    { href: "/clinic", label: "Patients to talk to", icon: "users" },
+    { href: "/how-masar-decides", label: "How Masar decides", icon: "book" },
+  ],
+  system: [
+    { href: "/system", label: "How Masar is doing", icon: "chart" },
+    { href: "/how-masar-decides", label: "How Masar decides", icon: "book" },
+  ],
 };
 
 const WHO: Record<Session["role"], string> = {
@@ -118,13 +124,13 @@ export async function Shell({
     // short steps and simply follows the content on long ones. Never fixed, never overlapping.
     <div className={minimal ? "jr-shell flex min-h-svh flex-col" : "min-h-dvh"} dir={dirOf(lang)} lang={lang}>
       <header className="sticky top-0 z-30 border-b border-rule bg-paper/90 backdrop-blur-md">
-        <div className={`mx-auto flex h-16 items-center gap-6 px-4 md:px-8 ${width}`}>
+        <div className={`mx-auto flex h-16 items-center gap-3 px-4 sm:gap-6 md:px-8 ${width}`}>
           <Brand />
-          <nav className="hidden items-center gap-1 sm:flex" aria-label={t(lang, "Main")}>
+          <nav className="hidden items-center gap-1 md:flex" aria-label={t(lang, "Main")}>
             <NavLinks items={nav} />
           </nav>
           <div className="ms-auto flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-end leading-tight md:block">
+            <span className="hidden text-end leading-tight lg:block">
               <span className="block text-[13px] font-medium text-ink">{account?.name}</span>
               <span className="block text-[12px] text-ink-3">{t(lang, WHO[session.role])}</span>
             </span>
@@ -133,21 +139,26 @@ export async function Shell({
                 <button
                   lang={lang === "ar" ? "en" : "ar"}
                   aria-label={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}
-                  className="min-h-[40px] whitespace-nowrap rounded-full px-3 text-[14px] font-semibold text-accent hover:bg-accent-soft"
+                  className="min-h-[44px] whitespace-nowrap rounded-full px-3 text-[14px] font-semibold text-accent hover:bg-accent-soft"
                 >
                   {lang === "ar" ? "English" : "العربية"}
                 </button>
               </form>
             ) : null}
             <form action={signOut}>
-              <button className="min-h-[40px] whitespace-nowrap rounded-full border border-rule-strong px-3.5 text-[13px] font-medium text-ink hover:border-ink-3">
+              <button className="min-h-[44px] whitespace-nowrap rounded-full border border-rule-strong px-3.5 text-[13px] font-medium text-ink hover:border-ink-3">
                 {t(lang, "Sign out")}
               </button>
             </form>
           </div>
         </div>
         {nav.length && !tabs ? (
-          <nav className="flex gap-1 px-4 pb-2 sm:hidden" aria-label={t(lang, "Main")}>
+          <nav className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 [scrollbar-width:none] md:hidden" aria-label={t(lang, "Main")}>
+            <NavLinks items={nav} compact />
+          </nav>
+        ) : null}
+        {tabs ? (
+          <nav className="hidden gap-1.5 overflow-x-auto px-4 pb-2.5 [scrollbar-width:none] sm:flex md:hidden" aria-label={t(lang, "Main")}>
             <NavLinks items={nav} compact />
           </nav>
         ) : null}

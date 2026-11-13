@@ -33,7 +33,7 @@ export function PatientDashboard() {
   const name = base.name.split(" ")[0];
   const sections = [
     ["overview", tr("Overview")],
-    ["insights", tr("Insights")],
+    ["insights", tr("What stood out")],
     ["trends", tr("Trends and labs")],
     ["next", tr("Next steps")],
     ["doctor", tr("Your doctor")],
@@ -65,16 +65,16 @@ export function PatientDashboard() {
       <section id="pt-overview" className="scroll-mt-32">
         <div className="grid gap-4 lg:grid-cols-12">
           <div className="pt-card pt-hero relative overflow-hidden lg:col-span-8">
-            <p className="eyebrow">{tr("Your reproductive-health overview")}</p>
+            <p className="eyebrow">{tr("Your reproductive health at a glance")}</p>
             <h1 className="display mt-3 max-w-2xl text-[clamp(1.8rem,3.4vw,2.5rem)] leading-[1.1] text-ink">
               {say({ text: d.headline.line.text, vars: { ...d.headline.line.vars, name } })} <em className="text-accent">{tr(d.headline.emphasis.text)}</em>
             </h1>
-            <p className="mt-3 max-w-2xl text-[15px] text-ink-2">{tr("This isn't a diagnosis or a prediction. It describes what you shared, what changed by Masar's published rules, and what is still unknown.")}</p>
+            <p className="mt-3 max-w-2xl text-[15px] text-ink-2">{tr("This isn't a diagnosis or a prediction. It's a simple picture of what you shared, what has changed, and what we don't know yet.")}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {d.urgency ? <Timing urgency={d.urgency} lang={s.lang} /> : null}
-              <Pill tone="stone">{tr("{n} of 5 sources shared", { n: shared })}</Pill>
+              <Pill tone="stone">{tr("You're sharing {n} of 5 sources", { n: shared })}</Pill>
               <Pill tone={s.consent.shareClinician ? "accent" : "stone"}>{s.consent.shareClinician ? tr("Dr Layla can see your summary") : tr("Your doctor can't see your summary")}</Pill>
-              <Pill tone={s.consent.ai && s.geminiOn ? "accent" : "stone"}>{s.consent.ai && s.geminiOn ? tr("AI processing on") : tr("AI processing off")}</Pill>
+              <Pill tone={s.consent.ai && s.geminiOn ? "accent" : "stone"}>{s.consent.ai && s.geminiOn ? tr("AI help is on") : tr("AI help is off")}</Pill>
             </div>
             {s.summary ? (
               <div className="mt-5 rounded-[16px] border border-rule bg-surface/80 p-4">
@@ -96,9 +96,9 @@ export function PatientDashboard() {
           <PictureCard d={d} />
           <div className="grid gap-4 sm:grid-cols-4 lg:col-span-12">
             {[
-              [d.insights.length, tr("Worth a conversation"), "#pt-insights"],
-              [d.series.length, tr("Measurements on record"), "#pt-trends"],
-              [d.unknown.length, tr("Still unknown"), "#pt-insights"],
+              [d.insights.length, tr("Worth talking about"), "#pt-insights"],
+              [d.series.length, tr("Results we can follow over time"), "#pt-trends"],
+              [d.unknown.length, tr("Not known yet"), "#pt-insights"],
               [d.prepare.questions.length, tr("Questions to discuss"), "#pt-doctor"],
             ].map(([n, label, href]) => (
               <a key={String(label)} href={String(href)} className="pt-card pt-lift !py-4">
@@ -118,7 +118,7 @@ export function PatientDashboard() {
 
       {/* Insights */}
       <section id="pt-insights" className="scroll-mt-32 pt-12">
-        <SectionTitle n={2} title={tr("Your health insights")} body={tr("From Masar's published rules only. Each says why it was raised, how strong the evidence is, and what it can't tell you.")} />
+        <SectionTitle n={2} title={tr("What stood out in your record")} body={tr("Each one says why it came up, how strong the evidence is, and what it can't tell you.")} />
         {d.insights.length ? (
           <div className="grid gap-4 md:grid-cols-2">
             {d.insights.map((i) => (
@@ -128,7 +128,7 @@ export function PatientDashboard() {
         ) : (
           <div className="pt-card text-[15px] text-ink-2">
             <p className="font-semibold text-ink">{tr("Nothing in what you've shared needs a conversation right now.")}</p>
-            <p className="mt-1">{tr("That isn't a guarantee: it only covers what Masar can see. The gaps below are what would help Masar say more.")}</p>
+            <p className="mt-1">{tr("That isn't a guarantee: it only covers what we can see. The gaps below are what would help us tell you more.")}</p>
           </div>
         )}
         {d.context.map((c) => (
@@ -138,19 +138,19 @@ export function PatientDashboard() {
             <p className="mt-1 text-[14px] text-ink-2">{c.body.map((b) => say(b.text)).join(" ")}</p>
           </div>
         ))}
-        <h3 className="display mb-4 mt-10 text-[1.45rem] text-ink">{tr("Known, unknown and worth exploring")}</h3>
+        <h3 className="display mb-4 mt-10 text-[1.45rem] text-ink">{tr("What we know, what we don't, and what to ask about")}</h3>
         <KnowledgeBoard d={d} x={x} />
       </section>
 
       {/* Trends and labs */}
       <section id="pt-trends" className="scroll-mt-32 pt-12">
-        <SectionTitle n={3} title={tr("Trends and lab results")} body={tr("Real readings only. A change is called real only when it passes Masar's published rule; one reading is never a trend.")} />
+        <SectionTitle n={3} title={tr("Trends and lab results")} body={tr("These are your actual results. We only call something a real change when it's bigger than the usual ups and downs, and one result on its own can't show a trend.")} />
         <Trends d={d} />
       </section>
 
       {/* Next steps */}
       <section id="pt-next" className="scroll-mt-32 pt-12">
-        <SectionTitle n={4} title={tr("What you could explore next")} body={tr("Suggestions to explore, not medical instructions. Each says why it's there.")} />
+        <SectionTitle n={4} title={tr("What you could do next")} body={tr("These are ideas, not medical instructions. Each one says why it's here.")} />
         <div className="grid gap-3 md:grid-cols-2">
           {d.actions.map((a) => (
             <div key={a.id} className="pt-card pt-lift !p-4">
@@ -198,7 +198,7 @@ export function PatientDashboard() {
 
       {/* Report */}
       <section id="pt-report" className="scroll-mt-32 pt-12">
-        <SectionTitle n={6} title={tr("Your personal health report")} body={tr("Everything above in one readable document, with where each statement came from.")} />
+        <SectionTitle n={6} title={tr("Your personal health report")} body={tr("Everything on this page in one document you can print or save, with where each piece came from.")} />
         <div className="pt-card flex flex-wrap items-center gap-4">
           <p className="min-w-0 flex-1 text-[14.5px] text-ink-2">{tr("Download it to bring to an appointment, or keep it for yourself. It contains only what you chose to share.")}</p>
           <div className="flex flex-wrap gap-2">
@@ -254,7 +254,7 @@ function PictureCard({ d }: { d: Dashboard }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="eyebrow">{tr("Your picture")}</p>
-          <p className="mt-1 text-[15px] font-semibold text-ink">{tr("{on} of {total} pieces on record", { on: d.picture.on, total })}</p>
+          <p className="mt-1 text-[15px] font-semibold text-ink">{tr("We have {on} of {total} things that help", { on: d.picture.on, total })}</p>
         </div>
         <svg viewBox="0 0 110 110" className="h-24 w-24 shrink-0 -rotate-90" aria-hidden>
           <circle cx="55" cy="55" r={R} fill="none" strokeWidth="11" className="stroke-zinc-100" />
@@ -267,11 +267,11 @@ function PictureCard({ d }: { d: Dashboard }) {
           <li key={c.label} className="flex items-center gap-2.5 text-[13.5px]">
             <span aria-hidden className={`h-2.5 w-2.5 shrink-0 rounded-full ${c.status === "on" ? "bg-accent" : c.status === "missing" ? "bg-indigo-300" : "border border-dashed border-unknown"}`} />
             <span className="min-w-0 flex-1 text-ink">{tr(c.label)}</span>
-            <span className={`text-[12px] ${c.status === "on" ? "text-accent" : "text-unknown"}`}>{c.status === "on" ? tr("On record") : c.status === "off" ? tr("Not shared") : tr("Not on record yet")}</span>
+            <span className={`text-[12px] ${c.status === "on" ? "text-accent" : "text-unknown"}`}>{c.status === "on" ? tr("On record") : c.status === "off" ? tr("Not shared") : tr("We don't have this yet")}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[12px] text-ink-3">{tr("A list, not a score. Missing information is never counted against you.")}</p>
+      <p className="mt-3 text-[12px] text-ink-3">{tr("This is a checklist, not a score. Anything missing is never held against you.")}</p>
     </div>
   );
 }
@@ -316,7 +316,7 @@ function Trends({ d }: { d: Dashboard }) {
           ))}
         </div>
       ) : (
-        <div className="pt-card text-[14.5px] text-ink-2">{tr("Nothing you shared has readings over time yet, so no change can be described.")}</div>
+        <div className="pt-card text-[14.5px] text-ink-2">{tr("Nothing you've shared has been measured more than once yet, so we can't see any changes.")}</div>
       )}
       {labs.length ? (
         <div className="pt-card overflow-x-auto">
@@ -450,7 +450,7 @@ function Assistant({ d }: { d: Dashboard }) {
     const ser = (intent?.kind === "measure" && d.series.find((x) => x.code === intent.code)) || d.series.find((x) => text.includes(tr(x.label).toLowerCase()) || /amh|bmi|cycle|دورة/.test(text) && (text.includes(x.code.split("_")[0]) || (x.code === "cycle_length" && /cycle|دورة/.test(text))));
     if (ins) return [tr("{title}.", { title: tr(ins.title) }), tr("Why it matters: {why}", { why: tr(ins.why) }), tr("What it can't tell you: {cannot}", { cannot: tr(ins.cannot) })].join("\n\n");
     if (ser) return [tr("{label}: {what}", { label: tr(ser.label), what: tr(MEASURE_INFO[ser.code].what) }), say(ser.sentence), tr("Its limits: {limits}", { limits: tr(MEASURE_INFO[ser.code].limits) })].join("\n\n");
-    if (intent?.kind === "unknown" || /unknown|missing|مجهول|ناقص/.test(text)) return d.unknown.length ? tr("Still unknown: {list}", { list: d.unknown.map((f) => say(f.text)).join(" ") }) : tr("Nothing Masar looks at is missing from your record.");
+    if (intent?.kind === "unknown" || /unknown|missing|مجهول|ناقص/.test(text)) return d.unknown.length ? tr("Still unknown: {list}", { list: d.unknown.map((f) => say(f.text)).join(" ") }) : tr("Nothing we look at is missing from your record.");
     if (intent?.kind === "questions" || /doctor|ask|طبيب|أسأل/.test(text)) return d.prepare.questions.map((x, i) => `${i + 1}. ${tr(x)}`).join("\n");
     return d.known.length ? tr("From what you shared, Masar has: {list}", { list: d.known.map((f) => say(f.text)).join(" ") }) : tr("You haven't shared anything Masar can use yet. You can change that in My data.");
   };
@@ -487,7 +487,7 @@ function Assistant({ d }: { d: Dashboard }) {
           <header className="flex items-center justify-between gap-3 border-b border-rule px-4 py-3">
             <div>
               <p className="text-[14.5px] font-semibold text-ink">{tr("Masar assistant")}</p>
-              <p className="text-[11.5px] text-ink-3">{tr("Explains your authorised picture with Masar's own words. It never diagnoses.")}</p>
+              <p className="text-[11.5px] text-ink-3">{tr("Explains your results in plain words, using only what you've shared. It never diagnoses.")}</p>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label={tr("Close")} className="grid h-8 w-8 place-items-center rounded-full text-ink-3 hover:bg-zinc-100">
               ✕
@@ -511,7 +511,7 @@ function Assistant({ d }: { d: Dashboard }) {
               ) : (
                 <div key={i} className="max-w-[92%]">
                   <p className="whitespace-pre-line rounded-[16px] bg-zinc-100 px-3.5 py-2.5 text-[14px] leading-relaxed text-ink">{m.text}</p>
-                  <p className="mt-1 px-1 text-[11px] text-ink-3">{tr("Masar's own words, from your authorised information")}</p>
+                  <p className="mt-1 px-1 text-[11px] text-ink-3">{tr("In Masar's own words, using only what you've shared")}</p>
                 </div>
               ),
             )}
@@ -571,20 +571,20 @@ export function reportJson(d: Dashboard, name: string, age: number, tr: Tr, say:
       })),
       whatMasarFoundNote: d.insights.length
         ? null
-        : tr("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see."),
+        : tr("Nothing you've shared needs a conversation right now. That isn't a guarantee: it only covers what we can see."),
       resultsOverTime: d.series.map((x) => ({
         measurement: tr(x.label),
         unit: tr(x.unit),
         whatMasarCanSay: say(x.sentence),
         results: x.points.map((p) => ({ date: date(p.at), value: p.value, source: tr(p.source) })),
       })),
-      resultsOverTimeNote: d.series.length ? null : tr("Nothing you shared has readings over time yet, so no change can be described."),
+      resultsOverTimeNote: d.series.length ? null : tr("Nothing you've shared has been measured more than once yet, so we can't see any changes."),
       whatRemainsUncertain: [...d.unknown.map((f) => say(f.text)), ...new Set(d.insights.map((i) => tr(i.cannot)))],
       nextStepsYouCouldDiscuss: d.actions.map((a) => ({ step: say(a.title), why: say(a.why) })),
       questionsToDiscuss: d.prepare.questions.map((q) => tr(q)),
       howToReadThis: [
-        tr("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it."),
-        tr("A change over time is called real only when it passes Masar's published rule; one reading is never a trend."),
+        tr("Everything we noticed comes from Masar's published rules, used only on what you chose to share. Each one names the medical guideline behind it."),
+        tr("We only call something a real change when it's bigger than the usual ups and downs. One result on its own can't show a trend."),
       ],
     },
     null,
@@ -605,7 +605,7 @@ export function reportBlocks(d: Dashboard, name: string, age: number, tr: Tr, sa
     { kind: "h2", text: tr("What Masar found") },
   ];
   if (!d.insights.length) {
-    blocks.push({ kind: "p", text: tr("Nothing in what you've shared needs a conversation right now. That isn't a guarantee: it only covers what Masar can see.") });
+    blocks.push({ kind: "p", text: tr("Nothing you've shared needs a conversation right now. That isn't a guarantee: it only covers what we can see.") });
   }
   for (const i of d.insights) {
     blocks.push({ kind: "h3", text: tr(i.title) });
@@ -614,20 +614,20 @@ export function reportBlocks(d: Dashboard, name: string, age: number, tr: Tr, sa
     blocks.push({ kind: "p", text: `${tr("What this can't tell you")}: ${tr(i.cannot)}` });
   }
   blocks.push({ kind: "h2", text: tr("Results over time") });
-  if (!d.series.length) blocks.push({ kind: "p", text: tr("Nothing you shared has readings over time yet, so no change can be described.") });
+  if (!d.series.length) blocks.push({ kind: "p", text: tr("Nothing you've shared has been measured more than once yet, so we can't see any changes.") });
   for (const x of d.series) {
     blocks.push({ kind: "h3", text: tr(x.label) });
     blocks.push({ kind: "p", text: say(x.sentence) });
     for (const p of x.points) blocks.push({ kind: "li", text: `${date(p.at)}: ${p.value} ${tr(x.unit)} · ${tr(p.source)}` });
   }
-  blocks.push({ kind: "h2", text: tr("What remains uncertain") });
+  blocks.push({ kind: "h2", text: tr("What we still can't say") });
   for (const line of [...d.unknown.map((f) => say(f.text)), ...new Set(d.insights.map((i) => tr(i.cannot)))]) blocks.push({ kind: "li", text: line });
   blocks.push({ kind: "h2", text: tr("Next steps you could discuss") });
   for (const a of d.actions) blocks.push({ kind: "li", text: `${say(a.title)}: ${say(a.why)}` });
   blocks.push({ kind: "h2", text: tr("Questions to discuss with a healthcare professional") });
   for (const q of d.prepare.questions) blocks.push({ kind: "li", text: tr(q) });
-  blocks.push({ kind: "h2", text: tr("Sources and how to read this") });
-  blocks.push({ kind: "li", text: tr("Findings come only from Masar's published rules, applied to the sources you shared. Each cites the guideline behind it.") });
-  blocks.push({ kind: "li", text: tr("A change over time is called real only when it passes Masar's published rule; one reading is never a trend.") });
+  blocks.push({ kind: "h2", text: tr("Where this comes from, and how to read it") });
+  blocks.push({ kind: "li", text: tr("Everything we noticed comes from Masar's published rules, used only on what you chose to share. Each one names the medical guideline behind it.") });
+  blocks.push({ kind: "li", text: tr("We only call something a real change when it's bigger than the usual ups and downs. One result on its own can't show a trend.") });
   return blocks;
 }

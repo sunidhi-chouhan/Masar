@@ -77,19 +77,19 @@ export function Overview({
       <div className="dash-card dash-hero relative overflow-hidden lg:col-span-8">
         <PathIllustration className="pointer-events-none absolute -bottom-10 -end-8 hidden h-[210px] w-[300px] opacity-80 xl:block" />
         <div className="relative max-w-xl xl:max-w-[34rem]">
-          <p className="eyebrow">{x.t("Your reproductive-health overview")}</p>
+          <p className="eyebrow">{x.t("Your reproductive health at a glance")}</p>
           <h1 className="display mt-3 text-[clamp(1.85rem,3.6vw,2.6rem)] leading-[1.1] text-ink">
             {x.say({ text: d.headline.line.text, vars: { ...d.headline.line.vars, name: d.name } })} <em className="text-accent">{x.t(d.headline.emphasis.text)}</em>
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-ink-2">
             {d.insights.length
               ? x.t("This isn't a diagnosis or a prediction. It's a reason to talk to a doctor while you have the most options.")
-              : x.t("Masar can only speak to what is on record, and some useful information isn't yet. If your records change, Masar looks again.")}
+              : x.t("We can only go by what's in your record, and some useful things aren't there yet. If your records change, we'll look again.")}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             {d.urgency ? <Timing urgency={d.urgency} lang={x.lang} /> : null}
             <a href={d.insights.length ? "#insights" : "#explore"} className="btn btn-primary !min-h-[42px] text-[14px]">
-              {d.insights.length ? x.t("See your insights") : x.t("See what could help")}
+              {d.insights.length ? x.t("See what stood out") : x.t("See what could help")}
             </a>
             <a href="#prepare" className="btn btn-secondary !min-h-[42px] text-[14px]">
               {x.t("Prepare for your doctor")}
@@ -98,7 +98,7 @@ export function Overview({
           <ul className="mt-6 flex flex-wrap gap-2 text-[12.5px]">
             <li className="dash-chip">
               <Icon name="plug" className="h-4 w-4" />
-              {x.t("{n} of 5 sources shared", { n: d.sourcesShared })}
+              {x.t("You're sharing {n} of 5 sources", { n: d.sourcesShared })}
             </li>
             <li className="dash-chip">
               <Icon name="shield" className="h-4 w-4" />
@@ -107,7 +107,7 @@ export function Overview({
             <li className="dash-chip">
               <Icon name="spark" className="h-4 w-4" />
               {shared.assistant === "off"
-                ? x.t("Assistant off: Masar's own words")
+                ? x.t("Assistant off, so everything here is written by Masar")
                 : shared.assistant === "on"
                   ? x.t("Assistant on (Google Gemini)")
                   : shared.assistant === "mock"
@@ -128,7 +128,7 @@ export function Overview({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="eyebrow">{x.t("Your picture")}</p>
-            <p className="mt-1 text-[15px] font-semibold text-ink">{x.t("{on} of {total} pieces on record", { on: d.picture.on, total })}</p>
+            <p className="mt-1 text-[15px] font-semibold text-ink">{x.t("We have {on} of {total} things that help", { on: d.picture.on, total })}</p>
           </div>
           <svg viewBox="0 0 120 120" className="h-24 w-24 shrink-0 -rotate-90" aria-hidden>
             <circle cx="60" cy="60" r={R} fill="none" strokeWidth="12" className="stroke-zinc-100" />
@@ -143,20 +143,20 @@ export function Overview({
               <span aria-hidden className={`h-2.5 w-2.5 shrink-0 rounded-full ${c.status === "on" ? "bg-accent" : c.status === "missing" ? "bg-indigo-300" : "border border-dashed border-unknown"}`} />
               <span className="min-w-0 flex-1 text-ink">{x.t(c.label)}</span>
               <span className={`text-[12px] ${c.status === "on" ? "text-accent" : "text-unknown"}`}>
-                {c.status === "on" ? x.t("On record") : c.status === "off" ? x.t("Not shared") : x.t("Not on record yet")}
+                {c.status === "on" ? x.t("On record") : c.status === "off" ? x.t("Not shared") : x.t("We don't have this yet")}
               </span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[12px] text-ink-3">{x.t("A list, not a score. Missing information is never counted against you.")}</p>
+        <p className="mt-3 text-[12px] text-ink-3">{x.t("This is a checklist, not a score. Anything missing is never held against you.")}</p>
       </div>
 
       {/* At a glance */}
       <div className="grid gap-4 sm:grid-cols-3 lg:col-span-12">
         {[
-          { icon: "spark" as IconName, n: d.insights.length, label: x.t("Worth a conversation"), href: "#insights" },
-          { icon: "chart" as IconName, n: d.series.length, label: x.t("Measurements on record"), href: "#over-time" },
-          { icon: "question" as IconName, n: d.unknown.length, label: x.t("Still unknown"), href: "#known" },
+          { icon: "spark" as IconName, n: d.insights.length, label: x.t("Worth talking about"), href: "#insights" },
+          { icon: "chart" as IconName, n: d.series.length, label: x.t("Results we can follow over time"), href: "#over-time" },
+          { icon: "question" as IconName, n: d.unknown.length, label: x.t("Not known yet"), href: "#known" },
         ].map((s) => (
           <a key={s.label} href={s.href} className="dash-card dash-stat group flex items-center gap-4 !py-4">
             <span aria-hidden className="grid h-10 w-10 place-items-center rounded-[12px] bg-accent-soft text-accent">
@@ -181,7 +181,7 @@ export function Overview({
                 ? x.t("Written by Masar's assistant (Google Gemini) from what you shared, and checked by Masar.")
                 : summary.from === "mock"
                   ? x.t("Written by the Gemini demo mock (no live model call), and checked by Masar.")
-                  : x.t("Masar's own summary of what you shared.")}
+                  : x.t("A summary of what you shared, written by Masar.")}
             </p>
           </div>
           <ul className="mt-3 grid gap-x-8 gap-y-2 md:grid-cols-2">
@@ -216,7 +216,7 @@ export function InsightCard({ i, x }: { i: Insight; x: Tx }) {
         {x.t(i.title)}
       </h3>
 
-      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3">{x.t("Why Masar raised it")}</p>
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3">{x.t("Why this came up")}</p>
       <ul className="mt-1.5 space-y-2">
         {i.because.map((b, k) => (
           <li key={k} className="rounded-[12px] bg-zinc-50 px-3 py-2">
@@ -293,7 +293,7 @@ export function Insights({ d, x }: { d: Dashboard; x: Tx }) {
           <div className="flex-1">
             <p className="text-[16px] font-semibold text-ink">{x.t("Nothing in what you've shared needs a conversation right now.")}</p>
             <p className="mt-1 text-[14.5px] leading-relaxed text-ink-2">
-              {x.t("That isn't a guarantee: it only covers what Masar can see. The gaps below are what would help Masar say more.")}
+              {x.t("That isn't a guarantee: it only covers what we can see. The gaps below are what would help us tell you more.")}
             </p>
           </div>
           <a href="#explore" className="btn btn-secondary shrink-0">
@@ -333,8 +333,8 @@ export function Insights({ d, x }: { d: Dashboard; x: Tx }) {
 export function KnowledgeBoard({ d, x }: { d: Dashboard; x: Tx }) {
   const cols: { title: string; icon: IconName; tone: string; items: Fact[]; empty: string }[] = [
     { title: x.t("What we know"), icon: "check", tone: "border-t-accent", items: d.known, empty: x.t("Nothing shared yet.") },
-    { title: x.t("What is still unknown"), icon: "question", tone: "border-t-unknown", items: d.unknown, empty: x.t("Nothing missing from what Masar looks at.") },
-    { title: x.t("What may be worth exploring"), icon: "compass", tone: "border-t-soon", items: d.explore, empty: x.t("Nothing raised right now.") },
+    { title: x.t("What we don't know yet"), icon: "question", tone: "border-t-unknown", items: d.unknown, empty: x.t("Nothing we look at is missing.") },
+    { title: x.t("Worth asking a doctor about"), icon: "compass", tone: "border-t-soon", items: d.explore, empty: x.t("Nothing raised right now.") },
   ];
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -484,7 +484,7 @@ export function OverTime({ d, x, children }: { d: Dashboard; x: Tx; children?: R
       ) : null}
 
       {!d.series.length ? (
-        <div className="dash-card text-[14.5px] text-ink-2">{x.t("Nothing you shared has readings over time yet, so no change can be described.")}</div>
+        <div className="dash-card text-[14.5px] text-ink-2">{x.t("Nothing you've shared has been measured more than once yet, so we can't see any changes.")}</div>
       ) : null}
 
       {d.timeline.length >= 2 ? (
@@ -493,7 +493,7 @@ export function OverTime({ d, x, children }: { d: Dashboard; x: Tx; children?: R
             <Icon name="clock" className="h-5 w-5 text-ink-2" />
             {x.t("Your health timeline")}
           </h3>
-          <p className="mt-1 text-[13.5px] text-ink-3">{x.t("Everything on record from the sources you shared, in date order.")}</p>
+          <p className="mt-1 text-[13.5px] text-ink-3">{x.t("Everything we have from what you shared, from oldest to newest.")}</p>
           <div className="mt-3">
             <HealthTimeline
               label={x.t("Your health timeline")}
@@ -543,7 +543,7 @@ export function Explore({ d, x }: { d: Dashboard; x: Tx }) {
     <div>
       <p className="mb-4 flex items-start gap-2 rounded-[14px] bg-soon-soft px-4 py-3 text-[13.5px] text-ink">
         <Icon name="compass" className="mt-0.5 h-4 w-4 shrink-0 text-soon" />
-        {x.t("Suggestions to explore, not medical instructions. You decide what to do; a doctor advises.")}
+        {x.t("These are ideas, not medical instructions. You decide, and a doctor can advise.")}
       </p>
       <div className="grid gap-4 md:grid-cols-2">
         {groups.map((g) => (
@@ -572,7 +572,7 @@ export function Explore({ d, x }: { d: Dashboard; x: Tx }) {
                           </Link>
                         ) : (
                           <a href={a.href} className="link">
-                            {g.id === "discuss" ? x.t("See your questions") : x.t("Read the insight")}
+                            {g.id === "discuss" ? x.t("See your questions") : x.t("Read more")}
                           </a>
                         )
                       ) : null}
@@ -604,7 +604,7 @@ export function Prepare({ d, x, personId, children }: { d: Dashboard; x: Tx; per
           <p className="font-mono text-[11.5px] uppercase tracking-[0.12em] text-white/60">{x.t("Questions to bring")}</p>
           <p className="mt-2 text-[17px] leading-snug text-white">&ldquo;{x.say(d.prepare.reason)}&rdquo;</p>
           <p className="mt-1 text-[13px] text-white/60">
-            {d.prepare.generic ? x.t("Nothing needs a conversation now; these help at any routine visit.") : x.t("From the rules behind what Masar found. Tick the ones you want to ask.")}
+            {d.prepare.generic ? x.t("Nothing needs a conversation now; these help at any routine visit.") : x.t("Based on what we noticed. Tick the ones you'd like to ask.")}
           </p>
           <div className="mt-4">
             <PrepareList dark copyable storageKey={`masar-questions:${personId}`} items={questions} labels={{ copy: x.t("Copy my questions"), copied: x.t("Copied"), heading: x.t("My questions:") }} />
@@ -620,7 +620,7 @@ export function Prepare({ d, x, personId, children }: { d: Dashboard; x: Tx; per
       </div>
 
       <div className="dash-card">
-        <p className="eyebrow">{x.t("Consultation summary")}</p>
+        <p className="eyebrow">{x.t("A short summary for your doctor")}</p>
         <dl className="mt-3 grid gap-4 md:grid-cols-2">
           <div>
             <dt className="text-[12.5px] font-medium text-ink-3">{x.t("Why I'm here")}</dt>
@@ -631,11 +631,11 @@ export function Prepare({ d, x, personId, children }: { d: Dashboard; x: Tx; per
             <dd className="mt-1 text-[14.5px] text-ink">{d.insights.length ? d.insights.map((i) => x.t(i.title)).join(x.lang === "ar" ? "، " : "; ") : x.t("Nothing worth a conversation in what was shared.")}</dd>
           </div>
           <div>
-            <dt className="text-[12.5px] font-medium text-ink-3">{x.t("What's on record")}</dt>
+            <dt className="text-[12.5px] font-medium text-ink-3">{x.t("What's in my record")}</dt>
             <dd className="mt-1 text-[14.5px] text-ink">{d.known.slice(0, 5).map((f) => x.say(f.text)).join(" ")}</dd>
           </div>
           <div>
-            <dt className="text-[12.5px] font-medium text-ink-3">{x.t("What remains uncertain")}</dt>
+            <dt className="text-[12.5px] font-medium text-ink-3">{x.t("What we still can't say")}</dt>
             <dd className="mt-1 text-[14.5px] text-ink">{d.prepare.uncertainties.slice(0, 4).map((u) => x.t(u)).join(" ")}</dd>
           </div>
         </dl>
@@ -660,14 +660,14 @@ export function ReportTeaser({ d, x }: { d: Dashboard; x: Tx }) {
     [x.t("What you shared"), x.t("{n} of 5 sources", { n: d.sourcesShared })],
     [x.t("What Masar found"), String(d.insights.length)],
     [x.t("Results over time"), String(d.series.length)],
-    [x.t("What remains uncertain"), String(d.unknown.length)],
+    [x.t("What we still can't say"), String(d.unknown.length)],
     [x.t("Questions to discuss"), String(d.prepare.questions.length)],
   ];
   return (
     <div className="dash-card grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
       <div>
         <p className="text-[15px] text-ink-2">
-          {x.t("A readable summary of what you shared, what Masar found and couldn't tell, where each statement came from, and what you could discuss next. Print it or save it as a PDF to bring to an appointment.")}
+          {x.t("A plain summary of what you shared, what we noticed, what we can't tell, and what you might talk about with a doctor. Print it or save it as a PDF to take to an appointment.")}
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           {parts.map(([k, v]) => (

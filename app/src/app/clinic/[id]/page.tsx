@@ -9,6 +9,19 @@ import { TESTS } from "@/server/ai/reports";
 import { requireRole } from "@/server/session";
 import { SubmitButton } from "@/components/submit-button";
 import { clinicianView } from "@/server/views";
+import { ClinicJump } from "@/components/clinic-jump";
+import { Icon, type IconName } from "@/components/dashboard/icons";
+
+function H2({ icon, children }: { icon: IconName; children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2.5 font-semibold tracking-[-0.025em] text-[1.4rem] text-zinc-950 sm:text-[1.5rem]">
+      <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-indigo-50 text-indigo-600">
+        <Icon name={icon} className="h-[18px] w-[18px]" />
+      </span>
+      {children}
+    </h2>
+  );
+}
 
 // Per-user page: it reads the session on every request, so it is never prerendered.
 export const instant = false;
@@ -22,11 +35,15 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
     return (
       <Shell session={session}>
         <div className="card mx-auto max-w-xl p-8 text-center">
+          <span aria-hidden className="lock-shake mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-rose-50 text-rose-600">
+            <Icon name="lock" className="h-8 w-8" />
+          </span>
           <Pill tone="clay">Not shared with you</Pill>
           <p className="mt-4 font-semibold tracking-[-0.025em] text-[1.8rem] text-zinc-950">This patient has not shared their summary with you.</p>
           <p className="mt-2 text-[14px] text-zinc-600">The attempt has been recorded in their access log.</p>
-          <Link href="/clinic" className="mt-6 inline-block text-[14px] font-medium text-indigo-600">
-            ← Back to the list
+          <Link href="/clinic" className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 text-[14px] font-medium text-indigo-600">
+            <Icon name="back" className="h-4 w-4" />
+            Back to the list
           </Link>
         </div>
       </Shell>
@@ -43,14 +60,23 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
   const eid = `784-••••-•••${digits.slice(-4)}-•`;
   const lastSeen = `${TOUCHPOINT_LABEL[r.touchpoint.kind]}, ${formatDate(r.touchpoint.at)}`;
   const next = req?.bookedFor ? formatDate(req.bookedFor) : req ? "To be booked" : "None";
+  const deciding = live && req?.status === "requested";
+  const jump: { id: string; label: string; icon: IconName; badge?: string }[] = [
+    { id: "why", label: "Why flagged", icon: "flag", badge: String(v.signals.length) },
+    { id: "trends", label: "Trends", icon: "chart" },
+    { id: "factors", label: "Factors and gaps", icon: "clipboard" },
+    { id: "request", label: deciding ? "Your decision" : "Request", icon: "chat", badge: deciding ? "!" : undefined },
+    ...(live ? [{ id: "tests", label: "Test results", icon: "flask" as IconName }] : []),
+  ];
 
   return (
     <Shell session={session} wide>
-      <Link href="/clinic" className="text-[13px] font-medium text-zinc-500 hover:text-indigo-600">
-        ← Patients to talk to
+      <Link href="/clinic" className="-ms-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-2 text-[13.5px] font-medium text-zinc-600 hover:text-indigo-600">
+        <Icon name="back" className="h-4 w-4" />
+        Patients to talk to
       </Link>
 
-      <div className="accent-panel mt-4 p-6 md:p-8">
+      <div className="accent-panel mt-2 p-5 sm:p-6 md:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-semibold tracking-[-0.025em] text-[clamp(1.9rem,3vw,2.6rem)] leading-tight text-white">
             {r.name}, {r.age}
@@ -62,7 +88,7 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
         <p className="mt-2 text-[14px] text-white/75">
           {r.sex === "female" ? "Woman" : "Man"} · {v.record.intention ? INTENTION_LABEL[v.record.intention] : "Plans not shared"}
         </p>
-        <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-white/15 pt-4 text-[13px] sm:grid-cols-4">
+        <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-white/15 pt-4 text-[13px] sm:grid-cols-4 sm:gap-x-6">
           {[
             ["Medical record no.", mrn],
             ["Emirates ID", eid],
@@ -90,10 +116,12 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
         </p>
       ) : null}
 
+      <ClinicJump items={jump} />
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
-          <section className="reveal card p-6">
-            <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Why this was flagged</h2>
+          <section id="why" className="reveal card scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 p-5 sm:p-6">
+            <H2 icon="flag">Why this was flagged</H2>
             <ul className="mt-4 space-y-4">
               {v.signals.map((s) => (
                 <li key={s.code} className="rounded-2xl border border-zinc-200 p-4">
@@ -112,8 +140,8 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
             </ul>
           </section>
 
-          <section className="reveal card p-6">
-            <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Trends</h2>
+          <section id="trends" className="reveal card scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 p-5 sm:p-6">
+            <H2 icon="chart">Trends</H2>
             <div className="mt-4 grid gap-5 md:grid-cols-2">
               {v.measures.map((m) => (
                 <div key={m.def.code}>
@@ -128,8 +156,8 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
             </div>
           </section>
 
-          <section className="reveal card p-6">
-            <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Factors and gaps</h2>
+          <section id="factors" className="reveal card scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 p-5 sm:p-6">
+            <H2 icon="clipboard">Factors and gaps</H2>
             <div className="mt-4 flex flex-wrap gap-2">
               {v.factors.map((f) => (
                 <Pill key={f.label + f.value} tone={f.canChange ? "pine" : "stone"}>
@@ -148,8 +176,8 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
         </div>
 
         <aside className="space-y-6">
-          <section className="card border-indigo-200/70 p-6 shadow-[0_0_0_4px_var(--color-indigo-50)]">
-            <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Patient&apos;s request</h2>
+          <section id="request" className="card scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 border-indigo-200/70 p-5 shadow-[0_0_0_4px_var(--color-indigo-50)] sm:p-6">
+            <H2 icon="chat">Patient&apos;s request</H2>
             {req ? (
               <>
                 <p className="mt-2 text-[15px] font-semibold text-zinc-950">{OPTION_LABEL[req.option].title}</p>
@@ -167,7 +195,7 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
             )}
 
             {live && req && req.status === "requested" ? (
-              <form action={clinicianDecide.bind(null, r.id)} className="mt-5 space-y-3 border-t border-zinc-200 pt-5">
+              <form id="decision" action={clinicianDecide.bind(null, r.id)} className="mt-5 scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 space-y-3 border-t border-zinc-200 pt-5">
                 <p className="text-[14px] font-semibold text-zinc-950">Your decision</p>
                 <div className="grid grid-cols-3 gap-1 rounded-full bg-zinc-100 p-1 text-[13px]">
                   {[
@@ -177,7 +205,7 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
                   ].map(([value, label], i) => (
                     <label key={value} className="cursor-pointer">
                       <input type="radio" name="decision" value={value} defaultChecked={i === 0} className="peer sr-only" />
-                      <span className="block rounded-full py-1.5 text-center text-zinc-600 peer-checked:bg-white peer-checked:font-medium peer-checked:text-indigo-600 peer-checked:shadow-sm">
+                      <span className="flex min-h-[40px] items-center justify-center rounded-full px-1 text-center leading-tight text-zinc-600 transition-all peer-checked:bg-white peer-checked:font-medium peer-checked:text-indigo-600 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-400">
                         {label}
                       </span>
                     </label>
@@ -186,15 +214,15 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
                 <input
                   name="reason"
                   placeholder="Why you disagree (needed if you disagree)"
-                  className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-[14px] outline-none focus:border-indigo-500"
+                  className="w-full min-h-[44px] rounded-xl border border-zinc-300 px-3 py-2 text-[15px] outline-none focus:border-indigo-500"
                 />
                 <textarea
                   name="note"
                   rows={2}
                   placeholder="Note to the patient (optional)"
-                  className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-[14px] outline-none focus:border-indigo-500"
+                  className="w-full min-h-[44px] rounded-xl border border-zinc-300 px-3 py-2 text-[15px] outline-none focus:border-indigo-500"
                 />
-                <SubmitButton pendingLabel="Recording" className="w-full rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Record decision</SubmitButton>
+                <SubmitButton pendingLabel="Recording" className="w-full min-h-[48px] rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Record decision</SubmitButton>
                 <p className="text-[12px] text-zinc-500">Your decisions help us learn how often Masar gets it right.</p>
               </form>
             ) : null}
@@ -204,14 +232,14 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
                 <p className="mb-3 text-[14px] text-zinc-800">
                   Decision recorded: <span className="font-semibold">{{ Accept: "Agreed", Modify: "Agreed, with a test", Override: "Disagreed" }[req.decision ?? "Accept"]}</span>
                 </p>
-                <SubmitButton pendingLabel="Booking" className="w-full rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Book a conversation</SubmitButton>
+                <SubmitButton pendingLabel="Booking" className="w-full min-h-[48px] rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Book a conversation</SubmitButton>
               </form>
             ) : null}
 
             {live && req?.status === "booked" ? (
               <form action={clinicianAttended.bind(null, r.id)} className="mt-5 border-t border-zinc-200 pt-5">
                 <p className="mb-3 text-[14px] text-zinc-800">Booked for {req.bookedFor ? formatDate(req.bookedFor) : "—"}.</p>
-                <button className="w-full rounded-full border border-zinc-300 bg-white py-2.5 text-sm font-semibold text-zinc-950 hover:border-zinc-400">
+                <button className="w-full min-h-[48px] rounded-full border border-zinc-300 bg-white py-2.5 text-sm font-semibold text-zinc-950 hover:border-zinc-400">
                   Mark conversation held
                 </button>
               </form>
@@ -221,8 +249,8 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
           </section>
 
           {live ? (
-            <section className="card p-6">
-              <h2 className="font-semibold tracking-[-0.025em] text-[1.5rem] text-zinc-950">Test results</h2>
+            <section id="tests" className="card scroll-mt-[190px] md:scroll-mt-36 lg:scroll-mt-24 p-5 sm:p-6">
+              <H2 icon="flask">Test results</H2>
               {!v.state.sources.lab ? (
                 <p className="mt-2 rounded-xl bg-zinc-100 px-3.5 py-2.5 text-[13.5px] text-zinc-700">
                   The patient has switched off Lab results, so uploaded reports, their values and files are not shared with you.
@@ -277,7 +305,7 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
               )}
               <form action={clinicianRequestReport.bind(null, r.id)} className="mt-5 space-y-3 border-t border-zinc-200 pt-5">
                 <p className="text-[14px] font-semibold text-zinc-950">Ask for a test result</p>
-                <select name="test" className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-[14px] outline-none focus:border-indigo-500">
+                <select name="test" className="w-full min-h-[44px] rounded-xl border border-zinc-300 bg-white px-3 py-2 text-[15px] outline-none focus:border-indigo-500">
                   {TESTS.map((t) => (
                     <option key={t}>{t}</option>
                   ))}
@@ -285,9 +313,9 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
                 <input
                   name="note"
                   placeholder="Message to the patient (optional)"
-                  className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-[14px] outline-none focus:border-indigo-500"
+                  className="w-full min-h-[44px] rounded-xl border border-zinc-300 px-3 py-2 text-[15px] outline-none focus:border-indigo-500"
                 />
-                <SubmitButton pendingLabel="Sending" className="w-full rounded-full border border-zinc-300 bg-white py-2.5 text-sm font-semibold text-zinc-950 hover:border-indigo-400">
+                <SubmitButton pendingLabel="Sending" className="w-full min-h-[48px] rounded-full border border-zinc-300 bg-white py-2.5 text-sm font-semibold text-zinc-950 hover:border-indigo-400">
                   Send request
                 </SubmitButton>
               </form>
@@ -295,6 +323,16 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
           ) : null}
         </aside>
       </div>
+
+      {deciding ? (
+        <a
+          href="#decision"
+          className="decide-fab fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] end-4 z-30 inline-flex min-h-[52px] items-center gap-2 rounded-full bg-indigo-600 px-5 text-[15px] font-semibold text-white shadow-[0_14px_30px_-10px_rgb(30_91_86/0.6)] lg:hidden"
+        >
+          <Icon name="check" className="h-5 w-5" />
+          Your decision
+        </a>
+      ) : null}
     </Shell>
   );
 }
