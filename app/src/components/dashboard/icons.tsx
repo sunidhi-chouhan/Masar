@@ -123,6 +123,62 @@ const ICON = {
   ),
   arrow: <path d="M5 12h13M13 7l5 5-5 5" {...P} />,
   check: <path d="M5.5 12.5l4 4 9-9" {...P} />,
+  // Navigation and clinician tools.
+  path: <path d="M4 18c3.5 0 4.5-7 8-7s4 4 7 4M19 6v.01" {...P} />,
+  user: (
+    <>
+      <circle cx="12" cy="8.5" r="3.5" {...P} />
+      <path d="M5 19.5c1.2-3.4 3.8-5 7-5s5.8 1.6 7 5" {...P} />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="9" cy="9" r="3" {...P} />
+      <path d="M3.5 19c1-3 3-4.5 5.5-4.5s4.5 1.5 5.5 4.5M15 6.2a3 3 0 0 1 0 5.6M17 14.8c1.7.6 2.9 2 3.5 4.2" {...P} />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" {...P} />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2" {...P} />
+    </>
+  ),
+  menu: <path d="M4.5 7h15M4.5 12h15M4.5 17h15" {...P} />,
+  close: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" {...P} />,
+  back: <path d="M14.5 6l-6 6 6 6" {...P} />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6" {...P} />
+      <path d="M15.5 15.5l4 4" {...P} />
+    </>
+  ),
+  flag: <path d="M6 20.5V4.5M6 5h10.5l-2 3.5 2 3.5H6" {...P} />,
+  inbox: (
+    <>
+      <path d="M4 13.5l2.5-7.5h11l2.5 7.5v5H4z" {...P} />
+      <path d="M4 13.5h4.5l1.5 2h4l1.5-2H20" {...P} />
+    </>
+  ),
+  note: (
+    <>
+      <path d="M6 4.5h9l3 3v12H6z" {...P} />
+      <path d="M9 11h6M9 14.5h6M9 8h3" {...P} />
+    </>
+  ),
+  send: <path d="M4.5 12L19.5 5l-4 14-3.5-5.5z M12 13.5l7.5-8.5" {...P} />,
+  calendar: (
+    <>
+      <rect x="4" y="5.5" width="16" height="14" rx="3" {...P} />
+      <path d="M8 3.5v4M16 3.5v4M4 10h16" {...P} />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="8" {...P} />
+      <path d="M4 12h16M12 4c2.2 2.3 3.2 5 3.2 8s-1 5.7-3.2 8c-2.2-2.3-3.2-5-3.2-8s1-5.7 3.2-8z" {...P} />
+    </>
+  ),
+  signIn: <path d="M13 5.5h4.5a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H13M4.5 12h10M11 8.5l3.5 3.5-3.5 3.5" {...P} />,
   clock: (
     <>
       <circle cx="12" cy="12" r="8" {...P} />
@@ -133,9 +189,12 @@ const ICON = {
 
 export type IconName = keyof typeof ICON;
 
+/** Icons that point along the reading direction, mirrored in Arabic. */
+const DIRECTIONAL: IconName[] = ["arrow", "back", "signIn", "path", "send"];
+
 export function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={`${className} rtl-flip-${name === "arrow" ? "yes" : "no"}`} aria-hidden>
+    <svg viewBox="0 0 24 24" className={`${className} rtl-flip-${DIRECTIONAL.includes(name) ? "yes" : "no"}`} aria-hidden>
       {ICON[name]}
     </svg>
   );

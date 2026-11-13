@@ -318,3 +318,15 @@
 @keyframes pv-log { 0% { opacity: 0; transform: translateY(4px); } 4%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; } }
 @keyframes pv-veil { 0%, 100% { fill-opacity: 0.92; } 50% { fill-opacity: 0.8; } }
 @keyframes pv-ridge { 0%, 100% { stroke-opacity: 0.14; } 50% { stroke-opacity: 0.32; } }
+
+/* The landing page's menu below laptop width. */
+.menu-line { transform-box: fill-box; transform-origin: center; transition: transform 0.3s var(--ease-calm); }
+.menu-line.is-open-a { transform: translateY(4px) rotate(45deg); }
+.menu-line.is-open-b { transform: translateY(-4px) rotate(-45deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .landing-menu { animation: landing-menu-in 0.28s var(--ease-calm) both; }
+  .landing-menu-scrim { animation: landing-fade 0.28s var(--ease-calm) both; }
+  .landing-menu-item { animation: rise-sm 0.4s var(--ease-calm) calc(0.04s * var(--i, 0)) both; }
+}
+@keyframes landing-menu-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }

@@ -8,7 +8,7 @@ import { Journey } from "@/components/journey";
 import { CertaintyExplorer } from "@/components/certainty-explorer";
 import { PrivacyStory } from "@/components/privacy-story";
 import { InView } from "@/components/in-view";
-import { LandingNav, StickyHeader } from "@/components/landing-nav";
+import { LandingMenu, LandingNav, StickyHeader } from "@/components/landing-nav";
 import { t, type Lang as L } from "@/lib/i18n";
 import "./landing.css";
 import { setLanguage } from "@/server/actions";
@@ -239,25 +239,39 @@ const COPY = {
 
 function Header({ lang }: { lang: Lang }) {
   const c = COPY[lang];
+  const ar = lang === "ar";
+  const switcher = (
+    <form action={setLanguage.bind(null, ar ? "en" : "ar")}>
+      <button lang={ar ? "en" : "ar"} aria-label={c.switchLabel} className="min-h-[44px] rounded-full px-3 text-[14px] font-semibold text-accent hover:bg-accent-soft">
+        {c.switchTo}
+      </button>
+    </form>
+  );
   return (
     <StickyHeader>
-    <header className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:gap-6 md:px-8">
-      <Brand animated />
-      <LandingNav items={c.nav.map(([h, l]) => [h, l] as [string, string])} label={lang === "ar" ? "أقسام الصفحة" : "Page sections"} />
-      <Link href="/access" className="whitespace-nowrap rounded-full px-3 py-2 text-[14px] font-medium text-ink-2 hover:text-ink">
-        {c.demoAccess}
-      </Link>
-      <div className="ms-auto flex items-center gap-2">
-        <form action={setLanguage.bind(null, lang === "ar" ? "en" : "ar")}>
-          <button lang={lang === "ar" ? "en" : "ar"} aria-label={c.switchLabel} className="min-h-[44px] rounded-full px-3 text-[14px] font-semibold text-accent hover:bg-accent-soft">
-            {c.switchTo}
-          </button>
-        </form>
-        <Link href="/sign-in" className="btn btn-primary whitespace-nowrap !min-h-[40px] !px-4 !text-[14px]">
-          {c.signIn}
+      <header className="relative mx-auto flex max-w-6xl items-center gap-2 px-4 py-4 sm:gap-6 md:px-8">
+        <Brand animated />
+        <LandingNav items={c.nav.map(([h, l]) => [h, l] as [string, string])} label={ar ? "أقسام الصفحة" : "Page sections"} />
+        <Link href="/access" className="hidden min-h-[44px] items-center whitespace-nowrap rounded-full px-3 text-[14px] font-medium text-ink-2 hover:text-ink sm:inline-flex">
+          {c.demoAccess}
         </Link>
-      </div>
-    </header>
+        <div className="ms-auto flex items-center gap-1.5 sm:gap-2">
+          <div className="hidden min-[400px]:block">{switcher}</div>
+          <Link href="/sign-in" className="btn btn-primary whitespace-nowrap !min-h-[44px] !px-4 !text-[14px]">
+            {c.signIn}
+          </Link>
+          <LandingMenu
+            items={c.nav.map(([h, l]) => [h, l] as [string, string])}
+            links={[
+              { href: "/access", label: c.demoAccess, icon: "users" },
+              { href: "/how-masar-decides", label: ar ? "كيف يقرّر مسار" : "How Masar decides", icon: "book" },
+            ]}
+            labels={{ open: ar ? "فتح القائمة" : "Open menu", close: ar ? "إغلاق القائمة" : "Close menu", sections: ar ? "أقسام الصفحة" : "On this page" }}
+          >
+            <div className="min-[400px]:hidden">{switcher}</div>
+          </LandingMenu>
+        </div>
+      </header>
     </StickyHeader>
   );
 }

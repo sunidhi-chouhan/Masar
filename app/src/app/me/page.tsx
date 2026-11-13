@@ -73,9 +73,9 @@ export default async function MyPath() {
 
   const nav = [
     { id: "overview", label: t("Overview") },
-    { id: "insights", label: t("Insights") },
+    { id: "insights", label: t("What stood out") },
     { id: "over-time", label: t("Over time") },
-    { id: "explore", label: t("Explore next") },
+    { id: "explore", label: t("What next") },
     { id: "prepare", label: t("Your doctor") },
     { id: "report", label: t("Report") },
   ];
@@ -121,12 +121,12 @@ export default async function MyPath() {
         id="insights"
         n={2}
         icon="spark"
-        title={t("Your health insights")}
-        body={t("What Masar found in what you shared, why it matters, how strong the evidence is, and what it can't tell you.")}
+        title={t("What stood out in your record")}
+        body={t("For each thing we noticed: why it came up, why it matters, how strong the evidence is, and what it can't tell you.")}
       >
         <Insights d={d} x={x} />
         <div id="known" className="scroll-mt-32 pt-8">
-          <h3 className="display mb-4 text-[1.45rem] text-ink">{t("Known, unknown and worth exploring")}</h3>
+          <h3 className="display mb-4 text-[1.45rem] text-ink">{t("What we know, what we don't, and what to ask about")}</h3>
           <KnowledgeBoard d={d} x={x} />
         </div>
       </DashSection>
@@ -135,25 +135,25 @@ export default async function MyPath() {
         id="over-time"
         n={3}
         icon="chart"
-        title={t("Your health over time")}
-        body={t("Real readings only, from the sources you shared. A change is called real only when it passes Masar's published rule.")}
+        title={t("How things have changed over time")}
+        body={t("These are your actual results, from what you chose to share. We only call something a real change when it's bigger than the usual ups and downs between tests.")}
       >
         <OverTime d={d} x={x}>
           <Reports personId={session.id} reports={v.state.reports} t={t} fmt={fmt} lang={lang} aiReads={aiAllowedFor(session.id, "reportReading")} />
         </OverTime>
       </DashSection>
 
-      <DashSection id="explore" n={4} icon="compass" title={t("What you could explore next")} body={t("Each suggestion says why it's there. You stay in control.")}>
+      <DashSection id="explore" n={4} icon="compass" title={t("What you could do next")} body={t("Each idea says why it's here. You decide what, if anything, to do.")}>
         <Explore d={d} x={x} />
       </DashSection>
 
-      <DashSection id="prepare" n={5} icon="clipboard" title={t("Prepare for your doctor")} body={t("Questions to ask, what to bring, and a short summary of your picture.")}>
+      <DashSection id="prepare" n={5} icon="clipboard" title={t("Prepare for your doctor")} body={t("Questions to ask, things to bring, and a short summary you can show your doctor.")}>
         <Prepare d={d} x={x} personId={session.id}>
           <NextStep v={v} t={t} fmt={fmt} />
         </Prepare>
       </DashSection>
 
-      <DashSection id="report" n={6} icon="doc" title={t("Your personal health report")} body={t("Everything above in one readable document, with its sources.")}>
+      <DashSection id="report" n={6} icon="doc" title={t("Your personal health report")} body={t("Everything on this page in one document you can print or save, with where each piece came from.")}>
         <ReportTeaser d={d} x={x} />
       </DashSection>
 

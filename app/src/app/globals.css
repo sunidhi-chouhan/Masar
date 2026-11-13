@@ -651,3 +651,25 @@ em:lang(ar) {
   .report-doc { box-shadow: none !important; border: 0 !important; padding: 0 !important; }
   .report-doc section { break-inside: avoid; }
 }
+
+/* App navigation: the current page's underline grows in; tabs give a small press. */
+@media (prefers-reduced-motion: no-preference) {
+  .nav-underline { transform-origin: center; animation: nav-underline 0.35s var(--ease-calm) both; }
+  .nav-tab > span { transition: transform 0.15s var(--ease-calm), background-color 0.2s; }
+  .nav-tab:active > span { transform: scale(0.9); }
+}
+@keyframes nav-underline { from { transform: scaleX(0); } to { transform: none; } }
+
+/* Clinician worklist: counts and rows arrive in a quick, quiet cascade. */
+@media (prefers-reduced-motion: no-preference) {
+  /* backwards, not both: once in, hover may still lift the card. */
+  .clinic-count, .clinic-row { animation: jr-in 0.4s var(--ease-calm) calc(0.035s * var(--i, 0)) backwards; }
+}
+
+/* Clinician review: the decision shortcut on phones, and a blocked-access lock. */
+@media (prefers-reduced-motion: no-preference) {
+  .decide-fab { animation: jr-in 0.45s var(--ease-calm) 0.6s backwards, fab-pulse 2.4s ease-in-out 1.2s 3; }
+  .lock-shake { animation: lock-shake 0.6s var(--ease-calm) 0.2s 1 backwards; }
+}
+@keyframes fab-pulse { 0%, 100% { box-shadow: 0 14px 30px -10px rgb(30 91 86 / 0.6), 0 0 0 0 rgb(30 91 86 / 0.35); } 50% { box-shadow: 0 14px 30px -10px rgb(30 91 86 / 0.6), 0 0 0 12px rgb(30 91 86 / 0); } }
+@keyframes lock-shake { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.05) rotate(-6deg); opacity: 1; } 75% { transform: rotate(4deg); } 100% { transform: none; } }

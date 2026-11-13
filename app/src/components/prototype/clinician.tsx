@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Resident } from "@/lib/model";
 import { INTENTION_LABEL } from "@/lib/model";
 import { OPTION_LABEL, RULES, clinicalReason } from "@/lib/signals";
@@ -8,7 +8,8 @@ import { ALL_CONSENT, protoView, type ProtoView } from "@/lib/prototype";
 import { PERMISSION_TEXT } from "@/lib/permissions";
 import { SeriesChart } from "@/components/dashboard/series-chart";
 import { Timing } from "@/components/editorial";
-import { Brand, Pill, Simulated, Tabs, useProto } from "./core";
+import { Brand, Initials, Pill, Simulated, Tabs, useProto } from "./core";
+import { Icon, type IconName } from "@/components/dashboard/icons";
 import { Bell, LangToggle } from "./patient";
 import { reportBlocks } from "./dashboard";
 import { downloadPdf } from "./report-pdf";
@@ -27,6 +28,9 @@ export function ClinicianApp() {
   const { s, set, tr, base, view, inbox } = useProto();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "review" | "requests">("all");
+  // Phones and tablets show the list or one record at a time; wide screens show both.
+  const [pane, setPane] = useState<"list" | "record">("list");
+  const detail = useRef<HTMLElement>(null);
   const patients = useMemo(() => inbox.map((r) => ({ r, v: protoView(r, SYNTH, ALL_CONSENT, {}, null) })), [inbox]);
   const me = { r: base, v: view, shared: s.consent.shareClinician };
   const selected = s.selected ?? s.profileId;
@@ -34,11 +38,17 @@ export function ClinicianApp() {
     { id: base.id, name: base.name, age: base.age, sex: base.sex, shared: me.shared, v: me.shared ? view : null, live: true, request: !!s.request },
     ...patients.map((p) => ({ id: p.r.id, name: p.r.name, age: p.r.age, sex: p.r.sex, shared: true, v: p.v, live: false, request: false })),
   ].filter((p) => (!q || p.name.toLowerCase().includes(q.toLowerCase())) && (filter === "all" || (filter === "review" ? (p.v?.dashboard.insights.length ?? 0) > 0 : p.request)));
-  const open = (id: string, shared: boolean) =>
+  const open = (id: string, shared: boolean) => {
     set((x) => {
       const y = { ...x, selected: id };
       return id === x.profileId && !shared ? withAudit(y, { role: "clinician", who: "Dr Layla Al Hashimi", what: "Tried to open a patient summary that isn't shared", allowed: false }) : y;
     });
+    setPane("record");
+    if (window.innerWidth < 1024) {
+      window.scrollTo({ top: 0 });
+      requestAnimationFrame(() => detail.current?.focus({ preventScroll: true }));
+    }
+  };
 
   return (
     <>
@@ -56,11 +66,18 @@ export function ClinicianApp() {
         </div>
       </header>
       <main id="pt-main" tabIndex={-1} className="mx-auto grid max-w-[1400px] gap-4 px-4 pb-28 pt-4 outline-none md:px-6 lg:grid-cols-[320px_1fr]">
-        <aside aria-label={tr("Your patients")} className="pt-card !p-3 lg:sticky lg:top-20 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto">
+        <aside aria-label={tr("Your patients")} className={`pt-card min-w-0 !p-3 lg:sticky lg:top-20 lg:block lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto ${pane === "record" ? "hidden" : ""}`}>
+          <div className="flex items-center justify-between gap-2 px-1 pb-2 pt-1">
+            <p className="text-[15px] font-semibold text-ink">{tr("Your patients")}</p>
+            <span className="tabular rounded-full bg-zinc-100 px-2 py-0.5 text-[12px] font-semibold text-ink-2">{rows.length}</span>
+          </div>
           <label className="sr-only" htmlFor="pt-search">
             {tr("Search patients")}
           </label>
-          <input id="pt-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Search patients")} className="pt-input" />
+          <div className="relative">
+            <input id="pt-search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Search patients")} className="pt-input !min-h-[46px] !ps-10" />
+            <Icon name="search" className="pointer-events-none absolute start-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-ink-3" />
+          </div>
           <div className="mt-2">
             <Tabs
               label={tr("Filter patients")}
@@ -74,28 +91,46 @@ export function ClinicianApp() {
             />
           </div>
           <ul className="mt-3 space-y-1.5">
-            {rows.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => open(p.id, p.shared)}
-                  aria-current={selected === p.id ? "true" : undefined}
-                  className={`w-full rounded-[14px] border px-3 py-2.5 text-start transition-colors ${selected === p.id ? "border-accent bg-accent-soft/60" : "border-transparent hover:bg-zinc-50"}`}
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="text-[14px] font-semibold text-ink">{p.name}</span>
-                    {!p.shared ? <Pill tone="stone">🔒 {tr("Not shared")}</Pill> : p.request ? <Pill tone="soon">{tr("Request")}</Pill> : null}
-                  </span>
-                  <span className="mt-0.5 block text-[12px] text-ink-3">
-                    {tr(p.sex === "female" ? "Woman" : "Man")}, {p.age} · {p.live ? tr("Uses Masar in this demo") : tr("Synthetic resident")}
-                  </span>
-                  {p.v?.dashboard.insights.length ? <span className="mt-1 block truncate text-[12px] text-ink-2">{p.v.dashboard.insights.map((i) => tr(RULES[i.code].clinicalTitle)).join(" · ")}</span> : null}
-                </button>
-              </li>
-            ))}
+            {rows.map((p, idx) => {
+              const urgency = p.v?.dashboard.urgency;
+              return (
+                <li key={p.id} className="pt-row" style={{ ["--i" as string]: Math.min(idx, 10) }}>
+                  <button
+                    type="button"
+                    onClick={() => open(p.id, p.shared)}
+                    aria-current={selected === p.id ? "true" : undefined}
+                    className={`group flex w-full items-start gap-3 rounded-[14px] border px-3 py-3 text-start transition-colors ${selected === p.id ? "border-accent bg-accent-soft/60" : "border-transparent hover:bg-zinc-50"}`}
+                  >
+                    {p.shared ? (
+                      <Initials name={p.name} tone={urgency ?? "stone"} />
+                    ) : (
+                      <span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-100 text-ink-3">
+                        <Icon name="lock" className="h-5 w-5" />
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                        <span className="text-[14.5px] font-semibold text-ink">{p.name}</span>
+                        {!p.shared ? <Pill tone="stone">{tr("Not shared")}</Pill> : p.request ? <Pill tone="soon">{tr("Request")}</Pill> : null}
+                      </span>
+                      <span className="mt-0.5 block text-[12.5px] text-ink-3">
+                        {tr(p.sex === "female" ? "Woman" : "Man")}, {p.age} · {p.live ? tr("Uses Masar in this demo") : tr("Synthetic resident")}
+                      </span>
+                      {p.v?.dashboard.insights.length ? <span className="mt-1 line-clamp-2 block text-[12.5px] text-ink-2">{p.v.dashboard.insights.map((i) => tr(RULES[i.code].clinicalTitle)).join(" · ")}</span> : null}
+                    </span>
+                    <Icon name="arrow" className="mt-2.5 h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5 lg:hidden" />
+                  </button>
+                </li>
+              );
+            })}
+            {!rows.length ? <li className="px-2 py-6 text-center text-[13.5px] text-ink-3">{tr("No patients match.")}</li> : null}
           </ul>
         </aside>
-        <section aria-label={tr("Patient")}>
+        <section ref={detail} tabIndex={-1} aria-label={tr("Patient")} className={`min-w-0 outline-none lg:block ${pane === "list" ? "hidden" : ""}`}>
+          <button type="button" onClick={() => setPane("list")} className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-2 text-[14px] font-medium text-ink-2 hover:text-ink lg:hidden">
+            <Icon name="back" className="h-[18px] w-[18px]" />
+            {tr("All patients")}
+          </button>
           {selected === base.id ? (
             me.shared ? (
               <Patient r={base} v={view} live />
@@ -119,8 +154,8 @@ function Locked() {
   const name = base.name.split(" ")[0];
   return (
     <div className="pt-card pt-enter grid place-items-center py-16 text-center">
-      <span className="grid h-16 w-16 place-items-center rounded-full bg-zinc-100 text-[1.6rem]" aria-hidden>
-        🔒
+      <span className="pt-lock grid h-16 w-16 place-items-center rounded-full bg-zinc-100 text-ink-2" aria-hidden>
+        <Icon name="lock" className="h-8 w-8" />
       </span>
       <h1 className="display mt-4 text-[1.7rem] text-ink">{tr("{name} hasn't shared a summary with you", { name })}</h1>
       <p className="mt-2 max-w-md text-[14.5px] text-ink-2">{tr("You can't see their results, answers or findings. This look was recorded in their access history as blocked.")}</p>
@@ -153,31 +188,26 @@ function Patient({ r, v, live }: { r: Resident; v: ProtoView; live: boolean }) {
   const d = v.dashboard;
   const name = r.name.split(" ")[0];
   const top = d.urgency;
-  const tabs: { id: Tab; label: string; count?: number }[] = [
-    { id: "summary", label: tr("Summary") },
-    { id: "records", label: tr("History and records") },
-    { id: "insights", label: tr("Insights and uncertainty"), count: d.insights.length },
-    { id: "labs", label: tr("Labs and trends"), count: d.series.length },
-    { id: "consent", label: tr("Consent and access") },
-    { id: "consult", label: tr("Consultation prep") },
-    { id: "notes", label: tr("Notes"), count: (s.notes[r.id] ?? []).length },
-    { id: "followup", label: tr("Follow-up") },
-    { id: "messages", label: tr("Messages") },
-    { id: "report", label: tr("Report") },
+  const ic = (n: IconName) => <Icon name={n} className="h-[18px] w-[18px]" />;
+  const tabs: { id: Tab; label: string; count?: number; icon: React.ReactNode }[] = [
+    { id: "summary", label: tr("Summary"), icon: ic("spark") },
+    { id: "records", label: tr("History and records"), icon: ic("clock") },
+    { id: "insights", label: tr("Insights and uncertainty"), count: d.insights.length, icon: ic("flag") },
+    { id: "labs", label: tr("Labs and trends"), count: d.series.length, icon: ic("chart") },
+    { id: "consent", label: tr("Consent and access"), icon: ic("shield") },
+    { id: "consult", label: tr("Consultation prep"), icon: ic("clipboard") },
+    { id: "notes", label: tr("Notes"), count: (s.notes[r.id] ?? []).length, icon: ic("note") },
+    { id: "followup", label: tr("Follow-up"), icon: ic("check") },
+    { id: "messages", label: tr("Messages"), icon: ic("chat") },
+    { id: "report", label: tr("Report"), icon: ic("doc") },
   ];
   return (
     <div className="pt-enter space-y-4">
       <div className="pt-card pt-hero">
         <div className="flex flex-wrap items-start gap-4">
-          <span aria-hidden className="grid h-14 w-14 place-items-center rounded-full bg-ink font-display text-[1.3rem] text-paper">
-            {r.name
-              .split(" ")
-              .map((w) => w[0])
-              .slice(0, 2)
-              .join("")}
-          </span>
+          <Initials name={r.name} tone="dark" size="lg" />
           <div className="min-w-0 flex-1">
-            <h1 className="display text-[1.8rem] leading-tight text-ink">{r.name}</h1>
+            <h1 className="display text-[1.6rem] leading-tight text-ink sm:text-[1.8rem]">{r.name}</h1>
             <p className="mt-0.5 text-[13.5px] text-ink-2">
               {tr(r.sex === "female" ? "Woman" : "Man")}, {r.age} · {v.record.intention ? tr(INTENTION_LABEL[v.record.intention]) : tr("Plans not shared")}
             </p>
@@ -189,7 +219,9 @@ function Patient({ r, v, live }: { r: Resident; v: ProtoView; live: boolean }) {
           </div>
         </div>
       </div>
-      <Tabs label={tr("Patient record")} value={tab} onChange={setTab} items={tabs} />
+      <div className="sticky top-16 z-20 -mx-4 bg-paper/95 px-4 py-2 backdrop-blur-md md:-mx-6 md:px-6 lg:static lg:mx-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <Tabs label={tr("Patient record")} value={tab} onChange={setTab} items={tabs} />
+      </div>
 
       <div key={tab} className="pt-enter">
         {tab === "summary" ? (
@@ -562,7 +594,7 @@ function Messages({ live, name }: { live: boolean; name: string }) {
     <div className="pt-card">
       <ul className="space-y-2">
         {s.messages.map((m, i) => (
-          <li key={i} className={`max-w-[80%] rounded-[16px] px-3.5 py-2 text-[14px] ${m.from === "clinician" ? "ms-auto bg-accent text-white" : "bg-zinc-100 text-ink"}`}>
+          <li key={i} className={`max-w-[88%] rounded-[16px] sm:max-w-[80%] px-3.5 py-2 text-[14px] ${m.from === "clinician" ? "ms-auto bg-accent text-white" : "bg-zinc-100 text-ink"}`}>
             {m.text}
             <span className="mt-0.5 block text-[11px] opacity-70">{date(m.at)}</span>
           </li>
@@ -590,8 +622,10 @@ function Messages({ live, name }: { live: boolean; name: string }) {
           {tr("Message")}
         </label>
         <input id="pt-msg" value={text} onChange={(e) => setText(e.target.value)} className="pt-input" placeholder={tr("Write to {name}", { name })} />
-        <button type="submit" className="btn btn-primary shrink-0">
-          {tr("Send")}
+        <button type="submit" className="btn btn-primary shrink-0 gap-1.5">
+          <Icon name="send" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">{tr("Send")}</span>
+          <span className="sr-only sm:hidden">{tr("Send")}</span>
         </button>
       </form>
     </div>
