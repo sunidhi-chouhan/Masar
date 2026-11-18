@@ -1,6 +1,7 @@
 import type { Resident } from "@/lib/model";
 import type { FollowUp, FollowUpSource, JAnswers, JourneySummary } from "@/lib/journey";
-import { NO_CONSENT, type ProtoConsent, type ProtoSim } from "@/lib/prototype";
+import { NO_CONSENT, type ProtoConsent, type ProtoJourney, type ProtoSim } from "@/lib/prototype";
+import { NO_EDITS, type Answer, type ShareKey } from "@/lib/longitudinal";
 import type { Lang } from "@/lib/i18n";
 
 // The prototype's one shared state: every role reads and changes the same
@@ -42,8 +43,32 @@ export interface Referral {
   at: string;
 }
 
+/** The person's preparation guide: generated, then edited and shared only by them. */
+export interface Guide {
+  source: "ai" | "mock" | "masar";
+  at: string;
+  /** Gemini's or Masar's opening, in the person's language */
+  intro: string;
+  questions: string[];
+  notes: string;
+  share: Record<ShareKey, boolean>;
+  /** when it was last shared with Dr Layla, and exactly what was ticked then */
+  sharedAt: string | null;
+  sharedKeys: ShareKey[];
+}
+
+export interface ChatTurn {
+  q: string;
+  a: Answer;
+  source: "ai" | "mock" | "masar" | "urgent";
+  /** the categories the assistant was given, and the ones withheld */
+  used: string[];
+  withheld: string[];
+  at: string;
+}
+
 export interface ProtoState {
-  v: 3;
+  v: 4;
   lang: Lang;
   role: Role;
   profileId: string;
@@ -70,9 +95,13 @@ export interface ProtoState {
   audit: AuditEntry[];
   selected: string | null;
   controlsOpen: boolean;
+  /** the longitudinal journey: the demo clock and the person's own observations */
+  journey: ProtoJourney;
+  guide: Guide | null;
+  chat: ChatTurn[];
 }
 
-export const STORAGE_KEY = "masar-prototype-v3";
+export const STORAGE_KEY = "masar-prototype-v4";
 
 export const CLINICS: ProtoState["clinics"] = [
   { id: "c1", name: "Al Bateen Family Health Centre", area: "Abu Dhabi", clinicians: 6, accepting: true },
@@ -84,7 +113,7 @@ export const CLINICS: ProtoState["clinics"] = [
 export function initialState(profileId: string, inbox: Resident[], lang: Lang = "en"): ProtoState {
   const now = new Date().toISOString();
   return {
-    v: 3,
+    v: 4,
     lang,
     role: "patient",
     profileId,
@@ -119,6 +148,9 @@ export function initialState(profileId: string, inbox: Resident[], lang: Lang = 
     audit: [{ at: now, role: "system", who: "Masar", what: "Demo started with synthetic data only", allowed: true }],
     selected: null,
     controlsOpen: false,
+    journey: { stage: 0, wearableGap: false, extraObs: false, edits: { ...NO_EDITS } },
+    guide: null,
+    chat: [],
   };
 }
 

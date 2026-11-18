@@ -8,6 +8,9 @@ import { Journey } from "@/components/journey";
 import { CertaintyExplorer } from "@/components/certainty-explorer";
 import { PrivacyStory } from "@/components/privacy-story";
 import { InView } from "@/components/in-view";
+import { InsideMasar } from "@/components/landing-inside";
+import { PathHero } from "@/components/prototype/scenes";
+import "@/components/prototype/prototype.css";
 import { LandingMenu, LandingNav, StickyHeader } from "@/components/landing-nav";
 import { t, type Lang as L } from "@/lib/i18n";
 import "./landing.css";
@@ -22,6 +25,7 @@ const COPY = {
   en: {
     nav: [
       ["#how", "How it works"],
+      ["#inside", "Inside Masar"],
       ["#limits", "What it won't do"],
       ["#who", "Who it's for"],
       ["#privacy", "Privacy"],
@@ -126,10 +130,21 @@ const COPY = {
     privacyCaption: "Illustration. Masar does not use fingerprints or any biometric.",
     closingTitle: "The conversation, earlier. The choice, yours.",
     closingBody: "Masar is in a pilot with synthetic records. There are no real accounts yet: use demo access to see how it would run in production. UAE PASS and organisation accounts come at pilot launch.",
+    insideLabel: "Inside Masar",
+    insideTitle: "Your record, told as one journey over time.",
+    insideBody: "Inside the app, Masar follows four parts of your health side by side, and only the parts you choose to share.",
+    insideNote: "Illustrations only. No real data is shown on this page.",
+    inside: [
+      ["Reproductive patterns", "Cycles and symptoms you log, compared with your own earlier ones."],
+      ["Lifestyle", "Short check-ins on sleep, stress, activity and meals. Context, never a cause."],
+      ["Clinical evidence", "Lab results and clinic records, exactly as recorded, with what they can't tell you."],
+      ["Wearable signals", "Sleep, steps and resting heart rate. Gaps are shown, never filled in."],
+    ],
   },
   ar: {
     nav: [
       ["#how", "كيف يعمل"],
+      ["#inside", "داخل مسار"],
       ["#limits", "ما لا يفعله"],
       ["#who", "لمن هو"],
       ["#privacy", "الخصوصية"],
@@ -234,6 +249,16 @@ const COPY = {
     privacyCaption: "رسم توضيحي. لا يستخدم مسار بصمات الأصابع ولا أي قياس حيوي.",
     closingTitle: "الحديث، أبكر. والقرار، لكم.",
     closingBody: "مسار في مرحلة تجريبية بسجلات افتراضية. لا توجد حسابات حقيقية بعد: استخدموا الدخول التجريبي لتروا كيف سيعمل في بيئة الإنتاج. الهوية الرقمية وحسابات المؤسسات تأتي عند إطلاق المرحلة التجريبية.",
+    insideLabel: "داخل مسار",
+    insideTitle: "سجلّكم، يُروى كرحلة واحدة عبر الزمن.",
+    insideBody: "داخل التطبيق، يتابع مسار أربعة جوانب من صحتكم جنبًا إلى جنب، وفقط الجوانب التي تختارون مشاركتها.",
+    insideNote: "رسوم توضيحية فقط. لا تُعرض أي بيانات حقيقية في هذه الصفحة.",
+    inside: [
+      ["الأنماط الإنجابية", "الدورات والأعراض التي تسجّلونها، مقارنةً بما سجّلتموه سابقًا."],
+      ["نمط الحياة", "تسجيلات قصيرة عن النوم والتوتر والنشاط والوجبات. سياق، وليست سببًا أبدًا."],
+      ["الأدلة السريرية", "نتائج المختبر وسجلات العيادة كما سُجّلت تمامًا، مع ما لا يمكنها إخباركم به."],
+      ["إشارات الجهاز القابل للارتداء", "النوم والخطوات ومعدل نبض القلب أثناء الراحة. تُعرض الفجوات ولا تُملأ أبدًا."],
+    ],
   },
 } as const;
 
@@ -283,6 +308,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <div className="landing min-h-dvh overflow-x-clip bg-paper">
+      {/* reading progress, driven by the scroll itself (hidden where unsupported or with reduced motion) */}
+      <span aria-hidden className="pt-progress fixed inset-x-0 top-0 z-[60] h-[2px] bg-accent" />
       <Header lang={lang} />
       {deleted ? (
         <p role="status" className="mx-auto mt-2 max-w-6xl px-4 md:px-8">
@@ -293,7 +320,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       ) : null}
 
       <noscript>
-        <style>{`[data-inview] *{opacity:1!important;transform:none!important;stroke-dashoffset:0!important}`}</style>
+        <style>{`[data-inview],[data-inview] *{opacity:1!important;transform:none!important;stroke-dashoffset:0!important}`}</style>
       </noscript>
       <main id="main" tabIndex={-1}>
         {/* Hero */}
@@ -386,6 +413,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </div>
         </section>
 
+        <InsideMasar label={c.insideLabel} title={c.insideTitle} body={c.insideBody} note={c.insideNote} parts={c.inside} />
+
         {/* Does / doesn't */}
         <section id="limits" className="scroll-mt-6 border-y border-rule bg-zinc-50">
           <div className="mx-auto max-w-6xl px-4 py-20 md:px-8 md:py-24">
@@ -398,7 +427,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               ].map((col) => (
                 <div key={col.title}>
                   <h3 className="font-mono text-[12px] uppercase tracking-[0.08em] text-ink-3">{col.title}</h3>
-                  <ul className="mt-4 divide-y divide-rule border-y border-rule">
+                  <InView as="ul" threshold={0.2} className="seq-list mt-4 divide-y divide-rule border-y border-rule">
                     {col.list.map((x) => (
                       <li key={x} className="flex gap-4 py-3.5 text-[16.5px] text-ink">
                         <span aria-hidden className={`w-4 shrink-0 font-semibold ${col.ink}`}>
@@ -407,7 +436,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                         {x}
                       </li>
                     ))}
-                  </ul>
+                  </InView>
                 </div>
               ))}
             </div>
@@ -443,6 +472,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         {/* Close */}
         <section className="mx-auto max-w-6xl px-4 py-20 text-center md:px-8 md:py-28">
+          {/* the path from the top of the page, continuing to the horizon */}
+          <div aria-hidden className="closing-path relative mx-auto mb-12 aspect-[2.4/1] max-w-3xl overflow-hidden rounded-[32px] border border-rule shadow-[0_30px_80px_-50px_rgb(28_27_24/0.45)]">
+            <PathHero />
+          </div>
           <h2 className="display mx-auto max-w-3xl text-[clamp(2.1rem,5vw,3.8rem)] leading-[1.06] text-ink">{c.closingTitle}</h2>
           <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-ink-2">{c.closingBody}</p>
           <Link href="/sign-in" className="btn btn-primary mt-8">

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import { t } from "@/lib/i18n";
+import { sayIn, t } from "@/lib/i18n";
 import { visibleQuestions, type JAnswers } from "@/lib/journey";
-import { protoSummaryInput, protoView, ageBand, type ProtoConsent, type ProtoSim } from "@/lib/prototype";
+import { protoSummaryInput, protoView, ageBand, journeyFor, type ProtoConsent, type ProtoSim } from "@/lib/prototype";
+import { CONDITION_LABEL, INTENTION_LABEL } from "@/lib/model";
+import { RULES } from "@/lib/signals";
+import { intentOf, SCOPE_LABEL, type Intent } from "@/lib/longitudinal";
+import { parseJourney } from "@/lib/journey-input";
+import { prototypeAsk, prototypeGuide } from "@/server/ai/trajectory-ai";
 import { accessAllowed } from "@/server/access";
 import { aiMode } from "@/server/ai/gemini";
 import { prototypeFollowUps, prototypeSummary } from "@/server/ai/journey-ai";
@@ -16,7 +21,7 @@ import { prototypeProfiles } from "@/server/prototype";
 // mock mode it is that version, labelled as the mock. Every live output goes
 // through the same validation as the real journey.
 
-const BOOL_KEYS: (keyof ProtoConsent)[] = ["answers", "clinical", "labs", "device", "healthAge", "ai", "shareClinician"];
+const BOOL_KEYS: (keyof ProtoConsent)[] = ["answers", "cycles", "lifestyle", "clinical", "labs", "device", "healthAge", "ai", "shareClinician"];
 
 export async function GET() {
   return NextResponse.json({ mode: aiMode() });
@@ -62,9 +67,42 @@ export async function POST(req: Request) {
     return NextResponse.json(out);
   }
   if (body.task === "summary") {
-    const view = protoView(profile.resident, sim, consent, answers, null);
+    const view = protoView(profile.resident, sim, consent, answers, null, { journey: journeyFor(profile.resident, sim, consent, parseJourney(body.journey)) });
     const finals = Array.isArray(body.finalAnswered) ? (body.finalAnswered as unknown[]).filter((x): x is string => typeof x === "string").slice(0, 2).map((x) => x.slice(0, 200)) : [];
     const out = await prototypeSummary({ allowed: geminiOn && consent.ai, input: protoSummaryInput(view, consent, answers, finals, tr), lang, tr });
+    return NextResponse.json(out);
+  }
+  if (body.task === "ask" || body.task === "guide") {
+    const journey = parseJourney(body.journey);
+    const jv = journeyFor(profile.resident, sim, consent, journey);
+    const view = protoView(profile.resident, sim, consent, answers, null, { journey: jv });
+    const goal = view.record.intention ? tr(INTENTION_LABEL[view.record.intention]) : null;
+    const signals = view.dashboard.insights;
+    const insightTitles = signals.map((i) => tr(RULES[i.code].title));
+    const say = (l: { text: string; vars?: Record<string, string | number> }) => sayIn(lang, l);
+    // The AI permission and Gemini's switch decide whether anything is sent at all.
+    const allowed = geminiOn && consent.ai;
+    const used = jv.lanes.filter((l) => l.allowed && l.count).flatMap((l) => l.scope.filter((x) => !jv.withheld.includes(x))).map((x) => SCOPE_LABEL[x]);
+    const withheld = jv.withheld.map((x) => SCOPE_LABEL[x]);
+    if (body.task === "ask") {
+      const question = typeof body.question === "string" ? body.question.trim().slice(0, 300) : "";
+      if (!question) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+      const intent: Intent = typeof body.intent === "string" && body.intent in { changes: 1, relevant: 1, missing: 1, why: 1, evidence: 1, cannot: 1, specialist: 1, prepare: 1, lab: 1, track: 1 } ? (body.intent as Intent) : intentOf(question);
+      const out = await prototypeAsk({ allowed, question, intent, resident: profile.resident, view: jv, goal, insightTitles, ageBand: ageBand(profile.resident.age), lang, say });
+      return NextResponse.json({ ...out, used: allowed ? used : [], withheld });
+    }
+    const out = await prototypeGuide({
+      allowed,
+      resident: profile.resident,
+      view: jv,
+      goal,
+      insightTitles,
+      ruleQuestions: [...new Set(signals.flatMap((i) => RULES[i.code].questions))].slice(0, 3).map(tr),
+      conditions: consent.clinical ? profile.resident.conditions.map((c) => tr(CONDITION_LABEL[c])) : [],
+      ageBand: ageBand(profile.resident.age),
+      lang,
+      say,
+    });
     return NextResponse.json(out);
   }
   return NextResponse.json({ error: "Unknown task" }, { status: 400 });

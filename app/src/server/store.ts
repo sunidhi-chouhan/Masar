@@ -1,4 +1,6 @@
 import "server-only";
+import { parseChat, parseGuide, parseJourney, type StoredGuide, type StoredTurn } from "@/lib/journey-input";
+import type { ProtoJourney } from "@/lib/prototype";
 import fs from "node:fs";
 import path from "node:path";
 import type { OptionKind, ReadingCode, SourceId } from "@/lib/model";
@@ -124,6 +126,43 @@ export interface PersonState {
   /** when to nudge someone who read what Masar found but hasn't asked yet */
   remindAt: string | null;
   journey: JourneyState;
+  /** the latest resident experience: tracking permissions, the demo clock, own entries, guide and assistant turns */
+  longitudinal: LongitudinalState;
+}
+
+/**
+ * The longitudinal layer, kept per account. Cycle tracking and lifestyle
+ * check-ins are new permissions: until the person chooses (null), cycle
+ * tracking follows "Phone and wearable", which used to carry cycle dates, and
+ * lifestyle check-ins follow "Your answers". Live accounts sit at month 12,
+ * the demo's today.
+ */
+export interface LongitudinalState {
+  cycles: boolean | null;
+  lifestyle: boolean | null;
+  journey: ProtoJourney;
+  guide: StoredGuide | null;
+  chat: StoredTurn[];
+}
+
+export function freshLongitudinal(): LongitudinalState {
+  return { cycles: null, lifestyle: null, journey: parseJourney(null, 4), guide: null, chat: [] };
+}
+
+function longitudinalFrom(l: Partial<LongitudinalState> | undefined): LongitudinalState {
+  if (!l) return freshLongitudinal();
+  return {
+    cycles: typeof l.cycles === "boolean" ? l.cycles : null,
+    lifestyle: typeof l.lifestyle === "boolean" ? l.lifestyle : null,
+    journey: parseJourney(l.journey, 4),
+    guide: parseGuide(l.guide),
+    chat: parseChat(l.chat),
+  };
+}
+
+/** The tracking permissions as they apply now, with their defaults. */
+export function trackingConsent(p: PersonState): { cycles: boolean; lifestyle: boolean } {
+  return { cycles: p.longitudinal.cycles ?? p.sources.device, lifestyle: p.longitudinal.lifestyle ?? p.sources.self };
 }
 
 export interface AccessEntry {
@@ -182,6 +221,7 @@ export function freshPerson(): PersonState {
     reports: [],
     remindAt: null,
     journey: freshJourney(),
+    longitudinal: freshLongitudinal(),
   };
 }
 
@@ -216,6 +256,7 @@ function normalise(p: Partial<PersonState> | undefined): PersonState {
     reportReadingConsent: p?.reportReadingConsent === true,
     reports: Array.isArray(merged.reports) ? merged.reports : [],
     journey: journeyFrom(p?.journey),
+    longitudinal: longitudinalFrom(p?.longitudinal),
   };
 }
 

@@ -330,3 +330,43 @@
 }
 @keyframes landing-menu-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 @keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* The checks people already attend breathe softly once the graph has drawn; a still ring without motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp[data-inview="true"] .lp-breath { transform-box: fill-box; transform-origin: center; animation: lp-breath 4.8s ease-in-out calc(2.6s + var(--i, 0) * 0.38s) infinite both; }
+}
+@keyframes lp-breath { 0%, 100% { transform: scale(0.85); opacity: 0.25; } 50% { transform: scale(1.2); opacity: 0.7; } }
+
+/* ---------- Premium polish: Inside Masar, lists, closing, buttons ---------- */
+/* A soft dawn light behind the four scenes, the same light the dashboard's chapters use. */
+.inside-glow {
+  background:
+    radial-gradient(45% 40% at 85% 10%, rgb(200 150 46 / 0.10), transparent 70%),
+    radial-gradient(50% 45% at 10% 70%, color-mix(in oklab, var(--color-accent-soft) 70%, transparent), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* the four scenes rise in turn as they reach the reader; the dashed path draws between them */
+  /* a transition, not an animation, so the page's pause-when-hidden rule never freezes a reveal halfway */
+  .inside-card > article { transition: opacity 0.9s var(--ease-calm), transform 0.9s var(--ease-calm), box-shadow 0.5s var(--ease-calm); }
+  .inside-card[data-inview="false"] > article { opacity: 0; transform: translateY(18px); }
+  .inside-card[data-inview="true"] > article:hover { transform: translateY(-4px); }
+  .inside-path path { stroke-dashoffset: 0; animation: inside-march 18s linear infinite; }
+
+  /* what Masar does, and doesn't: each line is set down in order */
+  .seq-list[data-inview="false"] > li { opacity: 0; }
+  .seq-list[data-inview="true"] > li { animation: rise-sm 0.7s var(--ease-calm) both; }
+  .seq-list[data-inview="true"] > li:nth-child(2) { animation-delay: 90ms; }
+  .seq-list[data-inview="true"] > li:nth-child(3) { animation-delay: 180ms; }
+  .seq-list[data-inview="true"] > li:nth-child(4) { animation-delay: 270ms; }
+  .seq-list[data-inview="true"] > li:nth-child(5) { animation-delay: 360ms; }
+  .seq-list[data-inview="true"] > li:nth-child(n + 6) { animation-delay: 450ms; }
+
+  /* buttons answer the pointer: a lift and shadow on hover, a press on click */
+  .landing .btn { transition: background-color 0.18s var(--ease-calm), border-color 0.18s var(--ease-calm), color 0.18s var(--ease-calm), transform 0.2s var(--ease-calm), box-shadow 0.25s var(--ease-calm); }
+  .landing .btn:hover { transform: translateY(-1px); }
+  .landing .btn:active { transform: translateY(0) scale(0.98); }
+}
+@keyframes inside-march { to { stroke-dashoffset: -100; } }
+.landing .btn-primary:hover { box-shadow: 0 14px 30px -16px rgb(30 91 86 / 0.8); }
+.landing .btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+@media print { .inside-card > article, .seq-list > li { opacity: 1 !important; animation: none !important; } }

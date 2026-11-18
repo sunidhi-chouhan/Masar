@@ -7,14 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "tsx scripts/check-story.ts && tsx scripts/check-path.ts && tsx --conditions=react-server scripts/check-privacy.ts && tsx --conditions=react-server scripts/check-ai.ts && tsx --conditions=react-server scripts/check-journey.ts && tsx --conditions=react-server scripts/check-dashboard.ts && tsx scripts/check-experience.ts",
+    "check": "tsx scripts/check-story.ts && tsx scripts/check-path.ts && tsx --conditions=react-server scripts/check-privacy.ts && tsx --conditions=react-server scripts/check-ai.ts && tsx --conditions=react-server scripts/check-journey.ts && tsx --conditions=react-server scripts/check-dashboard.ts && tsx scripts/check-experience.ts && tsx scripts/check-longitudinal.ts && tsx scripts/check-i18n-longitudinal.ts && tsx --conditions=react-server scripts/check-trajectory-ai.ts && tsx --conditions=react-server scripts/check-live-accounts.ts",
     "login-links": "tsx scripts/login-links.ts",
     "samples": "tsx scripts/make-sample-reports.ts",
     "check:privacy": "tsx --conditions=react-server scripts/check-privacy.ts",
     "check:ai": "tsx --conditions=react-server scripts/check-ai.ts",
     "check:path": "tsx scripts/check-path.ts",
     "check:journey": "tsx --conditions=react-server scripts/check-journey.ts",
-    "check:dashboard": "tsx --conditions=react-server scripts/check-dashboard.ts"
+    "check:dashboard": "tsx --conditions=react-server scripts/check-dashboard.ts",
+    "check:longitudinal": "tsx scripts/check-longitudinal.ts && tsx scripts/check-i18n-longitudinal.ts && tsx --conditions=react-server scripts/check-trajectory-ai.ts"
   },
   "dependencies": {
     "next": "16.4.3",

@@ -71,7 +71,7 @@ export function reportFileAccess(
 }
 
 /** Results the person uploaded and confirmed count as lab results. */
-function withUploads(r: Resident, state: PersonState): Resident {
+export function withUploads(r: Resident, state: PersonState): Resident {
   const extra = (state.reports ?? [])
     .filter((x) => x.status === "confirmed")
     .flatMap((x) =>

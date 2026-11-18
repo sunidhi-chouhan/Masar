@@ -11,6 +11,19 @@ import { SubmitButton } from "@/components/submit-button";
 import { clinicianView } from "@/server/views";
 import { ClinicJump } from "@/components/clinic-jump";
 import { Icon, type IconName } from "@/components/dashboard/icons";
+import { LiveClinicianTimeline } from "@/components/prototype/live";
+import { liveExtras, liveState, liveView } from "@/server/experience";
+import { logAccess } from "@/server/store";
+import { aiMode } from "@/server/ai/gemini";
+import { clinicianLabel } from "@/lib/accounts";
+import "@/components/prototype/prototype.css";
+
+/** What the shared timeline panel needs, from this resident's own stored record. Clinician screens are English. */
+function clinicianTimeline(id: string) {
+  const lv = liveView(id);
+  const initial = liveState(id, "en");
+  return { resident: lv.resident, initial, extras: liveExtras(lv.p), stamp: JSON.stringify([initial.consent, initial.guide?.sharedAt, initial.guide?.sharedKeys, initial.journey.edits.confirmed]) };
+}
 
 function H2({ icon, children }: { icon: IconName; children: React.ReactNode }) {
   return (
@@ -61,7 +74,11 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
   const lastSeen = `${TOUCHPOINT_LABEL[r.touchpoint.kind]}, ${formatDate(r.touchpoint.at)}`;
   const next = req?.bookedFor ? formatDate(req.bookedFor) : req ? "To be booked" : "None";
   const deciding = live && req?.status === "requested";
+  // The longitudinal timeline, only for a signed-in resident who shared their guide, and only the sections they ticked.
+  const timeline = live && v.state.shareWithClinician && v.state.longitudinal.guide?.sharedAt ? clinicianTimeline(r.id) : null;
+  if (timeline) logAccess({ personId: r.id, who: clinicianLabel(session.id), what: "Opened your shared timeline", allowed: true });
   const jump: { id: string; label: string; icon: IconName; badge?: string }[] = [
+    ...(timeline ? [{ id: "timeline", label: "Shared timeline", icon: "clock" as IconName }] : []),
     { id: "why", label: "Why flagged", icon: "flag", badge: String(v.signals.length) },
     { id: "trends", label: "Trends", icon: "chart" },
     { id: "factors", label: "Factors and gaps", icon: "clipboard" },
@@ -117,6 +134,12 @@ export default async function Review({ params }: PageProps<"/clinic/[id]">) {
       ) : null}
 
       <ClinicJump items={jump} />
+
+      {timeline ? (
+        <section id="timeline" className="mt-6 scroll-mt-24" aria-label="Shared timeline">
+          <LiveClinicianTimeline personId={r.id} resident={timeline.resident} initial={timeline.initial} extras={timeline.extras} aiMode={aiMode()} stamp={timeline.stamp} />
+        </section>
+      ) : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
