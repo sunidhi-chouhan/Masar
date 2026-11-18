@@ -1,4 +1,5 @@
 import { AR, AR_PATTERNS } from "./i18n-ar";
+import { AR_LONG } from "./i18n-ar-longitudinal";
 
 // Resident-facing text is written in English and looked up in Arabic by its
 // English wording. Anything without a translation stays in English rather
@@ -9,7 +10,7 @@ export const LANG_COOKIE = "masar_lang";
 export type Vars = Record<string, string | number>;
 
 function arabic(text: string): string {
-  const exact = AR[text];
+  const exact = AR[text] ?? AR_LONG[text];
   if (exact !== undefined) return exact;
   for (const [pattern, to] of AR_PATTERNS) {
     const m = text.match(pattern);
@@ -29,4 +30,10 @@ export const dirOf = (lang: Lang) => (lang === "ar" ? "rtl" : "ltr");
 /** Dates in the person's language, with Western digits in both. */
 export function formatDateIn(lang: Lang, iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
   return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-AE-u-nu-latn" : "en-GB", opts);
+}
+
+/** A line in the reader's language: string variables are translated, ISO dates formatted. */
+export function sayIn(lang: Lang, l: { text: string; vars?: Vars }): string {
+  const vars = l.vars && Object.fromEntries(Object.entries(l.vars).map(([k, x]) => [k, typeof x === "string" ? (/^\d{4}-\d{2}-\d{2}$/.test(x) ? formatDateIn(lang, x) : t(lang, x)) : x]));
+  return t(lang, l.text, vars);
 }

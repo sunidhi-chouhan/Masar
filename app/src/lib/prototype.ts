@@ -12,10 +12,15 @@ import { MEASURES, factorsFor, measureViews } from "./trajectory";
 import { buildDashboard, type Dashboard } from "./dashboard";
 import { coverage } from "./path";
 import { labelOf, questionById, toRuleAnswers, visibleQuestions, type JAnswers, type SummaryInput } from "./journey";
+import { journeyReadings, journeyView, STAGES, type JourneyEdits, type JourneyView, type StageId } from "./longitudinal";
 
 /** The prototype's permissions: one per kind of information, plus the assistant and the clinician. */
 export interface ProtoConsent {
   answers: boolean;
+  /** cycle starts and symptoms the person logs in Masar */
+  cycles: boolean;
+  /** sleep, stress, meals and exposure check-ins */
+  lifestyle: boolean;
   clinical: boolean;
   labs: boolean;
   device: boolean;
@@ -31,8 +36,8 @@ export interface ProtoSim {
   extraLab: boolean;
 }
 
-export const NO_CONSENT: ProtoConsent = { answers: false, clinical: false, labs: false, device: false, healthAge: false, ai: false, shareClinician: false };
-export const ALL_CONSENT: ProtoConsent = { answers: true, clinical: true, labs: true, device: true, healthAge: true, ai: true, shareClinician: true };
+export const NO_CONSENT: ProtoConsent = { answers: false, cycles: false, lifestyle: false, clinical: false, labs: false, device: false, healthAge: false, ai: false, shareClinician: false };
+export const ALL_CONSENT: ProtoConsent = { answers: true, cycles: true, lifestyle: true, clinical: true, labs: true, device: true, healthAge: true, ai: true, shareClinician: true };
 
 export const SIMULATED_LAB_DATE = "2026-11-02";
 
@@ -53,7 +58,38 @@ export function simulatedResident(base: Resident, sim: ProtoSim): Resident {
 }
 
 export function sourcesOf(c: ProtoConsent): Record<SourceId, boolean> {
-  return { self: c.answers, malaffi: c.clinical, lab: c.labs, healthAge: c.healthAge, device: c.device };
+  return { self: c.answers, malaffi: c.clinical, lab: c.labs, healthAge: c.healthAge, device: c.device || c.cycles };
+}
+
+/** The prototype's longitudinal state: the demo clock and the person's own edits. */
+export interface ProtoJourney {
+  stage: StageId;
+  wearableGap: boolean;
+  extraObs: boolean;
+  edits: JourneyEdits;
+}
+
+export function journeyFor(base: Resident, sim: ProtoSim, consent: ProtoConsent, j: ProtoJourney): JourneyView {
+  return journeyView(
+    base,
+    { cycles: consent.cycles, lifestyle: consent.lifestyle, device: consent.device, labs: consent.labs, clinical: consent.clinical },
+    { stage: j.stage, wearableGap: j.wearableGap, extraObs: j.extraObs, extraLab: sim.extraLab, labs: sim.labs, clinical: sim.clinical },
+    j.edits,
+  );
+}
+
+/**
+ * The record Masar's existing rules read, on the journey's clock: readings
+ * dated after the demo's today don't exist yet, and cycle lengths and recent
+ * sleep come from the longitudinal observations (already consent-filtered).
+ */
+function onTheClock(r: Resident, consent: ProtoConsent, jv: JourneyView): Resident {
+  const asOf = STAGES[jv.stage].asOf;
+  const readings = [
+    ...r.readings.filter((x) => x.at <= asOf && !(x.source === "device" && (x.code === "cycle_length" || x.code === "sleep_hours")) && (x.source !== "device" || consent.device)),
+    ...journeyReadings(jv),
+  ];
+  return { ...r, readings };
 }
 
 export interface ProtoView {
@@ -63,13 +99,24 @@ export interface ProtoView {
 }
 
 /** Everything Masar can say about this person, from what they allowed. */
-export function protoView(base: Resident, sim: ProtoSim, consent: ProtoConsent, answers: JAnswers, beliefs: (string | null)[] | null, extra: { touchpoint?: Resident["touchpoint"]; request?: { at: string; status: string } | null } = {}): ProtoView {
-  const r = simulatedResident(base, sim);
+export function protoView(base: Resident, sim: ProtoSim, consent: ProtoConsent, answers: JAnswers, beliefs: (string | null)[] | null, extra: {
+    touchpoint?: Resident["touchpoint"];
+    request?: { at: string; status: string; attendedAt?: string; bookedFor?: string } | null;
+    journey?: JourneyView;
+    /** signed-in accounts: values the person confirmed from uploaded reports, their report requests, and whether Masar may look for signals */
+    confirmedValues?: Parameters<typeof buildDashboard>[0]["confirmedValues"];
+    reports?: Parameters<typeof buildDashboard>[0]["reports"];
+    scanning?: boolean;
+  } = {},
+): ProtoView {
+  const sr = simulatedResident(base, sim);
+  const r = extra.journey ? onTheClock({ ...sr, readings: sr.readings.map((x) => (sim.extraLab && x.at === SIMULATED_LAB_DATE && x.source === "lab" ? { ...x, at: STAGES[extra.journey!.stage].asOf } : x)) }, consent, extra.journey) : sr;
   const sources = sourcesOf(consent);
   const hasAnswers = consent.answers && Object.keys(answers).length > 0;
   const applied = hasAnswers ? applyAnswers(r, toRuleAnswers(r.sex, answers)) : { resident: r, reported: null };
   const record = visibleRecord(applied.resident, sources, applied.reported);
-  const signals = signalsFor(record);
+  const scanning = extra.scanning ?? true;
+  const signals = scanning ? signalsFor(record) : [];
   const measures = measureViews(record);
   const factors = factorsFor(record);
   const dashboard = buildDashboard({
@@ -79,13 +126,13 @@ export function protoView(base: Resident, sim: ProtoSim, consent: ProtoConsent, 
     measures,
     factors,
     sources,
-    confirmedValues: [],
-    scanning: true,
+    confirmedValues: consent.labs ? (extra.confirmedValues ?? []) : [],
+    scanning,
     recordConditions: consent.clinical ? r.conditions : [],
     touchpoint: extra.touchpoint ?? r.touchpoint,
     beliefs: consent.answers ? beliefs : null,
     request: extra.request ?? null,
-    reports: [],
+    reports: consent.labs ? (extra.reports ?? []) : [],
   });
   return { resident: r, record, dashboard };
 }

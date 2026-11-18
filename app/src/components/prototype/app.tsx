@@ -5,7 +5,7 @@ import { browser } from "react-dom";
 import type { Resident } from "@/lib/model";
 import type { Report } from "@/lib/evidence";
 import { dirOf } from "@/lib/i18n";
-import { protoView } from "@/lib/prototype";
+import { journeyFor, protoView } from "@/lib/prototype";
 import { STORAGE_KEY, initialState, type ProtoState } from "./state";
 import { Mark, ProtoCtx, makeTr, useProto, type Ctx, type ProfileInfo } from "./core";
 import { DemoControls } from "./controls";
@@ -35,7 +35,7 @@ function load(): ProtoState | null {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw) as ProtoState;
-    return s?.v === 3 ? s : null;
+    return s?.v === 4 ? s : null;
   } catch {
     return null;
   }
@@ -56,12 +56,13 @@ function Inner(props: { profiles: ProfileInfo[]; inbox: Resident[]; report: Repo
   }, [s]);
 
   const base = (props.profiles.find((p) => p.id === s.profileId) ?? props.profiles[0]).resident;
+  const journey = useMemo(() => journeyFor(base, s.sim, s.consent, s.journey), [base, s.sim, s.consent, s.journey]);
   const view = useMemo(
-    () => protoView(base, s.sim, s.consent, s.answers, s.knowledge, { request: s.request ? { at: s.request.at, status: s.request.status } : null }),
-    [base, s.sim, s.consent, s.answers, s.knowledge, s.request],
+    () => protoView(base, s.sim, s.consent, s.answers, s.knowledge, { request: s.request ? { at: s.request.at, status: s.request.status } : null, journey }),
+    [base, s.sim, s.consent, s.answers, s.knowledge, s.request, journey],
   );
   const fns = useMemo(() => makeTr(s.lang), [s.lang]);
-  const ctx: Ctx = { s, set: setS, ...fns, profiles: props.profiles, base, view, inbox: props.inbox, report: props.report, aiMode: props.aiMode, accessKey: props.accessKey };
+  const ctx: Ctx = { s, set: setS, ...fns, profiles: props.profiles, base, view, journey, inbox: props.inbox, report: props.report, aiMode: props.aiMode, accessKey: props.accessKey };
 
   return (
     <ProtoCtx.Provider value={ctx}>

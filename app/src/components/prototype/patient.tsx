@@ -385,11 +385,20 @@ function Nav({ back, next, nextLabel, disabled, extra }: { back?: () => void; ne
 
 const go = (stage: Stage) => (x: ProtoState): ProtoState => ({ ...x, stage });
 
+/** The tracking permissions, in the same shape as PERMISSION_TEXT. */
+export const TRACKING_TEXT = {
+  cycles: { label: "Cycle tracking", involves: "Period start dates, flow and symptoms you log in Masar.", does: "Compares your recent cycles with your own earlier ones, using a published rule." },
+  lifestyle: { label: "Lifestyle check-ins", involves: "Short, optional check-ins on sleep, stress, activity and meals.", does: "Shows them as context over time; never as a cause or a measure of fertility." },
+  wearable: { label: "Wearable data", involves: "Sleep, steps and resting heart rate from a wearable. Synthetic in this demo: no real device is connected.", does: "Shows weekly averages and gaps; nothing is filled in or guessed." },
+} as const;
+
 function Consent() {
-  const { s, set, tr, aiMode } = useProto();
-  const rows: { k: keyof ProtoState["consent"]; text: keyof typeof PERMISSION_TEXT; group: string }[] = [
+  const { s, set, tr, aiMode, base } = useProto();
+  const rows: { k: keyof ProtoState["consent"]; text: keyof typeof PERMISSION_TEXT | keyof typeof TRACKING_TEXT; group: string }[] = [
     { k: "answers", text: "self", group: "Your information" },
-    { k: "device", text: "device", group: "Your information" },
+    ...(base.sex === "female" ? [{ k: "cycles" as const, text: "cycles" as const, group: "Your information" }] : []),
+    { k: "lifestyle", text: "lifestyle", group: "Your information" },
+    { k: "device", text: "wearable", group: "Your information" },
     { k: "clinical", text: "malaffi", group: "Clinical records" },
     { k: "labs", text: "lab", group: "Clinical records" },
     { k: "healthAge", text: "healthAge", group: "Clinical records" },
@@ -412,7 +421,7 @@ function Consent() {
               {rows
                 .filter((r) => r.group === g)
                 .map((r) => {
-                  const c = PERMISSION_TEXT[r.text];
+                  const c = r.text in TRACKING_TEXT ? TRACKING_TEXT[r.text as keyof typeof TRACKING_TEXT] : PERMISSION_TEXT[r.text as keyof typeof PERMISSION_TEXT];
                   const on = s.consent[r.k];
                   return (
                     <li key={r.k} className="py-2.5">
@@ -672,14 +681,15 @@ function Analysis() {
       setDone([]);
       setFailed(false);
       const d = view.dashboard;
-      const shared = Object.entries(s.consent).filter(([k, v]) => v && k !== "ai" && k !== "shareClinician").length;
+      const kinds = Object.entries(s.consent).filter(([k]) => k !== "ai" && k !== "shareClinician" && (k !== "cycles" || base.sex === "female"));
+      const shared = kinds.filter(([, v]) => v).length;
       const tick = async (text: string) => {
         // Each step is real work; the pause only lets the screen show it.
         await new Promise((r) => setTimeout(r, 420));
         if (live) setDone((x) => [...x, text]);
       };
       try {
-        await tick(tr("{n} of 5 kinds of information shared", { n: shared }));
+        await tick(tr("{n} of {total} kinds of information shared", { n: shared, total: kinds.length }));
         await tick(tr("{n} things from your answers and records", { n: d.known.length }));
         await tick(tr("{known} known · {unknown} still unknown", { known: d.picture.on, unknown: d.unknown.length }));
         await tick(d.series.length ? tr("{n} measurements over time", { n: d.series.length }) : tr("No readings over time shared"));

@@ -105,6 +105,8 @@ export function LandingPath({ moments, ageLabel, gapLabel, lang }: { moments: Mo
             <g key={mo.label} className="lp-moment" style={{ ["--i" as string]: i }}>
               <line x1={x} x2={x} y1={labelY + 9} y2={y - 10} stroke={color} strokeWidth="1" strokeDasharray="2 4" className="lp-guide" />
               {mo.kind === "early" ? <circle cx={x} cy={y} r={16} fill="none" stroke="var(--color-date)" strokeOpacity="0.5" className="lp-halo" /> : null}
+              {/* the checks people already attend breathe softly: moments that exist today */}
+              {mo.kind === "check" ? <circle cx={x} cy={y} r={11} fill="none" stroke="var(--color-accent)" strokeOpacity="0.35" className="lp-breath" /> : null}
               <circle cx={x} cy={y} r={mo.kind === "early" ? 9 : 6} fill={mo.kind === "late" ? "var(--color-paper)" : color} stroke={color} strokeWidth="2.2" className="lp-marker" />
               <text x={x} y={labelY} textAnchor="middle" className={`lp-label text-[16px] ${mo.kind === "early" ? "fill-[var(--color-ink)] font-semibold" : "fill-[var(--color-ink-2)]"}`}>
                 {mo.label}

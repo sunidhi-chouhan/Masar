@@ -4,10 +4,12 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { answersFromRecords } from "@/lib/profile";
 import { fromRuleAnswers, deterministicSummary } from "@/lib/journey";
 import { beliefItems } from "@/lib/checks";
-import { ALL_CONSENT, NO_CONSENT, protoSummaryInput, protoView, type ProtoConsent } from "@/lib/prototype";
+import { ALL_CONSENT, NO_CONSENT, journeyFor, protoSummaryInput, protoView, type ProtoConsent } from "@/lib/prototype";
 import { RULES } from "@/lib/signals";
 import { initialState, uid, withAudit, withNotice, type ProtoState, type Role } from "./state";
 import { useProto } from "./core";
+import { STAGES, type StageId } from "@/lib/longitudinal";
+import { setStage } from "./trajectory";
 
 // Demo Controls: a floating panel that changes the prototype's real state.
 // Every control here changes what the screens show; nothing is cosmetic.
@@ -73,9 +75,11 @@ export function DemoControls() {
   const go = (fn: (x: ProtoState) => ProtoState) => set(fn);
   const consentKeys: { k: keyof ProtoConsent; label: string }[] = [
     { k: "answers", label: tr("Questionnaire answers") },
+    ...(base.sex === "female" ? [{ k: "cycles" as const, label: tr("Cycle tracking") }] : []),
+    { k: "lifestyle", label: tr("Lifestyle check-ins") },
     { k: "clinical", label: tr("Clinical records") },
     { k: "labs", label: tr("Lab results") },
-    { k: "device", label: tr("Phone and wearable") },
+    { k: "device", label: tr("Wearable data") },
     { k: "healthAge", label: tr("Health Age check") },
     { k: "ai", label: tr("AI processing (Gemini)") },
     { k: "shareClinician", label: tr("Share with Dr Layla") },
@@ -89,7 +93,7 @@ export function DemoControls() {
   const toDashboard = () =>
     go((x) => {
       const tr2 = (t2: string) => t2;
-      const v = protoView(base, x.sim, x.consent, x.answers, x.knowledge);
+      const v = protoView(base, x.sim, x.consent, x.answers, x.knowledge, { journey: journeyFor(base, x.sim, x.consent, x.journey) });
       const sum = deterministicSummary(protoSummaryInput(v, x.consent, x.answers, [], tr2), tr2);
       return withAudit(
         { ...x, auth: { status: "in", method: x.auth.method ?? "uaepass" }, account: { ...x.account, created: true }, role: "patient", stage: "dashboard", analysedAt: new Date().toISOString(), summary: x.summary ?? { source: "masar", data: sum, at: new Date().toISOString() } },
@@ -169,6 +173,64 @@ export function DemoControls() {
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <Btn onClick={() => go((x) => ({ ...initialState(x.profileId, inbox, x.lang), controlsOpen: true }))}>{tr("Reset the demo")}</Btn>
                 <Btn onClick={toDashboard}>{tr("Jump to dashboard")}</Btn>
+              </div>
+            </Section>
+
+            <Section title={tr("Longitudinal journey (synthetic)")}>
+              <Seg<string>
+                label={tr("Synthetic timeline")}
+                value={String(s.journey.stage)}
+                onChange={(v) => go(setStage(Number(v) as StageId))}
+                options={STAGES.map((st) => ({ id: String(st.id), label: tr(st.label).replace(/^Month /, "M") }))}
+              />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Btn onClick={() => go((x) => setStage(Math.min(4, x.journey.stage + 1) as StageId)(x))}>{tr("Advance the timeline")}</Btn>
+                <Btn
+                  onClick={() =>
+                    go((x) =>
+                      withAudit(
+                        { ...x, role: "patient", auth: { status: "in", method: x.auth.method ?? "uaepass" }, account: { ...x.account, created: true }, stage: "dashboard", analysedAt: x.analysedAt ?? new Date().toISOString(), journey: { ...x.journey, stage: 4 } },
+                        { role: "system", who: "Demo Controls", what: "Played the synthetic journey to month 12", allowed: true },
+                      ),
+                    )
+                  }
+                >
+                  {tr("Play to month 12")}
+                </Btn>
+              </div>
+              <div className="mt-2">
+                <Toggle on={s.journey.extraObs} label={tr("Simulate a new observation")} onChange={(extraObs) => go((x) => withAudit({ ...x, journey: { ...x.journey, extraObs } }, { role: "system", who: "Demo Controls", what: extraObs ? "Added simulated self-logged observations" : "Removed simulated self-logged observations", allowed: true }))} />
+                <Toggle on={s.journey.wearableGap} label={tr("Simulate missing wearable data")} onChange={(wearableGap) => go((x) => withAudit({ ...x, journey: { ...x.journey, wearableGap } }, { role: "system", who: "Wearable feed (synthetic)", what: wearableGap ? "Stopped syncing for four weeks" : "Synced again", allowed: true }))} />
+                <Toggle
+                  on={s.sim.extraLab}
+                  label={tr("Simulate new clinical evidence")}
+                  onChange={(extraLab) =>
+                    go((x) => {
+                      const y = { ...x, sim: { ...x.sim, extraLab } };
+                      return extraLab ? withAudit(withNotice(y, { to: "patient", tone: "info", text: "A new lab result arrived from your lab (simulated)." }), { role: "system", who: "Lab system (simulated)", what: "Sent a new result", allowed: true }) : y;
+                    })
+                  }
+                />
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Btn
+                  onClick={() => {
+                    toDashboard();
+                    setTimeout(() => window.dispatchEvent(new CustomEvent("masar:ask", { detail: { text: tr("What has changed over the last six months?"), intent: { kind: "journey", code: "changes" } } })), 60);
+                  }}
+                >
+                  {tr("Show AI interpretation")}
+                </Btn>
+                <Btn
+                  onClick={() => {
+                    toDashboard();
+                    setTimeout(() => window.dispatchEvent(new CustomEvent("masar:guide")), 60);
+                  }}
+                >
+                  {tr("Generate preparation guide")}
+                </Btn>
+                <Btn onClick={() => go((x) => withAudit({ ...x, role: "clinician", selected: x.profileId }, { role: "system", who: "Demo Controls", what: "Switched to {role}", vars: { role: "Clinician" }, allowed: true }))}>{tr("Show clinician view")}</Btn>
+                <Btn onClick={() => go((x) => withAudit({ ...x, role: "system" }, { role: "system", who: "Demo Controls", what: "Switched to {role}", vars: { role: "Health system" }, allowed: true }))}>{tr("Show health-system view")}</Btn>
               </div>
             </Section>
 

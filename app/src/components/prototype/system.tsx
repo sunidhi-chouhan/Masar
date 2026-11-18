@@ -5,6 +5,7 @@ import { MIN_GROUP } from "@/lib/evidence";
 import { RULES } from "@/lib/signals";
 import { Bars, Brand, Pill, Simulated, Stat, Tabs, download, useProto } from "./core";
 import { Bell, LangToggle } from "./patient";
+import { Pathways } from "./system-pathways";
 import { withAudit, type AuditEntry, type Referral } from "./state";
 
 // The health system: aggregates and workflows only. No screen here shows an
@@ -12,7 +13,7 @@ import { withAudit, type AuditEntry, type Referral } from "./state";
 // referrals carry a reference and a reason category, and the activity log
 // names roles, not patients.
 
-type Tab = "overview" | "referrals" | "population" | "clinics" | "activity" | "access" | "reports";
+type Tab = "overview" | "pathways" | "referrals" | "population" | "clinics" | "activity" | "access" | "reports";
 
 export function SystemApp() {
   const { tr } = useProto();
@@ -37,6 +38,7 @@ export function SystemApp() {
             onChange={setTab}
             items={[
               { id: "overview", label: tr("Overview") },
+              { id: "pathways", label: tr("Longitudinal pathways") },
               { id: "referrals", label: tr("Screening and referrals") },
               { id: "population", label: tr("Population insights") },
               { id: "clinics", label: tr("Clinics and clinicians") },
@@ -49,6 +51,7 @@ export function SystemApp() {
         </div>
         <div key={tab} className="pt-enter mt-5">
           {tab === "overview" ? <Overview /> : null}
+          {tab === "pathways" ? <Pathways /> : null}
           {tab === "referrals" ? <ReferralsView /> : null}
           {tab === "population" ? <Population /> : null}
           {tab === "clinics" ? <Clinics /> : null}
@@ -62,7 +65,8 @@ export function SystemApp() {
 }
 
 function Overview() {
-  const { report: r, tr, s } = useProto();
+  const { report: rep, tr, s } = useProto();
+  const r = rep!;
   const maxMonth = Math.max(1, ...r.monthly.map((m) => m.signals));
   return (
     <div className="space-y-4">
@@ -124,7 +128,8 @@ function Overview() {
 const COLS: Referral["status"][] = ["new", "accepted", "booked", "completed"];
 
 function ReferralsView() {
-  const { s, set, tr, report: r, date } = useProto();
+  const { s, set, tr, report: rep, date } = useProto();
+  const r = rep!;
   const ref = (x: Referral) => `REF-${x.id.replace(/[^a-z0-9]/gi, "").slice(-5).toUpperCase()}`;
   const move = (id: string, status: Referral["status"]) =>
     set((x) => withAudit({ ...x, referrals: x.referrals.map((y) => (y.id === id ? { ...y, status } : y)) }, { role: "system", who: "Referral coordinator", what: "Moved a referral to {status}", vars: { status }, allowed: true }));
@@ -186,7 +191,8 @@ function ReferralsView() {
 }
 
 function Population() {
-  const { report: r, tr } = useProto();
+  const { report: rep, tr } = useProto();
+  const r = rep!;
   return (
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-2">
@@ -305,7 +311,8 @@ function Activity() {
 }
 
 function Access() {
-  const { s, tr, report: r } = useProto();
+  const { s, tr, report: rep } = useProto();
+  const r = rep!;
   const count = (re: RegExp) => s.audit.filter((a) => re.test(a.what)).length;
   return (
     <div className="space-y-4">
@@ -344,7 +351,8 @@ function Access() {
 }
 
 function Reports() {
-  const { s, set, tr, report: r } = useProto();
+  const { s, set, tr, report: rep } = useProto();
+  const r = rep!;
   const csv = (rows: (string | number)[][]) => rows.map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
   return (
     <div className="grid gap-4 md:grid-cols-2">

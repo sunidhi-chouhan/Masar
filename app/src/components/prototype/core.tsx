@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import type { Resident } from "@/lib/model";
 import type { Report } from "@/lib/evidence";
 import type { ProtoView } from "@/lib/prototype";
+import type { JourneyView } from "@/lib/longitudinal";
 import type { Line } from "@/lib/path";
 import { formatDateIn, t, type Lang } from "@/lib/i18n";
 import type { ProtoState, Vars } from "./state";
@@ -25,10 +26,24 @@ export interface Ctx {
   profiles: ProfileInfo[];
   base: Resident;
   view: ProtoView;
+  /** the authorised longitudinal view on the demo clock */
+  journey: JourneyView;
   inbox: Resident[];
-  report: Report;
+  /** the simulated pilot report; only the health-system view reads it */
+  report?: Report;
   aiMode: "live" | "mock" | "off";
   accessKey: string | null;
+  /**
+   * Set when the experience runs on a signed-in demo account (/me) rather than
+   * /prototype: where the assistant and guide are asked, and the account's
+   * existing server-rendered features shown inside the shared chapters.
+   */
+  live?: LiveHooks;
+}
+
+export interface LiveHooks {
+  api: string;
+  slots: { banner?: ReactNode; reports?: ReactNode; request?: ReactNode };
 }
 
 export const ProtoCtx = createContext<Ctx | null>(null);
@@ -41,8 +56,9 @@ export function useProto(): Ctx {
 
 export function makeTr(lang: Lang) {
   const tr = (text: string, vars?: Vars) => t(lang, text, vars);
-  const say = (l: Line) => tr(l.text, l.vars && Object.fromEntries(Object.entries(l.vars).map(([k, x]) => [k, typeof x === "string" ? tr(x) : x])));
   const date = (iso: string) => formatDateIn(lang, iso);
+  // ISO dates in a line are shown in the reader's language; other words are translated.
+  const say = (l: Line) => tr(l.text, l.vars && Object.fromEntries(Object.entries(l.vars).map(([k, x]) => [k, typeof x === "string" ? (/^\d{4}-\d{2}-\d{2}$/.test(x) ? date(x) : tr(x)) : x])));
   return { tr, say, date };
 }
 

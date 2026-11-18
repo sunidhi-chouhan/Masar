@@ -180,6 +180,13 @@ check("every resident-facing sentence on the path has Arabic", () => {
     "src/components/prototype/system.tsx",
     "src/components/prototype/core.tsx",
     "src/components/prototype/state.ts",
+    "src/components/prototype/trajectory.tsx",
+    "src/components/prototype/prepare-guide.tsx",
+    "src/components/prototype/assistant.tsx",
+    "src/components/prototype/clinician-trajectory.tsx",
+    "src/components/prototype/system-pathways.tsx",
+    "src/lib/longitudinal.ts",
+    "src/lib/pathways.ts",
   ];
   for (const f of files) {
     const src = fs.readFileSync(path.join(__dirname, "..", f), "utf8");

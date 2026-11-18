@@ -14,13 +14,15 @@ import { Bell, LangToggle } from "./patient";
 import { reportBlocks } from "./dashboard";
 import { downloadPdf } from "./report-pdf";
 import { uid, withAudit, withNotice } from "./state";
+import { ClinicianTrajectory } from "./clinician-trajectory";
+import { sharedNow } from "./prepare-guide";
 
 // Dr Layla's practice view. The prototype patient appears only as far as they
 // have shared: before that, the row is locked and every look is logged as
 // blocked. The other patients are synthetic residents of the simulated
 // practice, shown as having shared with her.
 
-type Tab = "summary" | "records" | "insights" | "labs" | "consent" | "consult" | "notes" | "followup" | "messages" | "report";
+type Tab = "trajectory" | "summary" | "records" | "insights" | "labs" | "consent" | "consult" | "notes" | "followup" | "messages" | "report";
 
 const SYNTH = { clinical: "available" as const, labs: "available" as const, extraLab: false };
 
@@ -191,6 +193,7 @@ function Patient({ r, v, live }: { r: Resident; v: ProtoView; live: boolean }) {
   const ic = (n: IconName) => <Icon name={n} className="h-[18px] w-[18px]" />;
   const tabs: { id: Tab; label: string; count?: number; icon: React.ReactNode }[] = [
     { id: "summary", label: tr("Summary"), icon: ic("spark") },
+    ...(live ? [{ id: "trajectory" as const, label: tr("Trajectory"), count: sharedNow(s.guide, s.consent).length || undefined, icon: ic("chart") }] : []),
     { id: "records", label: tr("History and records"), icon: ic("clock") },
     { id: "insights", label: tr("Insights and uncertainty"), count: d.insights.length, icon: ic("flag") },
     { id: "labs", label: tr("Labs and trends"), count: d.series.length, icon: ic("chart") },
@@ -224,6 +227,7 @@ function Patient({ r, v, live }: { r: Resident; v: ProtoView; live: boolean }) {
       </div>
 
       <div key={tab} className="pt-enter">
+        {tab === "trajectory" && live ? <ClinicianTrajectory /> : null}
         {tab === "summary" ? (
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="pt-card lg:col-span-2">
